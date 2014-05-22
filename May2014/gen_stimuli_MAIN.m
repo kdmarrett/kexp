@@ -17,14 +17,14 @@
 clearvars -except inter_wheel_msec z
 
 PATH = '~/Dropbox/LABSN/Files_Script/';%local letter and output directory
-output_path = strcat(PATH, 'stimuli_output/April');%directory where subject stimulus will be saved for each computer
+output_path = strcat(PATH, 'stimuli_output/May');%directory where subject stimulus will be saved for each computer
 letter_path = strcat(PATH, 'monotone_220Hz_24414'); %directory to untrimmed letters %linux home
 K70_dir = strcat(PATH, 'K70'); % ubuntu home
 tone_dir = strcat(PATH, 'stimuli_tones'); %ubuntu home
 num_dir = strcat(PATH, 'number_processed');  %ubuntu home
 
 letterArray = {'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'X', 'Y', 'Z'}; %does not contain W
-
+letterArray = {'A' 'B' 'F' 'O' 'E' 'M' 'I' 'T' 'J' 'C' 'H' 'Q' 'G' 'N' 'U' 'V' 'K' 'D' 'L' 'U' 'P' 'S' 'Z' 'Y'};
 % General Parameters
 %resetRandGen(subject_id);
 fs = 24414; %letter sample rate
@@ -51,9 +51,9 @@ total_letters = wheel_num * letters_wheel;
 target_per_block = 2; % no. target oddballs in each letterblock must be greater than rep_blcok
 play_wheel = [1 1 1 1 1]; %boolean array to include certain wheels for training trials
 wheel_matrix = [7 8 9]; % number of letters in each wheel
-tot_cyc = 1;
-targ_cyc = 1;
-wheel_time = 3.000; % how long each wheel will last in seconds
+tot_cyc = 10;
+targ_cyc = 3;
+wheel_time = 1.000; % how long each wheel will last in seconds
 for i = 1:length(wheel_matrix)
     ILI_sec(i) = wheel_time / wheel_matrix(i);
 end
@@ -129,7 +129,7 @@ for i = 1:tot_block  % each target letter assigned a block written to a specific
     end %for each wheel
 
    %stamps wav_name with each block labeled in WN, LW, IWI, ILI order specifying tone or dropped
-   wav_name = fullfile(output_path, strcat('Block_', target_letter{i},'_WN_', int2str(wheel_num), '_LW_', int2str(letters_wheel), '_IWI_', int2str(IWI / fs), '_no.targs_', int2str(targ_cyc),'_tot.cyc_', int2str(tot_cyc), '_', scale_type));
+   wav_name = fullfile(output_path, strcat('Block_', target_letter{i},'_WN_', int2str(wheel_num), '_LW_', int2str(letters_wheel), '_IWI_', int2str(IWI / fs), '_notargs_', int2str(targ_cyc),'_totcyc_', int2str(tot_cyc), '_', scale_type));
    final_stim = rms_amp * final_stim / sqrt(mean(mean(final_stim.^2)));
    wavwrite(final_stim, fs, wav_name);
 if targ_cyc ~=  total_target_letters
