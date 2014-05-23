@@ -1,8 +1,6 @@
 %   function [output] = gen_stimuli_MAIN (inter_wheel_msec)   
 %   Author: Karl Marrett
-%  Uses dopping instead of dropped letters, thus all dropped letter code
-%  has been removed
-%   generates wheeled stimulus
+%  Uses dopping 
 %   Includes a preblock primer where target letters are played in their respective location and pitch, and
 %   a post_block to provide time between trials.
 % Key params
@@ -13,20 +11,21 @@
 % training blocks
 % single letter for each block
 
+%resetRandGen(subject_id);  %method for changing seed
 
-clearvars -except inter_wheel_msec z
+% tests letters per wheel, pitch assignment, alphabetic ordering, target
+% type
+trialPerPara = [20 20 20 20]; %sets how many trial will happen for each paradigm type
 
-PATH = '~/Dropbox/LABSN/Files_Script/';%local letter and output directory
-output_path = strcat(PATH, 'stimuli_output/May');%directory where subject stimulus will be saved for each computer
-letter_path = strcat(PATH, 'monotone_220Hz_24414'); %directory to untrimmed letters %linux home
-K70_dir = strcat(PATH, 'K70'); % ubuntu home
-tone_dir = strcat(PATH, 'stimuli_tones'); %ubuntu home
-num_dir = strcat(PATH, 'number_processed');  %ubuntu home
 
-letterArray = {'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'X', 'Y', 'Z'}; %does not contain W
-letterArray = {'A' 'B' 'F' 'O' 'E' 'M' 'I' 'T' 'J' 'C' 'H' 'Q' 'G' 'N' 'U' 'V' 'K' 'D' 'L' 'U' 'P' 'S' 'Z' 'Y'};
+clearvars -except inter_wheel_msec z % delete?
+
+PATH = '~/gitdir/kexp/';%local letter and output directory
+output_path = strcat(PATH, 'Stims');%dir for all subject stimulus
+letter_path = strcat(PATH, 'monotone_220Hz_24414'); %dir to untrimmed letters
+K70_dir = strcat(PATH, 'K70'); % computed HRTF
+
 % General Parameters
-%resetRandGen(subject_id);
 fs = 24414; %letter sample rate
 rms_amp = .01; %final normalization
 letter_decibel = -10; %amplitude of letters in wheel; final stim normalized
@@ -34,7 +33,6 @@ odd_tone_decibel = -30; %amplitude of tone oddballs
 odd_num_decibel = -30;
 white_noise_decibel = -60;  %amplitude 
 distance_sound = 5; %distance for stimuli to be played in HRTF
-%bit rate of stimuli?
 
 %amplitude modulator shifts amplitude of each wheel with AM_freq Hz; 0 for constant amplitude
 AM_freq = [0 0 0 0 0 0 0 0]; %Hz rate of amplitude modulator elements for each wheel 0 for none
@@ -42,15 +40,38 @@ AM_pow =  [0 0 0 0 0 0 0 0]; %decibel of each AM for each corresponding wheel
 
 %Parameters of block design
 scale_type = 'whole'; %string 'whole' or 'diatonic'
-target_letter = {'B'}; %one letter per block
-tot_block = length(target_letter); % a block for each target letter
+
+for z = 1:(length(trialPerPara))
+paradigm = zeros(1, 4); %decides which paradigm type specific stimuli will fall into 
+paradigm(z) = 1;
+
+if paradigm(1)
+    wheel_matrix = [9 8 7]; % number of letters in each wheel
+else
+    wheel_matrix = [8 8 8];
+end
+
+if paradigm{3}
+    letterArray{1} = {'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'X', 'Y', 'Z'}; %does not contain W
+else
+    letterArray{2} = {'A' 'B' 'F' 'O' 'E' 'M' 'I' 'T' 'J' 'C' 'H' 'Q' 'G' 'N' 'U' 'V' 'K' 'D' 'L' 'U' 'P' 'S' 'Z' 'Y'}; %maximal phoneme separation no 'w'
+end
+
+if paradigm(4)
+target_letter_i = {'B' 'C' 'D' 'E' 'G' 'P'};
+target_letter = target_letter_i(randi([1, length(target_letter_i)]));
+else
+target_letter = {'R'}; %one letter per block
+end
+
+
+
 rep_block = 1;  % how many times each wheel will be looped for each letterblock
-wheel_num = 3; %number of looped wheels each assigned a spatial location (WN) 3 if letters_wheel = 8
+wheel_num = length(wheel_matrix); %number of looped wheels each assigned a spatial location (WN) 3 if letters_wheel = 8
 letters_wheel = 8; %letters per wheel each assigned a pentatonic pitch (LW)
 total_letters = wheel_num * letters_wheel;
 target_per_block = 2; % no. target oddballs in each letterblock must be greater than rep_blcok
 play_wheel = [1 1 1 1 1]; %boolean array to include certain wheels for training trials
-wheel_matrix = [7 8 9]; % number of letters in each wheel
 tot_cyc = 10;
 targ_cyc = 3;
 wheel_time = 1.000; % how long each wheel will last in seconds
@@ -61,22 +82,15 @@ ILI = ceil(ILI_sec .* fs);
 IWI = ceil(ILI / wheel_num);
 wheel_token_Hz = wheel_matrix / wheel_time;
 
-%Timing/sample length parameters
-% inter_wheel_sec = inter_wheel_msec(z) / 1000; %time (ms) between different wheel offsets
-% inter_wheel = ceil(inter_wheel_sec * fs); %(IWI)
-% %inter_letter_sec = 400 / 1000; %time (ms) between each letter in a wheel
-% inter_letter_sec = wheel_num * inter_wheel_sec + inter_wheel_sec;  % creates blocks from IWI with no overlaps
-% inter_letter = ceil(inter_letter_sec * fs); %convert to discrete samples (ILI)
-
 postblock_sec = .5; %secs after letterblocks
-postblock = ceil(postblock_sec * fs); 
+postblock = ceil(postblock_sec * fs);  % convert to samples
 preblock_prime_sec = 4.5; %secs to introduce primer letter
 preblock = ceil(preblock_prime_sec * fs);
 primer_start = 3000;  %sample # that primer letter will play in the preblock; must be less than preblock
 letterblock = ceil(ILI * letters_wheel * tot_cyc + IWI * (wheel_num - 1)) + 15000; %rough sample length of each letterblock + extra space for last letter
 tot_sample = preblock + letterblock + postblock; %total samples in each wavfile
 
-for i = 1:tot_block  % each target letter assigned a block written to a specific wav file
+for i = 1:paradigm(z)  % each target letter assigned a block written to a specific wav file
     [ wheel_matrix, target_wheel_index, wheel_col, total_target_letters ] = generate_letter_matrix_wheel( letterArray, wheel_num, letters_wheel, target_letter, targ_cyc, tot_cyc); % returns cell array of wheel_num elements
     [pitch_wheel, angle_wheel, total_pitches, list_of_pitches] = pitch_angle_wheel(wheel_num, letters_wheel, tot_cyc, scale_type); %returns corresponding cell arrays
     final_stim = zeros(tot_sample, 2); % creates background track for each letter to be added on
@@ -136,8 +150,9 @@ if targ_cyc ~=  total_target_letters
     fprintf('Error in generate_letter_matrix_wheel')
 end
 end
+end
 
-    sound(final_stim, fs)
+%    sound(final_stim, fs)
 %    fprintf(wav_name)
 % save(subject_id, 'target_oddball_times', 'append');
 
