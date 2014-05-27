@@ -1,4 +1,4 @@
-function [pitch_wheel, angle_wheel, total_pitches, list_of_pitches ] = pitch_angle_wheel(wheel_num, letters_wheel, tot_cyc, scale_type)
+function [pitch_wheel, angle_wheel, total_pitches, list_of_pitches ] = pitch_angle_wheel(wheel_matrix_info, tot_cyc, scale_type)
 
 %establishes the angles to use for the varying amount of wheels
 baseline_angle{1} = [0];

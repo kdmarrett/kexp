@@ -1,17 +1,18 @@
-function [ wheel_matrix, target_wheel_index, wheel_col, total_target_letters ] = generate_letter_matrix_wheel( letterArray, wheel_num, letters_wheel, target_letter, targ_cyc, tot_cyc)
+function [ wheel_matrix, target_wheel_index, wheel_col, total_target_letters ] = generate_letter_matrix_wheel( letterArray, wheel_matrix_info, target_letter, targ_cyc, tot_cyc)
 
 %wheel matrix is a cell array where each array contains rows which
 %represent the trials or blocks for each wheel, the columns represent the
 %order in which the letter will be played in which is why they are randomly
 %reordered at the end.
 
-subLetter = {'Z'};
+subLetter = {'Z'}; %!! needs to be changed to non x[i] CV
 inner_cyc = tot_cyc - 2; % add in the first and end cycles last
-
+wheel_num = length(wheel_matrix_info);
 %create the generic wheels and record the wheel and letter number of
 %the target
 for i=1:wheel_num
-    base_wheel_matrix{i} = letterArray((1 + (letters_wheel * (i - 1))):(letters_wheel * i)); 
+    letters_wheel = wheel_matrix_info(i);
+    base_wheel_matrix{i} = letterArray((1 + (letters_wheel * (i - 1))):(letters_wheel * i)) 
 if sum(sum(strcmp(base_wheel_matrix{i}, target_letter))) %if this wheel contains the target letter
     target_letter_index = find(strcmp(base_wheel_matrix{i}, target_letter), 1); %record the letter index
     target_wheel_index = i;  %record the wheel index
