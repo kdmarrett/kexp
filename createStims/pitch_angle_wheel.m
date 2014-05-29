@@ -6,6 +6,8 @@ baseline_angle{2} = [-90, 90];
 baseline_angle{3} = [-90, 0,  90];
 baseline_angle{4} = [-90, -30, 30, 90];
 baseline_angle{5} = [-90, -40, 0, 40, 90];
+
+wheel_num = length(wheel_matrix_info);
 angles = baseline_angle{wheel_num};
 
 %starting note of diatonics
@@ -27,6 +29,7 @@ whole_tone_pitches = {'-9.0', '-7.0', '-5.0', '-3.0', '-1.0', '1.0', '3.0', '5.0
 
 for i = 1:wheel_num
 temp = [];
+letters_wheel = wheel_matrix_info(i);
 angle_wheel{i} = repmat(angles(i), tot_cyc, letters_wheel);
 if strcmpi(scale_type, 'diatonic')
     temp = diatonic_pitches((start_semitone_index(i)):(start_semitone_index(i) + letters_wheel - 1));

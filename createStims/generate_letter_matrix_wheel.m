@@ -10,13 +10,20 @@ inner_cyc = tot_cyc - 2; % add in the first and end cycles last
 wheel_num = length(wheel_matrix_info);
 %create the generic wheels and record the wheel and letter number of
 %the target
+wheel_matrix_info = [9 8 7];
+index = 1;
 for i=1:wheel_num
-    letters_wheel = wheel_matrix_info(i);
-    base_wheel_matrix{i} = letterArray((1 + (letters_wheel * (i - 1))):(letters_wheel * i)) 
+    if (wheel_matrix_info(1) ~= wheel_matrix_info(2)) %quick test for paradigm type
+        if i ~= 1
+            index = i - 1;
+        end
+    end
+    base_wheel_matrix{i} = letterArray((1 + (wheel_matrix_info(index) * (i - 1))):(wheel_matrix_info(i) * i)); 
 if sum(sum(strcmp(base_wheel_matrix{i}, target_letter))) %if this wheel contains the target letter
     target_letter_index = find(strcmp(base_wheel_matrix{i}, target_letter), 1); %record the letter index
     target_wheel_index = i;  %record the wheel index
 end %else?
+index = index + 1;
 end
 
 %create the target wheel without the target letter

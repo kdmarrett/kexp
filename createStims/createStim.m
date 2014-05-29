@@ -13,12 +13,12 @@ function [output] = createStim(condition_trials)
 %rewrite generate letter_matrix
 
 PATH = '~/gitdir/kexp/';%local letter and output directory
-PATH = '/Users/nancygrulke/git/kexp'; %Mac
-output_path = strcat(PATH, 'Stims');%dir for all subject stimulus
+%PATH = '/Users/nancygrulke/git/kexp'; %Mac
+output_path = strcat(PATH, 'Stims/');%dir for all subject stimulus
 letter_path = strcat(PATH, 'monotone_220Hz_24414'); %dir to untrimmed letters
 K70_dir = strcat(PATH, 'K70'); % computed HRTF
 letterArray{1} = {'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'X', 'Y', 'Z'}; %does not contain W
-letterArray{2} = {'A' 'B' 'F' 'O' 'E' 'M' 'I' 'T' 'J' 'C' 'H' 'Q' 'G' 'N' 'U' 'V' 'K' 'D' 'L' 'U' 'P' 'S' 'Z' 'Y'}; %maximal phoneme separation no 'W' or 'R'
+letterArray{2} = {'A' 'B' 'F' 'O' 'E' 'M' 'I' 'T' 'J' 'C' 'H' 'Q' 'G' 'N' 'U' 'V' 'K' 'D' 'L' 'U' 'P' 'S' 'Z' 'R'}; %maximal phoneme separation no 'W' or 'Y'
 
 % General Parameters
 fs = 24414; %letter sample rate
@@ -76,20 +76,20 @@ for y = 1:length(condition_trials); % repeats through each condition type
     wheel_token_Hz = wheel_matrix_info / wheel_time;
     if paradigm(1)
         letters_wheel = wheel_matrix_info(3); 
-        letterblock = ceil(ILI * letters_wheel * tot_cyc + IWI * (wheel_num - 1)) + 15000; %rough sample length of each letterblock + extra space for last letter
+        letterblock = ceil(ILI * letters_wheel * tot_cyc + IWI * (wheel_num - 1) + 15000); %rough sample length of each letterblock + extra space for last letter
     else
         letters_wheel = wheel_matrix_info(1);
-        letterblock = ceil(ILI * letters_wheel * tot_cyc) + 15000; %only first wheel determines cycle length here when ILI > IWI
+        letterblock = ceil(ILI * letters_wheel * tot_cyc + 15000); %only first wheel determines cycle length here when ILI > IWI
     end
     
-    tot_sample = preblock + letterblock + postblock; %total samples in each wavfile
+    tot_sample = ceil(preblock + letterblock + postblock); %total samples in each wavfile
     
     %% creates each trial and saves
     for z = 1:condition_trials(y); %repeats through amount of trials per trial
         targ_cyc = randi([2 3]); % no. target oddballs in each trial
         [ wheel_matrix, target_wheel_index, wheel_col, total_target_letters ] = generate_letter_matrix_wheel( letterArray, wheel_matrix_info, target_letter, targ_cyc, tot_cyc); % returns cell array of wheel_num elements
         [pitch_wheel, angle_wheel, total_pitches, list_of_pitches] = pitch_angle_wheel(wheel_matrix_info, tot_cyc, scale_type); %returns corresponding cell arrays
-        final_stim = zeros(tot_sample, 2); % creates background track for each letter to be added on
+        final_stim = floor(zeros(tot_sample, 2)); % creates background track for each letter to be added on
         final_stim = final_stim + (10^(white_noise_decibel / 20)) * randn(tot_sample, 2); %adds in white noise to background track
         primer_added = 0; %(re)sets whether primer has been added to each block
         indexer_final = preblock; %delays each wheel by inter_wheel interval only refers to row for final_stim
@@ -144,7 +144,7 @@ for y = 1:length(condition_trials); % repeats through each condition type
         end
         
         %stamps wav_name with each block labeled by paradigm condition
-        wav_name = fullfile(output_path, 'Paradigm', int2str(paradigm), 'Trial', int2str(z));
+        wav_name = strcat(output_path, 'Paradigm', int2str(paradigm), 'Trial', int2str(z))
         final_stim = rms_amp * final_stim / sqrt(mean(mean(final_stim.^2)));
         wavwrite(final_stim, fs, wav_name);
         %save('Variables') % for debugging purposes
