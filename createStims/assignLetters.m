@@ -1,4 +1,4 @@
-function [ wheel_matrix, target_wheel_index, wheel_col, total_target_letters ] = generate_letter_matrix_wheel( letterArray, wheel_matrix_info, target_letter, targ_cyc, tot_cyc)
+function [ wheel_matrix, target_wheel_index, wheel_col, total_target_letters ] = assignLetters( possibleLetters, wheel_matrix_info, target_letter, targ_cyc, tot_cyc)
 
 %wheel matrix is a cell array where each array contains rows which
 %represent the trials or blocks for each wheel, the columns represent the
@@ -10,20 +10,15 @@ inner_cyc = tot_cyc - 2; % add in the first and end cycles last
 wheel_num = length(wheel_matrix_info);
 %create the generic wheels and record the wheel and letter number of
 %the target
-wheel_matrix_info = [9 8 7];
 index = 1;
 for i=1:wheel_num
-    if (wheel_matrix_info(1) ~= wheel_matrix_info(2)) %quick test for paradigm type
-        if i ~= 1
-            index = i - 1;
-        end
-    end
-    base_wheel_matrix{i} = letterArray((1 + (wheel_matrix_info(index) * (i - 1))):(wheel_matrix_info(i) * i)); 
+    lettersWheel = wheel_matrix_info(i);
+    base_wheel_matrix{i} = possibleLetters(index:((index + lettersWheel - 1)));
 if sum(sum(strcmp(base_wheel_matrix{i}, target_letter))) %if this wheel contains the target letter
     target_letter_index = find(strcmp(base_wheel_matrix{i}, target_letter), 1); %record the letter index
     target_wheel_index = i;  %record the wheel index
 end %else?
-index = index + 1;
+index = index + lettersWheel;
 end
 
 %create the target wheel without the target letter

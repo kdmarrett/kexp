@@ -13,12 +13,12 @@ function [output] = createStim(condition_trials)
 %rewrite generate letter_matrix
 
 PATH = '~/gitdir/kexp/';%local letter and output directory
-%PATH = '/Users/nancygrulke/git/kexp'; %Mac
+PATH = '/Users/nancygrulke/git/kexp/'; %Mac
 output_path = strcat(PATH, 'Stims/');%dir for all subject stimulus
 letter_path = strcat(PATH, 'monotone_220Hz_24414'); %dir to untrimmed letters
 K70_dir = strcat(PATH, 'K70'); % computed HRTF
-letterArray{1} = {'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'X', 'Y', 'Z'}; %does not contain W
-letterArray{2} = {'A' 'B' 'F' 'O' 'E' 'M' 'I' 'T' 'J' 'C' 'H' 'Q' 'G' 'N' 'U' 'V' 'K' 'D' 'L' 'U' 'P' 'S' 'Z' 'R'}; %maximal phoneme separation no 'W' or 'Y'
+letterArray.alphabetic = {'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'X', 'Y', 'Z'}; %does not contain W
+letterArray.displaced = {'A' 'B' 'F' 'O' 'E' 'M' 'I' 'T' 'J' 'C' 'H' 'Q' 'G' 'N' 'U' 'V' 'K' 'D' 'L' 'U' 'P' 'S' 'Z' 'R'}; %maximal phoneme separation no 'W' or 'Y'
 
 % General Parameters
 fs = 24414; %letter sample rate
@@ -39,7 +39,7 @@ possible_paradigm = [0 0 0 0; 1 0 0 0; 0 1 0 0; 0 0 1 0; 0 0 0 1];
 play_wheel = [1 1 1 1 1]; %boolean array to include certain wheels for training trials
 tot_cyc = 10;
 wheel_time = 1.000; % how long each wheel will last in seconds
-postblock_sec = .5; %secs after letterblocks
+postblock_sec = 1.5; %secs after letterblocks
 postblock = ceil(postblock_sec * fs);  % convert to samples
 preblock_prime_sec = 4.5; %secs to introduce primer letter
 preblock = ceil(preblock_prime_sec * fs);
@@ -55,9 +55,9 @@ for y = 1:length(condition_trials); % repeats through each condition type
     end
     
     if paradigm(2)
-        letterArray =  letterArray{1}; %alphabet order
+       possibleLetters =  letterArray.alphabetic; %alphabet order
     else
-        letterArray = letterArray{2};  %displaced order
+        possibleLetters = letterArray.displaced;  %displaced order
     end
     
     if paradigm(3)
@@ -87,8 +87,8 @@ for y = 1:length(condition_trials); % repeats through each condition type
     %% creates each trial and saves
     for z = 1:condition_trials(y); %repeats through amount of trials per trial
         targ_cyc = randi([2 3]); % no. target oddballs in each trial
-        [ wheel_matrix, target_wheel_index, wheel_col, total_target_letters ] = generate_letter_matrix_wheel( letterArray, wheel_matrix_info, target_letter, targ_cyc, tot_cyc); % returns cell array of wheel_num elements
-        [pitch_wheel, angle_wheel, total_pitches, list_of_pitches] = pitch_angle_wheel(wheel_matrix_info, tot_cyc, scale_type); %returns corresponding cell arrays
+        [ wheel_matrix, target_wheel_index, wheel_col, total_target_letters ] = assignLetters( possibleLetters, wheel_matrix_info, target_letter, targ_cyc, tot_cyc); % returns cell array of wheel_num elements
+        [pitch_wheel, angle_wheel, total_pitches, list_of_pitches] = assignPitch(wheel_matrix_info, tot_cyc, scale_type); %returns corresponding cell arrays
         final_stim = floor(zeros(tot_sample, 2)); % creates background track for each letter to be added on
         final_stim = final_stim + (10^(white_noise_decibel / 20)) * randn(tot_sample, 2); %adds in white noise to background track
         primer_added = 0; %(re)sets whether primer has been added to each block
@@ -101,7 +101,7 @@ for y = 1:length(condition_trials); % repeats through each condition type
                     letter = wheel_matrix{j}{k, l}; %finds the letter in wheel_matrix cell
                     pitch = pitch_wheel{j}{k, l}; %finds the pitch in pitch_wheel cell
                     angle = angle_wheel{j}(k, l); %finds the angle in angle_wheel for each letter
-                    path = fullfile(letter_path, pitch, letter);
+                    path = fullfile(letter_path, pitch, letter{1});
                     [letter_sound, fs] = wavread(path);
                     [L, R] = stimuliHRTF(letter_sound, fs, angle, distance_sound, K70_dir);
                     letter_sound_proc = (10 ^(letter_decibel/20)) * [L R];
