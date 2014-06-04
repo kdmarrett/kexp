@@ -55,6 +55,7 @@ enerMask = 0;
 %% create specific vars for each condition
 [m, n] = size(possible_paradigm);
 for y = 1:m; % repeats through each condition type
+    output_path = fullfile(output_path, 'cond', letterArray.alphabetic{y} ) % place each condition type into folder
     paradigm = possible_paradigm(y, :);
     if paradigm(1)
         wheel_matrix_info = [9 8 7]; % number of letters in each wheel
@@ -175,7 +176,7 @@ for y = 1:m; % repeats through each condition type
         %         end
         
         %stamps wav_name with each block labeled by paradigm condition
-        wav_name = strcat(output_path, 'Paradigm', int2str(paradigm), 'Trial', int2str(z));
+        wav_name = strcat(output_path, 'cond', int2str(paradigm), 'tr_', int2str(z));
         final_stim = rms_amp * final_stim / sqrt(mean(mean(final_stim.^2)));
         wavwrite(final_stim, fs, wav_name);
         %save('Variables') % for debugging purposes
