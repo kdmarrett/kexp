@@ -6,7 +6,7 @@ function [ letter_to_pitch ] = assignConstantPitch( letterArray, total_letters, 
 ratio = floor(total_letters / total_pitches);
 left_over = (total_letters - (ratio * total_pitches));
 extra_rows = 3; 
-ltp_rows = ratio + extra_rows
+ltp_rows = ratio + extra_rows;
 
 %CREATE A VECTOR OF SHUFFLED INDICES
 mixed_indices = randperm(total_letters, total_letters);
