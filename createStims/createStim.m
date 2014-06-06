@@ -14,6 +14,7 @@
 %CREATE OTHER TESTS
 %TRY/CATCH ASSERT CATCH EXCEPTION
 % ALL ODDBALL AND TARGET TIMES RELATIVE TO STIM START
+% 'R' NEEDS TO BE AT SEPARATE SPATIAL LOCATIONS
 
 % DEFINE PATHS
 PATH = '~/git/kexp/';%local letter and output directory
@@ -51,7 +52,7 @@ condition_trials = repmat(trials_per_condition, length(condition_type));
 scale_type = 'whole'; %string 'whole' or 'diatonic'
 play_wheel = [1 1 1 1 1]; %boolean array to include certain wheels for training trials
 tot_cyc = 10;
-wheel_time = 2.500; % how long each wheel will last in seconds
+wheel_time = 3.500; % how long each wheel will last in seconds
 postblock_sec = .5; %secs after letterblocks
 postblock = ceil(postblock_sec * fs);  % convert to samples
 preblock_prime_sec = 4.5; %secs to introduce primer letter
@@ -188,10 +189,10 @@ for y = 1:m; % repeats through each condition type
             indexer_final = indexer_final + IWI;
         end %for each wheel
 
-        assert((targ_cyc ~= total_target_letters), 'Error in generate_letter_matrix_wheel creating correct number of targets')
+        assert((targ_cyc == total_target_letters), 'Error in generate_letter_matrix_wheel creating correct number of targets')
         
         %stamp wav_name with each block labeled by paradigm condition
-        wav_name = fullfile(final_output_path, strcat(int2str(z), '2.5'))
+        wav_name = fullfile(final_output_path, strcat(int2str(z), '_3.5'))
         final_stim = rms_amp * final_stim / sqrt(mean(mean(final_stim.^2)));
         wavwrite(final_stim, fs, wav_name);
         %save('expVars') % for debugging purposes
