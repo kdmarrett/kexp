@@ -9,8 +9,13 @@ function [output] = createStim(condition_trials)
 % training blocks
 % ways to keep or reorder
 % standardize variable names
-% rewrite pitch_angle_wheel
+% stimuli saved in block then trials
 %rewrite generate letter_matrix
+%TEST FOR SUBCOLUMN ALWAYS EQUALING ONE
+%TEST FOR NO REPEATED LETTERS IN LETTER_TO_PITCH
+%CREATE OTHER TESTS
+%TRY/CATCH ASSERT CATCH EXCEPTION
+%6 HOURS OF CODING AND CLEANING CREATESTIMS FOLDER
 
 PATH = '~/gitdir/kexp/';%local letter and output directory
 PATH = '/Users/nancygrulke/git/kexp/'; %Mac
@@ -20,6 +25,7 @@ K70_dir = strcat(PATH, 'K70'); % computed HRTF
 letterArray.alphabetic = {'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'X', 'Y', 'Z'}; %does not contain W
 letterArray.displaced = {'A' 'B' 'F' 'O' 'E' 'M' 'I' 'T' 'J' 'C' 'H' 'Q' 'G' 'N' 'U' 'V' 'K' 'D' 'L' 'U' 'P' 'S' 'Z' 'R'}; %maximal phoneme separation no 'W' or 'Y'
 subLetter = {'Z'}; %!! needs to be changed to non x[i] CV
+class(subLetter) %++++++
 
 % General Parameters
 fs = 24414; %letter sample rate
@@ -28,6 +34,7 @@ letter_decibel = -10; %amplitude of letters in wheel; final stim normalized
 odd_tone_decibel = -30; %amplitude of tone oddballs
 odd_num_decibel = -30;
 white_noise_decibel = -60;  %amplitude
+noise = 0;  %adds noise (1)
 distance_sound = 5; %distance for stimuli to be played in HRTF
 
 %amplitude modulator shifts amplitude of each wheel with AM_freq Hz; 0 for constant amplitude
@@ -55,7 +62,8 @@ enerMask = 0;
 %% create specific vars for each condition
 [m, n] = size(possible_paradigm);
 for y = 1:m; % repeats through each condition type
-    output_path = fullfile(output_path, 'cond', letterArray.alphabetic{y} ) % place each condition type into folder
+    %output_path = fullfile(output_path, 'cond', letterArray.alphabetic{y} ) % place each condition type into folder
+    output_path = fullfile(output_path, 'block_', int2str(y));
     paradigm = possible_paradigm(y, :);
     if paradigm(1)
         wheel_matrix_info = [9 8 7]; % number of letters in each wheel
@@ -117,7 +125,7 @@ for y = 1:m; % repeats through each condition type
             [ letter_to_pitch ] = assignConstantPitch( possibleLetters, total_letters, total_pitches, subLetter, droppedLetter );
         end
         final_stim = floor(zeros(tot_sample, 2)); % creates background track for each letter to be added on
-        final_stim = final_stim + (10^(white_noise_decibel / 20)) * randn(tot_sample, 2); %adds in white noise to background track
+        final_stim = final_stim + noise * (10^(white_noise_decibel / 20)) * randn(tot_sample, 2); %adds in white noise to background track
         primer_added = 0; %(re)sets whether primer has been added to each block
         indexer_final = preblock; %delays each wheel by inter_wheel interval only refers to row for final_stim
         for j = 1:length(wheel_matrix_info)
@@ -128,7 +136,7 @@ for y = 1:m; % repeats through each condition type
                     letter = wheel_matrix{j}{k, l} %finds the letter in wheel_matrix cell
                     %strcmp(letter, letter_to_pitch)
                     if tone_constant
-                        columnPitch = find(sum(strcmp(letter, letter_to_pitch)));
+                        columnPitch = find(sum(strcmp(letter, letter_to_pitch)))
                         pitch_wheel{j}{k, l} = list_of_pitches{columnPitch};
                     end
                     pitch = pitch_wheel{j}{k, l}; %finds the pitch in pitch_wheel cell
@@ -177,9 +185,10 @@ for y = 1:m; % repeats through each condition type
         
         %stamps wav_name with each block labeled by paradigm condition
         wav_name = strcat(output_path, 'cond', int2str(paradigm), 'tr_', int2str(z));
+        wav_name = fullfile(output_path, int2str(z));
         final_stim = rms_amp * final_stim / sqrt(mean(mean(final_stim.^2)));
         wavwrite(final_stim, fs, wav_name);
-        %save('Variables') % for debugging purposes
+        %save('expVars') % for debugging purposes
     end
 end
 end

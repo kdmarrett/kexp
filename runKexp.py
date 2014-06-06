@@ -3,20 +3,18 @@
 Script 'DAS-cog-load experiment'
 ================================
 
-This script runs an experiment with spatially distributed word streams.
+This script runs an experiment with spatially distributed letter streams.
 """
 # Author: Karl Marrett <kdmarret@uw.edu>
 
 #mainDir = /Users/nancygrulke/git/
 #stimDir 
+varsfile = 'expVars.mat'
+stimdir = 'stimuli/finalStims'
 datadir = 'data'
 
-import sys
-sys.path[0:0] = ('/Users/nancygrulke/git')
-#sys.path.append("/Users/nancygrulke/Drop/Dropbox/LABSN/Files _ Script/PythonScripts")
-#sys.path[0:0] = ('/Users/nancygrulke/git/pyglet')
-import pyglet
 
+import pyglet
 from glob import glob
 import numpy as np
 import os.path as op
@@ -31,9 +29,6 @@ isi = 0.5
 wait_dur = 3.0
 msg_dur = 3.0
 
-# import scipy.io
-# mat = scipy.io.loadmat('file.mat')
-
 # EXPERIMENT PARAMETERS
 cont_btn = 8
 cont_btn_label = 'Next'
@@ -43,7 +38,7 @@ max_rt = 1.25
 pretrial_wait = 2.5
 feedback_dur = 1.5
 isi = 0.2
-std_args = ['dasCogLoad']
+std_args = ['kexp']
 std_kwargs = dict(screen_num=0, window_size=[800, 600], full_screen=True,
                   stim_db=65, noise_db=40,  # session='1', participant='foo',
                   stim_rms=0.01, check_rms=None, suppress_resamp=False,
@@ -51,9 +46,6 @@ std_kwargs = dict(screen_num=0, window_size=[800, 600], full_screen=True,
 
 # RANDOM NUMBER GENERATOR
 rng = np.random.RandomState(0)
-
-#mainDir = /Users/nancygrulke/git/
-#stimDir = 
 
 # CONVERT AUDIO FILES
 
@@ -64,7 +56,7 @@ instr['start'] = ('In this experiment you will be listening to letter streams '
                   'in different spatial locations. The letters will contain'
                   ' most of the alphabet with some letters ommited.'
                   'Most trials will have letters grouped consecutively.'
-				  'Your job is to press the "{}"" button when you '
+				          'Your job is to press the "{} button when you '
                   'hear that the target letter that does not match the target letter '
                   'spatial location where the word occurred. There will be a '
                   'little bit of background noise to make the task more '
@@ -184,10 +176,10 @@ prev = False
 # RUN EXPERIMENT
 with ef.ExperimentController(*std_args, **std_kwargs) as ec:
     # counterbalance experiment order across subjects
-    if int(ec._exp_info['session']) % 2 == 0:
-        order = tr_blocks + sm_blocks + md_blocks
-    else:
-        order = tr_blocks + md_blocks + sm_blocks
+    # if int(ec._exp_info['session']) % 2 == 0:
+    #     order = tr_blocks + sm_blocks + md_blocks
+    # else:
+    #     order = tr_blocks + md_blocks + sm_blocks
 
     # startup
     ec.screen_prompt(instr['start'], live_keys=[cont_btn])
