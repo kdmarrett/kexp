@@ -155,7 +155,7 @@ for y = 1:m; % repeats through each condition type
                         track_sample_index = track_sample_index + ILI(j); %advances track_sample_index to the next letter slot intra wheel
                     end %for each letter
                 end %for each cycle
-                [final_wheel] = gen_new_envelope(wheel_track, AM_freq(j), AM_pow(j), fs);
+                [final_wheel] = createEnvelope(wheel_track, AM_freq(j), AM_pow(j), fs);
                 [rows, cols] = size(final_wheel);
                 foo = 1;
                 for m = wheel_sample_index:(wheel_sample_index + rows - 1)

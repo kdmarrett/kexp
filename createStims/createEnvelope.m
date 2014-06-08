@@ -1,4 +1,4 @@
-function [final_wheel] = gen_new_envelope(wheel_track, AM_freq, AM_pow, fs)
+function [final_wheel] = createEnvelope(wheel_track, AM_freq, AM_pow, fs)
     if any(AM_freq)
         [m, n] = size(wheel_track);
         t = 0:1/fs:(m/fs + 2); % seconds
