@@ -1,4 +1,4 @@
-function [wheel_matrix_info, possibleLetters, target_letter, rearrangeCycles, tone_constant] = assignParadigm(paradigm, letterArray)
+function [wheel_matrix_info, possibleLetters, target_letter, rearrangeCycles, tone_constant, ener_mask] = assignParadigm(paradigm, letterArray)
 	% Assign basic design paraeters of each paradigm type
 
 	% ASSIGN LETTERS PER WHEEL
@@ -36,3 +36,12 @@ function [wheel_matrix_info, possibleLetters, target_letter, rearrangeCycles, to
     else
         tone_constant = 0;
     end
+
+    %  USE SAME LETTER ACROSS WHEELS AND CYCLES
+    if paradigm(6)
+        ener_mask = 1;
+    else
+        ener_mask = 0;
+    end
+
+end
