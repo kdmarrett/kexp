@@ -25,11 +25,11 @@ PATH = '~/git/kexp/';%local letter and output directory
 output_path = strcat(PATH, 'Stims/');%dir for all subject stimulus
 letter_path = strcat(PATH, 'monotone_220Hz_24414'); %dir to untrimmed letters
 K70_dir = strcat(PATH, 'K70'); % computed HRTF
-data_dir = strcat(PATH, 'data');
+data_dir = strcat(PATH, 'data/');
 
 % SET LETTERS
-letterArray.alphabetic = {'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'X', 'Y', 'Z'}; %does not contain W
-letterArray.displaced = {'A' 'B' 'F' 'O' 'E' 'M' 'I' 'T' 'J' 'C' 'H' 'Q' 'G' 'N' 'U' 'V' 'K' 'D' 'L' 'U' 'P' 'S' 'Z' 'R'}; %maximal phoneme separation no 'W' or 'Y'
+letterArray.alphabetic = {'A' 'B' 'C' 'D' 'E' 'F' 'G' 'H' 'I' 'J' 'K' 'L' 'M' 'N' 'O' 'P' 'Q' 'R' 'S' 'T' 'U' 'V' 'X' 'Z'}; %does not contain W or Y
+letterArray.displaced =  {'A' 'B' 'F' 'O' 'E' 'M' 'I' 'T' 'J' 'C' 'H' 'Q' 'G' 'N' 'U' 'V' 'K' 'D' 'L' 'U' 'P' 'S' 'Z' 'R'}; %maximal phoneme separation no 'W' or 'Y'
 subLetter = {'Z'}; %!! needs to be changed to non x[i] CV???
 
 % GENERAL PARAMETERS
@@ -49,7 +49,7 @@ AM_pow =  [0 0 0 0 0 0 0 0]; %decibel of each AM for each corresponding wheel
 % BOOLEANS FOR DESIGN FEATURES, ORDERED: LETTERS PER WHEEL, ALPHABETIC VS. RANDOMLY SORTED, TARGET LETTER 'R' AS OPPOSED TO X[i],
 % LETTER ORDERS ARE RETAINED ACROSS CYCLES, TONE IS ASSIGNED CONTIGUOUSLY AS OPPOSED TO RANDOMLY, ENERGETIC VS. INFO MASK
 condition_type = [0 0 0 0 0 0; 1 0 0 0 0 0; 0 1 0 0 0 0; 0 0 1 0 0 0; 0 1 0 1 0 0; 0 0 0 0 1 0; 0 0 0 0 0 1 ];
-condition_type = condition_type(7,:);
+%condition_type = condition_type(7,:);
 trials_per_condition = 1;
 condition_trials = repmat(trials_per_condition, length(condition_type));
 
@@ -57,7 +57,7 @@ condition_trials = repmat(trials_per_condition, length(condition_type));
 scale_type = 'whole'; %string 'whole' or 'diatonic'
 play_wheel = [1 1 1]; %boolean array to include certain wheels for training trials
 tot_cyc = 10;
-cycle_time = 3.500; % how long each wheel will last in seconds
+cycle_time = 1.500; % how long each wheel will last in seconds
 cycle_sample = ceil(cycle_time * fs);
 postblock_sec = .5; %secs after letterblocks
 postblock = ceil(postblock_sec * fs);  % convert to samples
@@ -171,7 +171,7 @@ for y = 1:m; % repeats through each condition type
         %STAMP WAV_NAME WITH EACH BLOCK LABELED BY PARADIGM CONDITION
         filename = strcat(data_dir, block_name, '_t_', int2str(z));
         save(filename);
-        wav_name = fullfile(final_output_path, strcat(int2str(z), '_3500'));
+        wav_name = fullfile(final_output_path, strcat(int2str(z), '_', int2str(cycle_time * 1000), 'ms'));
         wave_name_ext = strcat(wav_name, '.wav')
         final_sample = rms_amp * final_sample / sqrt(mean(mean(final_sample.^2)));
         wavwrite(final_sample, fs, wav_name);

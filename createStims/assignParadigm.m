@@ -15,7 +15,7 @@ function [wheel_matrix_info, possibleLetters, target_letter, rearrangeCycles, to
         possibleLetters =  letterArray.alphabetic; %alphabet order
     end
     
-    % ASSIGN LETTER BLOCK
+    % ASSIGN TARGET LETTER
     if paradigm(3)
         target_letter_i = {'B' 'C' 'D' 'E' 'G' 'P' 'T' 'V' 'Z'}; %  of all letters ending [i]
         target_letter = target_letter_i(randi([1, length(target_letter_i)])); %choose randomly
