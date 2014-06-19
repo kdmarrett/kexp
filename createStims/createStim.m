@@ -50,12 +50,26 @@ AM_pow =  [0 0 0 0 0 0 0 0]; %decibel of each AM for each corresponding wheel
 % LETTER ORDERS ARE RETAINED ACROSS CYCLES, TONE IS ASSIGNED CONTIGUOUSLY AS OPPOSED TO RANDOMLY, ENERGETIC VS. INFO MASK
 condition_type = [0 0 0 0 0 0; 1 0 0 0 0 0; 0 1 0 0 0 0; 0 0 1 0 0 0; 0 1 0 1 0 0; 0 0 0 0 1 0; 0 0 0 0 0 1 ];
 %condition_type = condition_type(7,:);
+[blocks, bar] = size(condition_type);
 trials_per_condition = 1;
 condition_trials = repmat(trials_per_condition, length(condition_type));
+makeTraining = 1;
+if makeTraining
+    trials_per_training = 1;
+    condition_trials_training = repmat(trials_per_condition,length(condition_type));
+end
+
+
+%CREATE STIM FILE STRUCTURE
+stimStruct(output_path, blocks);
+%training directory
+if makeTraining
+    fn_train = fullfile(output_path, 'training');
+    stimStruct(fn_train, blocks);
+end
 
 %GLOBAL PARAMETERS OF BLOCK DESIGN
 scale_type = 'whole'; %string 'whole' or 'diatonic'
-play_wheel = [1 1 1]; %boolean array to include certain wheels for training trials
 tot_cyc = 10;
 cycle_time = 1.500; % how long each wheel will last in seconds
 cycle_sample = ceil(cycle_time * fs);
@@ -107,6 +121,12 @@ for y = 1:m; % repeats through each condition type
         targ_cyc = randi([minTarg maxTarg]); % no. target oddballs in each trial
         [ wheel_matrix, target_wheel_index, droppedLetter ] = assignLetters( possibleLetters, wheel_matrix_info, target_letter, targ_cyc, tot_cyc, rearrangeCycles, ener_mask, subLetter); % returns cell array of wheel_num elements
         [pitch_wheel, angle_wheel, total_pitches, list_of_pitches] = assignPitch(wheel_matrix_info, tot_cyc, scale_type); %returns corresponding cell arrays
+        if makeTraining
+            play_wheel = zeros(1,3);
+            play_wheel(target_wheel_index) = 1;
+        else
+            play_wheel = [1 1 1]; %boolean array to include certain wheels for training trials
+        end
         if tone_constant
             [ letter_to_pitch ] = assignConstantPitch( possibleLetters, total_letters, total_pitches, subLetter, droppedLetter );
         end

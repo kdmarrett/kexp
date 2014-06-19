@@ -10,7 +10,7 @@ This script runs an experiment with spatially distributed letter streams.
 #mainDir = /Users/nancygrulke/git/
 #stimDir 
 varsfile = 'expVars.mat'
-stimdir = 'stimuli/finalStims'
+stimdir = 'Stims'
 datadir = 'data'
 
 
@@ -48,6 +48,19 @@ std_kwargs = dict(screen_num=0, window_size=[800, 600], full_screen=True,
 rng = np.random.RandomState(0)
 
 # CONVERT AUDIO FILES
+
+# GROUP FILENAMES OF STIMULI BY BLOCK
+stim_blocks['t_one'] = sorted(glob(op.join(stimdir, 'train-one*')))
+stim_blocks['t_two'] = sorted(glob(op.join(stimdir, 'train-two*')))
+stim_blocks['t_fa_'] = sorted(glob(op.join(stimdir, 'train-four-a-*')))
+stim_blocks['t_faa'] = sorted(glob(op.join(stimdir, 'train-four-aa*')))
+stim_blocks['t_fab'] = sorted(glob(op.join(stimdir, 'train-four-ab*')))
+stim_blocks['e_one'] = sorted(glob(op.join(stimdir, 'trial-0[01]*')))  # 0-19
+stim_blocks['e_two'] = sorted(glob(op.join(stimdir, 'trial-0[23]*')))  # 20-39
+stim_blocks['e_thr'] = sorted(glob(op.join(stimdir, 'trial-0[45]*')))  # etc
+stim_blocks['e_fou'] = sorted(glob(op.join(stimdir, 'trial-0[67]*')))
+stim_blocks['e_fiv'] = sorted(glob(op.join(stimdir, 'trial-0[89]*')))
+stim_blocks['e_six'] = sorted(glob(op.join(stimdir, 'trial-1*')))
 
 # INSTRUCTIONS AND FEEDBACK
 #instr_args = [cont_btn_label, resp_btn, streams, bnum]  # , 2 * blocks]

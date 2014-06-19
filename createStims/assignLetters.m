@@ -80,6 +80,8 @@ end
 % TEST FOR CORRECT TARGETS
 match_matrix = strcmp(target_letter, wheel_matrix{target_wheel_index});
 total_target_letters = sum(sum(match_matrix));
+target_cyc
+total_target_letters
 assert((target_cyc == total_target_letters), 'Error in generate_letter_matrix_wheel creating correct number of targets')
 end
 
