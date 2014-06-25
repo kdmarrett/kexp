@@ -15,13 +15,13 @@ wheel_num = length(wheel_matrix_info);
 % CREATE GENERIC WHEELS, RECORD WHEEL AND LETTER INDEX OF  TARGET
 index = 1;
 for i=1:wheel_num
-    lettersWheel = wheel_matrix_info(i);
-    base_wheel_matrix{i} = possibleLetters(index:((index + lettersWheel - 1)));
+    lettersWheel(i) = wheel_matrix_info(i);
+    base_wheel_matrix{i} = possibleLetters(index:((index + lettersWheel(i) - 1)));
     if sum(sum(strcmp(base_wheel_matrix{i}, target_letter))) %if this wheel contains  target letter
         target_letter_index = find(strcmp(base_wheel_matrix{i}, target_letter), 1); %record  letter index
         target_wheel_index = i;  %record  wheel index
-    end %else?
-    index = index + lettersWheel;
+    end 
+    index = index + lettersWheel(i);
 end
 
 % CREATE TARGET WHEEL WITHOUT TARGET LETTER
@@ -29,14 +29,13 @@ sub_wheel = base_wheel_matrix{target_wheel_index};
 droppedLetter = sub_wheel(1, target_letter_index);
 if ener_mask
     for i = 1:wheel_num
-        base_wheel_matrix{i} = repmat(letterO, 1, lettersWheel);
+        base_wheel_matrix{i} = repmat(letterO, 1, lettersWheel(i));
+        sub_wheel_ener{i} = repmat(letterO, 1, lettersWheel(i));
     end
-    sub_wheel = repmat(letterO, 1, lettersWheel);
     base_wheel_matrix{target_wheel_index}(1, target_letter_index) = target_letter;
 else
     sub_wheel(1, target_letter_index) = subLetter; % non_target wheel created
 end
-
 
 %CREATE RANDOMIZED ARRAY target_cyc_mat CORRESPONDING TO TARGET AND NON-TARGET CYCLES (1 0
 %RESPECT.)
@@ -55,17 +54,35 @@ end
 %ADD IN  NON TARGET CYCLES
 target_cyc_mat = [0 target_cyc_mat 0];
 
+% DEFINE WHEEL_MATRIX
+wheel_matrix = cell(wheel_num, 1);
+% for i = 1:wheel_num   
+%     wheel_matrix{i} = zeros(tot_cyc, lettersWheel(i));
+% end 
+
 % PLACE WHEEL TYPES ACCORDING TO target_cyc_mat
 for i = 1:wheel_num
-    for j = 1:length(target_cyc_mat)
+    for j = 1:tot_cyc   
+        % fprintf(strcat('new ', j))
+        % j
+        % i
+        % [row,col] = size(wheel_matrix{i}) %++++++
+        % [row,col] = size([(1:lettersWheel(i))]) %++++++
+        % % [row,col] = size(base_wheel_matrix{i}) %++++++
+        % [row,col] = size(sub_wheel_ener{i}) %++++++
+        % % [row,col] = size(sub_wheel) %++++++
         if (i == target_wheel_index)
             if (target_cyc_mat(j) ==  1)
-                wheel_matrix{i}(j, :) = base_wheel_matrix{i};  % if its a target cycle add in a reorded set of  generic wheel
+                wheel_matrix{i}(j,(1:lettersWheel(i))) = base_wheel_matrix{i};  % if its a target cycle add in a reorded set of generic wheel
             else
-                wheel_matrix{i}(j, :) = sub_wheel; % reorder  subbed out wheel for non-target cycles of  target wheel
+                if ener_mask
+                    wheel_matrix{i}(j, (1:lettersWheel(i))) = sub_wheel_ener{i}; % reorder subbed out wheel for non-target cycles of target wheel  
+                else
+                    wheel_matrix{i}(j, (1:lettersWheel(i))) = sub_wheel; % reorder subbed out wheel for non-target cycles of target wheel
+                end
             end
         else
-            wheel_matrix{i}(j, :) = base_wheel_matrix{i}; % reorder  generic template for non-target wheels
+            wheel_matrix{i}(j, (1:lettersWheel(i))) = base_wheel_matrix{i}; % reorder  generic template for non-target wheels
         end
     end
 end
@@ -80,8 +97,7 @@ end
 % TEST FOR CORRECT TARGETS
 match_matrix = strcmp(target_letter, wheel_matrix{target_wheel_index});
 total_target_letters = sum(sum(match_matrix));
-target_cyc
-total_target_letters
+save total_target_letters  %for debugging
 assert((target_cyc == total_target_letters), 'Error in generate_letter_matrix_wheel creating correct number of targets')
 end
 

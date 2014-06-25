@@ -1,4 +1,4 @@
-function [pitch_wheel, angle_wheel, total_pitches, list_of_pitches ] = assignPitch(wheel_matrix_info, tot_cyc, scale_type)
+function [pitch_wheel, angle_wheel, total_pitches, list_of_pitches ] = assignPitch(wheel_matrix_info, tot_cyc, scale_type, pitches)
 
 %establishes the angles to use for the varying amount of wheels
 baseline_angle{1} = [0];
@@ -22,24 +22,19 @@ if strcmpi(scale_type, 'diatonic')
     end
 end
 
-%established the pitch orders for each wheel of letters
-%pent_pitches = {'0', '1.0', '2.0', '4.0', '5.0'};
-diatonic_pitches = {'-9.0', '-8.0', '-7.0', '-6.0', '-5.0', '-4.0', '-3.0', '-2.0' '-1.0','0', '1.0', '2.0', '3.0', '4.0', '5.0', '6.0', '7.0'};
-whole_tone_pitches = {'-9.0', '-7.0', '-5.0', '-3.0', '-1.0', '1.0', '3.0', '5.0', '7.0', '9.0'};  
-
 for i = 1:wheel_num
-temp = [];
-letters_wheel = wheel_matrix_info(i);
-angle_wheel{i} = repmat(angles(i), tot_cyc, letters_wheel);
-if strcmpi(scale_type, 'diatonic')
-    temp = diatonic_pitches((start_semitone_index(i)):(start_semitone_index(i) + letters_wheel - 1));
-    total_pitches = length(diatonic_pitches);
-    list_of_pitches = diatonic_pitches;
-else      
-    temp = whole_tone_pitches(i:(i+letters_wheel - 1));
-    total_pitches = length(whole_tone_pitches);
-    list_of_pitches = whole_tone_pitches;
-end
+    temp = [];
+    letters_wheel = wheel_matrix_info(i);
+    angle_wheel{i} = repmat(angles(i), tot_cyc, letters_wheel);
+    if strcmpi(scale_type, 'diatonic')
+        temp = pitches.diatonic((start_semitone_index(i)):(start_semitone_index(i) + letters_wheel - 1));
+        total_pitches = length(pitches.diatonic);
+        list_of_pitches = pitches.diatonic;
+    else      
+        temp = pitches.whole(i:(i+letters_wheel - 1));
+        total_pitches = length(pitches.whole);
+        list_of_pitches = pitches.whole;
+    end
     pitch_wheel{i} =  repmat(temp, tot_cyc, 1);
 end
 end

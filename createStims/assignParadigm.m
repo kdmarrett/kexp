@@ -1,12 +1,13 @@
-function [wheel_matrix_info, possibleLetters, target_letter, rearrangeCycles, tone_constant, ener_mask] = assignParadigm(paradigm, letterArray)
+function [wheel_matrix_info, possibleLetters, target_letter, rearrangeCycles, tone_constant, ener_mask, letters_used ] = assignParadigm(paradigm, letterArray)
 	% Assign basic design paraeters of each paradigm type
 
 	% ASSIGN LETTERS PER WHEEL
     if paradigm(1)
-        wheel_matrix_info = [9 8 7]; 
+        wheel_matrix_info = [10 9 7]; 
     else
-        wheel_matrix_info = [8 8 8];
+        wheel_matrix_info = [9 9 8];
     end
+    letters_used = sum(wheel_matrix_info);
     
     % ASSIGN LETTER ORDERING
     if paradigm(2)
@@ -17,7 +18,7 @@ function [wheel_matrix_info, possibleLetters, target_letter, rearrangeCycles, to
     
     % ASSIGN TARGET LETTER
     if paradigm(3)
-        target_letter_i = {'B' 'C' 'D' 'E' 'G' 'P' 'T' 'V' 'Z'}; %  of all letters ending [i]
+        target_letter_i = {'B' 'C' 'D' 'E' 'G' 'P' 'T' 'V'}; %  of all letters ending [i] but 'Z'
         target_letter = target_letter_i(randi([1, length(target_letter_i)])); %choose randomly
     else
         target_letter = {'R'};
