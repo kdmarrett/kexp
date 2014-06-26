@@ -2,9 +2,7 @@
 %   Author: Karl Marrett
 %   Includes a preblock primer where target letters are played in their respective location and pitch, and
 %   a post_block to provide time between trials. Stimuli saved in trials  block then trials
-%TEST FOR SUBCOLUMN ALWAYS EQUALING ONE
 %TEST FOR NO REPEATED LETTERS IN LETTER_TO_PITCH
-%TRY/CATCH ASSERT CATCH EXCEPTION
 % ALL ODDBALL AND TARGET TIMES RELATIVE TO STIM START
 % 'R' NEEDS TO BE AT SEPARATE SPATIAL LOCATIONS or choose other unique chars
 % Debug letterblock length
@@ -21,17 +19,18 @@ K70_dir = strcat(PATH, 'K70'); % computed HRTF
 data_dir = strcat(PATH, 'data/');
 
 % SET LETTERS
-letterArray.alphabetic = {'A' 'B' 'C' 'D' 'E' 'F' 'G' 'H' 'I' 'J' 'K' 'L' 'M' 'N' 'O' 'P' 'Q' 'R' 'S' 'T' 'U' 'V' 'W' 'X' 'Y' 'Z'}; %does not contain W or Y
-letterArray.displaced =  {'A' 'B' 'F' 'O' 'E' 'M' 'I' 'T' 'J' 'C' 'H' 'Q' 'G' 'N' 'U' 'V' 'K' 'D' 'L' 'U' 'P' 'S' 'Z' 'R' 'W' 'Y'}; %maximal phoneme separation no 'W' or 'Y'
+letterArray.alphabetic = {'A' 'B' 'C' 'D' 'E' 'F' 'G' 'H' 'I' 'J' 'K' 'L' 'M' 'N' 'O' 'P' 'Q' 'R' 'S' 'T' 'U' 'V' 'W' 'X' 'Y' 'Z'}; 
+letterArray.displaced =  {'A' 'B' 'F' 'O' 'E' 'M' 'I' 'T' 'J' 'C' 'H' 'Q' 'G' 'N' 'U' 'V' 'K' 'D' 'L' 'U' 'P' 'S' 'Z' 'R' 'W' 'Y'}; %maximal phoneme separation
 subLetter = {'Z'}; 
-
-% PREPARE LETTERS
-[fs, final_letter_path] = trimLetters(letter_samples, unprocessed_letter_path, letterArray, pitches );
+letter_samples = 10000; %length of each letter
 
 % ESTABLISH THE PITCH ORDERS FOR EACH WHEEL OF LETTERS
 pitches.pent = {'0', '1.0', '2.0', '4.0', '5.0'};
 pitches.diatonic = {'-9.0', '-8.0', '-7.0', '-6.0', '-5.0', '-4.0', '-3.0', '-2.0' '-1.0','0', '1.0', '2.0', '3.0', '4.0', '5.0', '6.0', '7.0'};
 pitches.whole = {'-9.0', '-7.0', '-5.0', '-3.0', '-1.0', '1.0', '3.0', '5.0', '7.0', '9.0'};   
+pitches.all = {'-9.0', '-8.0', '-7.0', '-6.0', '-5.0', '-4.0', '-3.0', '-2.0' '-1.0','0', '1.0', '2.0', '3.0', '4.0', '5.0', '6.0', '7.0', '8.0' '9.0'};
+% PREPARE LETTERS
+[fs, final_letter_path] = trimLetters(letter_samples, unprocessed_letter_path, letterArray, pitches );
 
 % GENERAL PARAMETERS
 rms_amp = 5; %final normalization
@@ -61,11 +60,17 @@ if makeTraining
 end
 
 %CREATE STIM FILE STRUCTURE
-stimStruct(stimuli_path, blocks);
-%training directory
+for i = 1:blocks
+    fn = fullfile(stimuli_path, strcat('block_', int2str(i)));
+    createStruct(fn);
+end
+% Stim training structure
 if makeTraining
     stimuli_path_train = fullfile(stimuli_path, 'training');
-    stimStruct(stimuli_path_train, blocks);
+    for i = 1:blocks
+        fn = fullfile(stimuli_path_train, strcat('block_', int2str(i)));
+        createStruct(fn);
+    end
 end
 
 %GLOBAL PARAMETERS OF BLOCK DESIGN
@@ -86,29 +91,33 @@ minTarg = 2;
 maxTarg = 3;
 target_time = [];
 
-for x = 1:reps   
-    if (x == 2) %+++?
-        play_wheel = zeros(1,3);
-        play_wheel(target_wheel_index) = 1;
+for x = 1:reps  % repeats through non training then training trials  
+    if (x == 2) %if a training trial
+        play_wheel = zeros(1,3); %bool array to include certain wheels for training trials
+        play_wheel(target_wheel_index) = 1; % only include the target letter
         output_path = stimuli_path_train;
     else
-        play_wheel = [1 1 1]; %boolean array to include certain wheels for training trials
+        play_wheel = [1 1 1]; 
         output_path = stimuli_path; 
     end
 
     %% GENERATE BLOCK FOR EACH CONDITION TYPE
     [m, n] = size(condition_type);
     for y = 1:m; % repeats through each condition type
-        if (y == 1)
+        % if (y == 1) ++++++
         block_name = strcat('block_', int2str(y));
         final_output_path = fullfile(output_path, block_name); % create dir for each block
         paradigm = condition_type(y, :);
-        [wheel_matrix_info, possibleLetters, target_letter, rearrangeCycles, tone_constant, ener_mask, letters_used] = assignParadigm(paradigm, letterArray);
-        assert((letters_used == total_letters), 'Error in assignLetters: not all letters assigned') 
+        [wheel_matrix_info, possibleLetters, target_letter, rearrangeCycles, tone_constant, ener_mask, letters_used, token_rate_modulation] = assignParadigm(paradigm, letterArray);
+        assert((letters_used == total_letters), 'Error: not all letters assigned') 
         
         % COMPUTE MISC. BASIC PARAMS OF BLOCK
         for i = 1:length(wheel_matrix_info)
-            ILI_sec(i) = cycle_time / wheel_matrix_info(i); %INTER-LETTER-TIME
+            if token_rate_modulation
+                ILI_sec(i) = cycle_time / wheel_matrix_info(i); %INTER-LETTER-TIME determined by each wheel
+            else
+                ILI_sec(i) = cycle_time / wheel_matrix_info(1); %INTER-LETTER-TIME determined by first wheel
+            end
         end
         
         ILI = ceil(ILI_sec .* fs);
@@ -132,7 +141,7 @@ for x = 1:reps
             play_wheel
         end
         
-        %%  GENERATE EACH TRIAL
+        %%  GENERATE EACH TRIAL WAV
         for z = 1:condition_trials(y);
             targ_cyc = randi([minTarg maxTarg]); % no. target oddballs in each trial
             [ wheel_matrix, target_wheel_index, droppedLetter ] = assignLetters( possibleLetters, wheel_matrix_info, target_letter, targ_cyc, tot_cyc, rearrangeCycles, ener_mask, subLetter); % returns cell array of wheel_num elements
@@ -190,7 +199,7 @@ for x = 1:reps
                     foo = 1;
                     for m = wheel_sample_index:(wheel_sample_index + rows - 1)
                         final_sample(m, 1) = final_sample(m, 1) + final_wheel(foo, 1); %adds each wheel in superposition to final_sample
-                        final_sample(m, 2) = final_sample(m, 2) + final_wheel(foo, 2); %adds each wheel in superposition to final_sample
+                        final_sample(m, 2) = final_sample(m, 2) + final_wheel(foo, 2); 
                         foo = foo + 1;
                     end
                 end
@@ -205,14 +214,13 @@ for x = 1:reps
             final_sample = rms_amp * (final_sample / sqrt(mean(mean(final_sample.^2))));  
             wavwrite(final_sample, fs, wav_name);
         end
-    end % +++
+    % end % +++
     end
 end
-
-[done, fs] = wavread(fullfile(PATH, 'CLICKloud.WAV'));
 assert((length(target_time) == targ_cyc), 'Error in target_time: not a time stamp for every target')
+[done, fs] = wavread(fullfile(PATH, 'CLICKloud.WAV'));
 target_time
-toc
+toc %print elapsed time
 sound(done, fs);
 
 

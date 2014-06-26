@@ -30,6 +30,8 @@ for i= 1:length(pitches.all) %loop through all semitone folders
         else
             trimmedLetters{j} = letterVector(1:letter_samples, :);
         end
+        letter_path = fullfile(letter_path, int2str(letter_samples), pitches.all{i});
+
         wavwrite(trimmedLetters{j}, fs, fullfile(letter_path, int2str(letter_samples), pitches.all{i}, letterArray{j}));
     end
 end
