@@ -25,24 +25,8 @@ for i = 1:length(mixed_indices)
     end
 end
 
-% col_indexer = 1;
-% row_indexer = row_indexer + 1;
-% if (left_over > 0)
-%     for i = 1:left_over
-%         if col_indexer > total_pitches
-%             col_indexer = 1;
-%             row_indexer = row_indexer + 1;
-%         end
-%         letter = letterArray{mixed_indices(total_pitches - (i - 1))};
-%         letter_to_pitch{row_indexer, col_indexer} = letter;
-%         col_indexer = col_indexer + 1;
-%     end
-% end
-
-% place subLetter into letter_to_pitch array
+% PLACE SUBLETTER INTO LETTER_TO_PITCH ARRAY
 columnSubLetter = find(sum(strcmp(droppedLetter, letter_to_pitch))); %find the column of the dropped out letter
-% subLetter ++++++ debug
-
 subRow = (ratio + extra_rows);
 columnSubLetter;
 letter_to_pitch{subRow, columnSubLetter} = subLetter{1}; %add in the subbed letter to that column

@@ -16,9 +16,10 @@ angles = baseline_angle{wheel_num};
 if strcmpi(scale_type, 'diatonic')
     if wheel_num == 3
         start_semitone_index = [3 8 10];
-    end
-    if wheel_num == 4 
+    elseif wheel_num == 4 
         start_semitone_index = [ 3 1 8 10];
+    else
+        fprintf('Error: need to define semitones for this number of wheels')
     end
 end
 

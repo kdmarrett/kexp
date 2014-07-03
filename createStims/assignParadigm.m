@@ -1,11 +1,13 @@
-function [wheel_matrix_info, possibleLetters, target_letter, rearrangeCycles, tone_constant, ener_mask, letters_used ] = assignParadigm(paradigm, letterArray)
-	% Assign basic design paraeters of each paradigm type
+function [wheel_matrix_info, possibleLetters, target_letter, rearrangeCycles, tone_constant, ener_mask, letters_used, token_rate_modulation  ] = assignParadigm(paradigm, letterArray)
+	% Assign basic design parameters of each paradigm type
 
 	% ASSIGN LETTERS PER WHEEL
     if paradigm(1)
-        wheel_matrix_info = [10 9 7]; 
-    else
-        wheel_matrix_info = [9 9 8];
+        wheel_matrix_info = [10 9 7]; % token rate changes according to letters in each wheel
+        token_rate_modulation = 1;  % bool to change token rate
+    else 
+        wheel_matrix_info = [9 9 8]; %token rate remains the same in all wheels
+        token_rate_modulation = 0;
     end
     letters_used = sum(wheel_matrix_info);
     

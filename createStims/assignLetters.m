@@ -56,21 +56,10 @@ target_cyc_mat = [0 target_cyc_mat 0];
 
 % DEFINE WHEEL_MATRIX
 wheel_matrix = cell(wheel_num, 1);
-% for i = 1:wheel_num   
-%     wheel_matrix{i} = zeros(tot_cyc, lettersWheel(i));
-% end 
 
 % PLACE WHEEL TYPES ACCORDING TO target_cyc_mat
 for i = 1:wheel_num
     for j = 1:tot_cyc   
-        % fprintf(strcat('new ', j))
-        % j
-        % i
-        % [row,col] = size(wheel_matrix{i}) %++++++
-        % [row,col] = size([(1:lettersWheel(i))]) %++++++
-        % % [row,col] = size(base_wheel_matrix{i}) %++++++
-        % [row,col] = size(sub_wheel_ener{i}) %++++++
-        % % [row,col] = size(sub_wheel) %++++++
         if (i == target_wheel_index)
             if (target_cyc_mat(j) ==  1)
                 wheel_matrix{i}(j,(1:lettersWheel(i))) = base_wheel_matrix{i};  % if its a target cycle add in a reorded set of generic wheel
