@@ -1,15 +1,18 @@
-function [ fs, final_letter_path ] = trimLetters(letter_samples, letter_path, letterArray, pitches, recreate_trimmed_letters )
+function [ fs, final_letter_path ] = trimLetters(letter_samples, letter_path, letterArray, pitches, recreate_trimmed_letters, speakers )
 % Writes all new letters with the specified sample length of letter_samples and saves into 
 % folder final_letter_path a subdirectory of letter_path
     
+for x = 1:length(speakers)
     fs = 24414; % default letter sample rate
-    final_letter_path = fullfile(letter_path, int2str(letter_samples));
+    shifted_letter_path = fullfile(letter_path, 'shiftedLetters', speakers{x});
+    final_letter_path = fullfile(letter_path, finalShiftTrimLetters, int2str(letter_samples));
+    output_path = fullfile(final_letter_path, speakers{x});
     if ((~exist(final_letter_path, 'dir')) || recreate_trimmed_letters)
         letterSound = {};
         trimmedLetters = {};
         for i= 1:length(pitches.all) %loop through all possible semitones
             for j = 1:length(letterArray.alphabetic) %loop through all letters in each semitone dir
-                [letterSound{j}, fs] = wavread(fullfile(letter_path, pitches.all{i}, letterArray.alphabetic{j}));  % letter wavs for each semitone
+                [letterSound{j}, fs] = wavread(fullfile(shifted_letter_path, pitches.all{i}, letterArray.alphabetic{j}));  % letter wavs for each semitone
             end
             
             % EXCEPTIONS 'C', 'W'
@@ -35,11 +38,13 @@ function [ fs, final_letter_path ] = trimLetters(letter_samples, letter_path, le
                 trimmedLetters{j} = createGate(trimmedLetters{j}, fs, 0, 1);
                 [rows, cols] = size(trimmedLetters{j});
                 assert((rows == letter_samples), 'Error in trimLetters: not all letters equal to letter_samples')
-                createStruct(fullfile(final_letter_path, pitches.all{i}))
-                wavwrite(trimmedLetters{j}, fs, fullfile(final_letter_path, pitches.all{i}, strcat(letterArray.alphabetic{j}, '.wav')));
+                createStruct(fullfile(output_path, pitches.all{i}))
+                wavwrite(trimmedLetters{j}, fs, fullfile(output_path, pitches.all{i}, strcat(letterArray.alphabetic{j}, '.wav')));
             end
         end
     end
 end
+end
+
 
 

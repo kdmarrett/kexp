@@ -4,14 +4,15 @@
 %   a post_block to provide time between trials. Stimuli saved in trials  block then trials
 
 % 'R' NEEDS TO BE AT SEPARATE SPATIAL LOCATIONS or choose other unique chars
-% choose subletter needs to be changed to non x[i] CV???
 % check that letter to pitch has no repeated elements
+% remove subbed letters
+% make sure each cycles letters have separate neighbors via spaces?
 
 tic
 % DEFINE PATHS
 PATH = '~/git/kexp/';%local letter and output directory
 stimuli_path = strcat(PATH, 'Stims/');%dir for all subject stimulus
-unprocessed_letter_path = strcat(PATH, 'monotone_220Hz_24414'); %dir to untrimmed letters
+letter_path = strcat(PATH, 'Letters'); %dir to untrimmed letters
 K70_dir = strcat(PATH, 'K70'); % computed HRTF
 data_dir = strcat(PATH, 'data/');
 
@@ -23,13 +24,13 @@ noise = 0;  % bool adds noise
 distance_sound = 5; %distance for stimuli to be played in HRTF
 scale_type = 'whole'; %string 'whole' or 'diatonic'
 tot_cyc = 10;
-cycle_time = 1.500; % how long each wheel will last in seconds
+cycle_time = 2.000; % how long each wheel will last in seconds
 postblock_sec = 1.5; %secs after letterblocks
 preblock_prime_sec = 4.5; %secs to introduce primer letter
 primer_start = 3000;  %sample # that primer letter will play in the preblock; must be less than preblock
 minTarg = 2;
 maxTarg = 3;
-makeTraining = 1;
+makeTraining = 0;
 % odd_tone_decibel = -30; %amplitude of tone oddballs
 % odd_num_decibel = -30;
 cycle_sample = ceil(cycle_time * fs);
@@ -46,6 +47,7 @@ letterArray.displaced =  {'A' 'B' 'F' 'O' 'E' 'M' 'I' 'T' 'J' 'C' 'H' 'Q' 'G' 'N
 subLetter = {'Z'}; 
 letter_samples = 10000; %length of each letter
 total_letters = length(letterArray.alphabetic);
+speakers = {'F01' 'F03' 'M01'};
 
 % ESTABLISH THE PITCH ORDERS FOR EACH WHEEL OF LETTERS
 pitches.pent = {'0', '1.0', '2.0', '4.0', '5.0'};
@@ -54,8 +56,8 @@ pitches.whole = {'-9.0', '-7.0', '-5.0', '-3.0', '-1.0', '1.0', '3.0', '5.0', '7
 pitches.all = {'-9.0', '-8.0', '-7.0', '-6.0', '-5.0', '-4.0', '-3.0', '-2.0' '-1.0','0', '1.0', '2.0', '3.0', '4.0', '5.0', '6.0', '7.0', '8.0' '9.0'};
 
 % PREPARE LETTERS
-recreate_trimmed_letters = 0; %bool recreates trimmed letters even if dir exists
-[fs, final_letter_path] = trimLetters(letter_samples, unprocessed_letter_path, letterArray, pitches, recreate_trimmed_letters);
+recreate_trimmed_letters = 1; %bool recreates trimmed letters even if dir exists
+[fs, final_letter_path] = trimLetters(letter_samples, letter_path, letterArray, pitches, recreate_trimmed_letters, speakers);
 
 % BOOLEANS FOR DESIGN FEATURES, ORDERED: LETTERS PER WHEEL, ALPHABETIC VS. MAXIMALLY DISPLACED, TARGET LETTER 'R' AS OPPOSED TO X[i],
 % LETTER ORDERS ARE RETAINED ACROSS CYCLES, TONE IS ASSIGNED RANDOMLY AS OPPOSED TO CONTIGUOSLY, ENERGETIC VS. INFO MASK
@@ -94,7 +96,7 @@ for x = 1:reps
         block_name = strcat('block_', int2str(y));
         final_output_path = fullfile(output_path, block_name); % create dir for each block
         paradigm = condition_type(y, :);
-        [wheel_matrix_info, possibleLetters, target_letter, rearrangeCycles, tone_constant, ener_mask, letters_used, token_rate_modulation] = assignParadigm(paradigm, letterArray);
+        [wheel_matrix_info, possibleLetters, target_letter, rearrangeCycles, tone_constant, ener_mask, letters_used, token_rate_modulation, speaker_list] = assignParadigm(paradigm, letterArray, speakers
         if ~(letters_used == total_letters)
             fprintf('Error: not all letters assigned') 
         end
@@ -127,6 +129,8 @@ for x = 1:reps
             for j = 1:length(wheel_matrix_info) % for every wheel
                 track_sample_index = 1; %used for each wheel for wheel_track indexing;
                 if play_wheel(j)
+                    current_speaker = speaker_list{j};
+                    final_letter_path = fullfile(final_letter_path, current_speaker);
                     wheel_track = zeros(tot_wheel(j), 2); %(re)initialize background track for each wheel
                     for k = 1:tot_cyc %for each cycle of the individual wheel
                         for l = 1:wheel_matrix_info(j) %for each letter
