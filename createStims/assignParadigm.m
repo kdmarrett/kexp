@@ -1,4 +1,4 @@
-function [wheel_matrix_info, possibleLetters, target_letter, rearrangeCycles, tone_constant, ener_mask, letters_used, token_rate_modulation, speaker_list  ] = assignParadigm(paradigm, letterArray, speakers)
+function [wheel_matrix_info, possibleLetters, target_letter, rearrangeCycles, tone_constant, ener_mask, letters_used, token_rate_modulation, speaker_list  ] = assignParadigm(paradigm, letterArray, speaker_list)
 	% Assign basic design parameters of each paradigm type
 
 	% ASSIGN LETTERS PER WHEEL
@@ -48,5 +48,6 @@ function [wheel_matrix_info, possibleLetters, target_letter, rearrangeCycles, to
     end
 
     %  ASSIGN SPEAKERS
-    speaker_list = speakers
+
+    %speaker_list = repmat(speakers{1}, 1)
 end

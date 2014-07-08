@@ -39,7 +39,6 @@ semis [23] = 10
 semis [24] = 11
 semis [25] = 12
 
-
 trimsilences = 0
 # RKM already trimmed silences manually
 
@@ -50,11 +49,11 @@ endfor
 
 form Preprocessing WAV files 
 	comment Directory of input sound files
-	 # text sound_directory ~/Desktop/Dropbox/LABSN/Files _ Script/monotone_220Hz_24414/0
-	 text sound_directory /Users/nancygrulke/git/kexp/Letters/rawLetters/M01
+	 text sound_directory /Users/nancygrulke/git/kexp/Letters/rawLetters/fec0
 	comment Directory of output sound files
-	 # text out_directory  ~/Desktop/Dropbox/LABSN/Files _ Script/3_8_monotone_letters
-	 text out_directory /Users/nancygrulke/git/kexp/Letters/shiftedLetters/M01
+	 text out_directory /Users/nancygrulke/git/kexp/Letters/shiftedLetters/fec
+
+0
 endform
 
 Create Strings as file list... list 'sound_directory$'/*.wav

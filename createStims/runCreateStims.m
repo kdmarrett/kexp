@@ -3,11 +3,27 @@
 %   Includes a preblock primer where target letters are played in their respective location and pitch, and
 %   a post_block to provide time between trials. Stimuli saved in trials  block then trials
 
-% 'R' NEEDS TO BE AT SEPARATE SPATIAL LOCATIONS or choose other unique chars
+% choose other unique chars AT SEPARATE SPATIAL LOCATIONS
 % check that letter to pitch has no repeated elements
 % remove subbed letters
-% make sure each cycles letters have separate neighbors via spaces?
+% make sure each cycles letters have separate neighbors via spaces? code via charStreamer paradigm
+% fix file name from trimLetters
+% new bug: Warning: Data clipped during write to file:1_3000ms.wav for M01 sampling frequencies differ
+% does EM still work?
+% male_trimmed 16000
+% Original 24414
+% F01 48000
+% isolet files at 16000
+% letters can be trimmed within praat script
+% letters need to be scaled to one within praat
+% good way to resample?
+% good way to trim?
+% good way to scale amplitudes of speakers
+% sloppy data clipping of final wav
 
+all_cycle_time = [1.5000 2.000 2.500]; % how long each wheel will last in seconds
+
+for irunCreateStims = 1:length(all_cycle_time)
 tic
 % DEFINE PATHS
 PATH = '~/git/kexp/';%local letter and output directory
@@ -23,19 +39,15 @@ white_noise_decibel = 0;  %amplitude
 noise = 0;  % bool adds noise
 distance_sound = 5; %distance for stimuli to be played in HRTF
 scale_type = 'whole'; %string 'whole' or 'diatonic'
+cycle_time = all_cycle_time(irunCreateStims);
 tot_cyc = 10;
-cycle_time = 2.000; % how long each wheel will last in seconds
 postblock_sec = 1.5; %secs after letterblocks
 preblock_prime_sec = 4.5; %secs to introduce primer letter
 primer_start = 3000;  %sample # that primer letter will play in the preblock; must be less than preblock
 minTarg = 2;
 maxTarg = 3;
-makeTraining = 0;
-% odd_tone_decibel = -30; %amplitude of tone oddballs
-% odd_num_decibel = -30;
-cycle_sample = ceil(cycle_time * fs);
-postblock = ceil(postblock_sec * fs);  % convert to samples
-preblock = ceil(preblock_prime_sec * fs);
+makeTraining = 1;
+recreate_trimmed_letters = 1; %bool recreates trimmed letters even if dir exists
 
 %AMPLITUDE MODULATOR SHIFTS AMPLITUDE
 AM_freq = [0 0 0 0 0 0 0 0]; %Hz rate of amplitude modulator elements for each wheel 0 for none
@@ -47,7 +59,10 @@ letterArray.displaced =  {'A' 'B' 'F' 'O' 'E' 'M' 'I' 'T' 'J' 'C' 'H' 'Q' 'G' 'N
 subLetter = {'Z'}; 
 letter_samples = 10000; %length of each letter
 total_letters = length(letterArray.alphabetic);
-speakers = {'F01' 'F03' 'M01'};
+%speaker_list = speakers; % hacks for testing new speakers
+speaker_list = {'mjp0', 'female_trimmed', 'fec0'};
+version_num = 1;
+speaker_amp_weights = [1 1.8 .5];
 
 % ESTABLISH THE PITCH ORDERS FOR EACH WHEEL OF LETTERS
 pitches.pent = {'0', '1.0', '2.0', '4.0', '5.0'};
@@ -56,8 +71,13 @@ pitches.whole = {'-9.0', '-7.0', '-5.0', '-3.0', '-1.0', '1.0', '3.0', '5.0', '7
 pitches.all = {'-9.0', '-8.0', '-7.0', '-6.0', '-5.0', '-4.0', '-3.0', '-2.0' '-1.0','0', '1.0', '2.0', '3.0', '4.0', '5.0', '6.0', '7.0', '8.0' '9.0'};
 
 % PREPARE LETTERS
-recreate_trimmed_letters = 1; %bool recreates trimmed letters even if dir exists
-[fs, final_letter_path] = trimLetters(letter_samples, letter_path, letterArray, pitches, recreate_trimmed_letters, speakers);
+[fs, trim_letter_path] = trimLetters(letter_samples, letter_path, letterArray, pitches, recreate_trimmed_letters, speaker_list, version_num, speaker_amp_weights);
+
+% odd_tone_decibel = -30; %amplitude of tone oddballs
+% odd_num_decibel = -30;
+cycle_sample = ceil(cycle_time * fs);
+postblock = ceil(postblock_sec * fs);  % convert to samples
+preblock = ceil(preblock_prime_sec * fs);
 
 % BOOLEANS FOR DESIGN FEATURES, ORDERED: LETTERS PER WHEEL, ALPHABETIC VS. MAXIMALLY DISPLACED, TARGET LETTER 'R' AS OPPOSED TO X[i],
 % LETTER ORDERS ARE RETAINED ACROSS CYCLES, TONE IS ASSIGNED RANDOMLY AS OPPOSED TO CONTIGUOSLY, ENERGETIC VS. INFO MASK
@@ -88,15 +108,14 @@ if makeTraining
     end
 end
 
- % REPEATS THROUGH NON TRAINING THEN TRAINING TRIALS
+% REPEATS THROUGH NON TRAINING THEN TRAINING TRIALS
 for x = 1:reps  
     %% GENERATE BLOCK FOR EACH CONDITION TYPE
     [m, n] = size(condition_type);
     for y = 1:m; % repeats through each condition type
         block_name = strcat('block_', int2str(y));
-        final_output_path = fullfile(output_path, block_name); % create dir for each block
         paradigm = condition_type(y, :);
-        [wheel_matrix_info, possibleLetters, target_letter, rearrangeCycles, tone_constant, ener_mask, letters_used, token_rate_modulation, speaker_list] = assignParadigm(paradigm, letterArray, speakers
+        [wheel_matrix_info, possibleLetters, target_letter, rearrangeCycles, tone_constant, ener_mask, letters_used, token_rate_modulation, speaker_list] = assignParadigm(paradigm, letterArray, speaker_list);
         if ~(letters_used == total_letters)
             fprintf('Error: not all letters assigned') 
         end
@@ -121,6 +140,7 @@ for x = 1:reps
                 play_wheel = [1 1 1]; 
                 output_path = stimuli_path; 
             end
+            final_output_path = fullfile(output_path, block_name); % create dir for each block
 
             final_sample = floor(zeros(tot_trial, 2)); % creates background track for each letter to be added on
             final_sample = final_sample + noise * (10^(white_noise_decibel / 20)) * randn(tot_trial, 2); %add white noise to background track
@@ -130,7 +150,7 @@ for x = 1:reps
                 track_sample_index = 1; %used for each wheel for wheel_track indexing;
                 if play_wheel(j)
                     current_speaker = speaker_list{j};
-                    final_letter_path = fullfile(final_letter_path, current_speaker);
+                    final_letter_path = fullfile(trim_letter_path, current_speaker);
                     wheel_track = zeros(tot_wheel(j), 2); %(re)initialize background track for each wheel
                     for k = 1:tot_cyc %for each cycle of the individual wheel
                         for l = 1:wheel_matrix_info(j) %for each letter
@@ -212,8 +232,8 @@ for x = 1:reps
                     
             %STAMP WAV_NAME WITH EACH BLOCK LABELED BY PARADIGM CONDITION
             filename = strcat(data_dir, block_name, '_t_', int2str(z));
-            wav_name = fullfile(final_output_path, strcat(int2str(z), '_', int2str(cycle_time * 1000), strcat('ms', '.wav')));
-            final_sample = rms_amp * (final_sample / sqrt(mean(mean(final_sample.^2))));  
+            wav_name = fullfile(final_output_path, strcat(int2str(z), '_', int2str(cycle_time * 1000), '_', strcat(speaker_list{1:length(speaker_list)}), '_', strcat('ms', '.wav')));
+            final_sample = rms_amp * (final_sample / sqrt(mean(mean(final_sample.^2))));
             wavwrite(final_sample, fs, wav_name);
             assert((length(target_time) == targ_cyc), 'Error in target_time: not a time stamp for every target')
         end
@@ -221,6 +241,7 @@ for x = 1:reps
 end
 [done, fs] = wavread(fullfile(PATH, 'CLICKloud.WAV')); % to alert user
 toc %print elapsed time
+end
 sound(done, fs);
 
 

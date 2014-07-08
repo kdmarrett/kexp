@@ -5,8 +5,8 @@ function [output] = createGate(input, fs, start_gate, end_gate)
 % end_gate smooths the end
 
 % DESIGN BASIC AMPLITUDE ENVELOPE
-gateDur = .01; % duration of the gate in seconds
-gate = cos(linspace(pi, 2 * pi, fs * gateDur)); % diminish envelope by half one period of sine
+gateDur = .03; % duration of the gate in seconds
+gate = cos(linspace(2 * pi, 3 * pi, fs * gateDur)); % diminish envelope by half one period of sine
 begGate = ((gate + 1) / 2)'; 
 endGate = fliplr(begGate); %inflection of begGate
 [m, n] = size(endGate);
