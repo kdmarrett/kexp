@@ -22,8 +22,10 @@
 % sloppy data clipping of final wav rms?
 % tie speaker weights to predefined speakers
 % sin^2 x around stimulus or multiplies by envelope
+% switch to charstreamer paradigm
 
 all_cycle_time = [2.000 2.500 3.000]; % how long each wheel will last in seconds
+close all
 
 for irunCreateStims = 1:length(all_cycle_time)
 tic
@@ -46,8 +48,6 @@ tot_cyc = 10;
 postblock_sec = 1.5; %secs after letterblocks
 preblock_prime_sec = 4.5; %secs to introduce primer letter
 primer_start = 3000;  %sample # that primer letter will play in the preblock; must be less than preblock
-minTarg = 2;
-maxTarg = 3;
 makeTraining = 1;
 recreate_trimmed_letters = 1; %bool recreates trimmed letters even if dir exists
 instrument_dynamics = 'mf'; %mezzoforte 
@@ -59,7 +59,6 @@ AM_pow =  [0 0 0 0 0 0 0 0]; %decibel of each AM for each corresponding wheel
 % SET LETTERS
 letterArray.alphabetic = {'A' 'B' 'C' 'D' 'E' 'F' 'G' 'H' 'I' 'J' 'K' 'L' 'M' 'N' 'O' 'P' 'Q' 'R' 'S' 'T' 'U' 'V' 'W' 'X' 'Y' 'Z'}; 
 letterArray.displaced =  {'A' 'B' 'F' 'O' 'E' 'M' 'I' 'T' 'J' 'C' 'H' 'Q' 'G' 'N' 'U' 'V' 'K' 'D' 'L' 'U' 'P' 'S' 'Z' 'R' 'W' 'Y'}; %maximal phoneme separation
-subLetter = {'Z'}; 
 letter_samples = 10000; %length of each letter
 total_letters = length(letterArray.alphabetic);
 %speaker_list = speakers; % hacks for testing new speakers
@@ -73,7 +72,7 @@ pitches.diatonic = {'-9.0', '-8.0', '-7.0', '-6.0', '-5.0', '-4.0', '-3.0', '-2.
 pitches.whole = {'-9.0', '-7.0', '-5.0', '-3.0', '-1.0', '1.0', '3.0', '5.0', '7.0', '9.0'};   
 pitches.all = {'-9.0', '-8.0', '-7.0', '-6.0', '-5.0', '-4.0', '-3.0', '-2.0' '-1.0','0', '1.0', '2.0', '3.0', '4.0', '5.0', '6.0', '7.0', '8.0' '9.0'};
 pitches.notes = {'C2' 'Db2' 'D2' 'Eb2' 'E2' 'F2' 'Gb2' 'G2' 'Ab2' 'A3' 'Bb3' 'B3' 'C3' 'Db3' 'D3' 'Eb3' 'E3' 'F3' 'Gb3'}; %encode by note name
-assert((pitches.notes == pitches.all), 'Error: note names do not cover range of possible pitches')
+assert((length(pitches.notes) == length(pitches.all)), 'Error: note names do not cover range of possible pitches')
 
 % PREPARE LETTERS
 [fs, trim_letter_path] = trimLetters(letter_samples, letter_path, letterArray, pitches, recreate_trimmed_letters, speaker_list, version_num, speaker_amp_weights);
@@ -128,14 +127,13 @@ for x = 1:reps
         % COMPUTE MISC. BASIC PARAMS OF BLOCK
         [ ILI, IWI, tot_trial, tot_wheel, letter_difference, min_wheel ] = assignTimeVars(wheel_matrix_info, cycle_sample, fs, tot_cyc, letter_samples, token_rate_modulation, preblock, postblock );
         if tone_constant
-            [ letter_to_pitch ] = assignConstantPitch( possibleLetters, total_letters, total_pitches, subLetter, droppedLetter );
+            [ letter_to_pitch ] = assignConstantPitch( possibleLetters, total_letters, total_pitches);
         end
 
         %%  GENERATE EACH TRIAL WAV
         for z = 1:condition_trials(y);
-            targ_cyc = randi([minTarg maxTarg]); % no. target oddballs in each trial
             target_time = []; % also clear target time from last trial
-            [ wheel_matrix, target_wheel_index, droppedLetter ] = assignLetters( possibleLetters, wheel_matrix_info, target_letter, targ_cyc, tot_cyc, rearrangeCycles, ener_mask, subLetter); % returns cell array of wheel_num elements
+            [ wheel_matrix, target_wheel_index ] = assignLetters( possibleLetters, wheel_matrix_info, target_letter, tot_cyc, rearrangeCycles, ener_mask); % returns cell array of wheel_num elements
             [pitch_wheel, angle_wheel, total_pitches, list_of_pitches] = assignPitch(wheel_matrix_info, tot_cyc, scale_type, pitches); %returns corresponding cell arrays
             if (x == 2) %if a training trial
                 play_wheel = zeros(1,3); %bool array to include certain wheels for training trials
@@ -240,7 +238,6 @@ for x = 1:reps
             wav_name = fullfile(final_output_path, strcat(int2str(z), '_', int2str(cycle_time * 1000), '_', strcat(speaker_list{1:length(speaker_list)}), '_', strcat('ms', '.wav')));
             final_sample = rms_amp * (final_sample / sqrt(mean(mean(final_sample.^2))));
             wavwrite(final_sample, fs, wav_name);
-            assert((length(target_time) == targ_cyc), 'Error in target_time: not a time stamp for every target')
         end
     end
 end

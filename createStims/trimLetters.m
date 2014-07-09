@@ -23,9 +23,13 @@ for x = 1:length(speaker_list)
                 end
                 ff = fullfile(fp, fn); 
                 [letterSound{j}, fs_speaker] = wavread(ff);  % letter wavs for each semitone
-                % plot(letterSound{j})
-                % title(letterArray.alphabetic{j})
-                % waitforbuttonpress
+                letterEnvelope{j} = envelope(letterSound{j}); 
+                plot(letterSound{j})
+                hold on
+                plot(letterEnvelope{j}, 'r')
+                title(letterArray.alphabetic{j})
+                waitforbuttonpress
+                hold off
 
                 % CHANGE OVERALL AMPLITUDE OF INDIVIDUAL SPEAKERS
                 letterSound{j} = speaker_amp_weights(x) .* letterSound{j};

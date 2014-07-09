@@ -1,4 +1,4 @@
-function [ letter_to_pitch ] = assignConstantPitch( letterArray, total_letters, total_pitches, subLetter, droppedLetter )
+function [ letter_to_pitch ] = assignConstantPitch( letterArray, total_letters, total_pitches )
 %Puts all possible letters into a cell where the column decides which pitch
 %is assigned to the letter
 
@@ -24,11 +24,5 @@ for i = 1:length(mixed_indices)
         row_indexer = row_indexer + 1;
     end
 end
-
-% PLACE SUBLETTER INTO LETTER_TO_PITCH ARRAY
-columnSubLetter = find(sum(strcmp(droppedLetter, letter_to_pitch))); %find the column of the dropped out letter
-subRow = (ratio + extra_rows);
-columnSubLetter;
-letter_to_pitch{subRow, columnSubLetter} = subLetter{1}; %add in the subbed letter to that column
 end
 
