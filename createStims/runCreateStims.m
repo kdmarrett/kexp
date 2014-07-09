@@ -10,18 +10,20 @@
 % fix file name from trimLetters
 % new bug: Warning: Data clipped during write to file:1_3000ms.wav for M01 sampling frequencies differ
 % does EM still work?
-% male_trimmed 16000
-% Original 24414
-% F01 48000
+% male_trimmed 16000 
+% Original 24414 convert in itunes
+% F01 48000 convert in itunes
 % isolet files at 16000
 % letters can be trimmed within praat script
 % letters need to be scaled to one within praat
-% good way to resample?
-% good way to trim?
-% good way to scale amplitudes of speakers
-% sloppy data clipping of final wav
+% good way to resample? itunes
+% good way to trim? create area around and overlap all sounds onto one plot
+% good way to scale amplitudes of speakers by ear
+% sloppy data clipping of final wav rms?
+% tie speaker weights to predefined speakers
+% sin^2 x around stimulus or multiplies by envelope
 
-all_cycle_time = [1.5000 2.000 2.500]; % how long each wheel will last in seconds
+all_cycle_time = [2.000 2.500 3.000]; % how long each wheel will last in seconds
 
 for irunCreateStims = 1:length(all_cycle_time)
 tic
@@ -48,6 +50,7 @@ minTarg = 2;
 maxTarg = 3;
 makeTraining = 1;
 recreate_trimmed_letters = 1; %bool recreates trimmed letters even if dir exists
+instrument_dynamics = 'mf'; %mezzoforte 
 
 %AMPLITUDE MODULATOR SHIFTS AMPLITUDE
 AM_freq = [0 0 0 0 0 0 0 0]; %Hz rate of amplitude modulator elements for each wheel 0 for none
@@ -69,6 +72,8 @@ pitches.pent = {'0', '1.0', '2.0', '4.0', '5.0'};
 pitches.diatonic = {'-9.0', '-8.0', '-7.0', '-6.0', '-5.0', '-4.0', '-3.0', '-2.0' '-1.0','0', '1.0', '2.0', '3.0', '4.0', '5.0', '6.0', '7.0'};
 pitches.whole = {'-9.0', '-7.0', '-5.0', '-3.0', '-1.0', '1.0', '3.0', '5.0', '7.0', '9.0'};   
 pitches.all = {'-9.0', '-8.0', '-7.0', '-6.0', '-5.0', '-4.0', '-3.0', '-2.0' '-1.0','0', '1.0', '2.0', '3.0', '4.0', '5.0', '6.0', '7.0', '8.0' '9.0'};
+pitches.notes = {'C2' 'Db2' 'D2' 'Eb2' 'E2' 'F2' 'Gb2' 'G2' 'Ab2' 'A3' 'Bb3' 'B3' 'C3' 'Db3' 'D3' 'Eb3' 'E3' 'F3' 'Gb3'}; %encode by note name
+assert((pitches.notes == pitches.all), 'Error: note names do not cover range of possible pitches')
 
 % PREPARE LETTERS
 [fs, trim_letter_path] = trimLetters(letter_samples, letter_path, letterArray, pitches, recreate_trimmed_letters, speaker_list, version_num, speaker_amp_weights);
@@ -242,7 +247,7 @@ end
 [done, fs] = wavread(fullfile(PATH, 'CLICKloud.WAV')); % to alert user
 toc %print elapsed time
 end
-sound(done, fs);
+sound((.6 * done), fs);
 
 
 
