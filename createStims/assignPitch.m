@@ -21,6 +21,12 @@ if strcmpi(scale_type, 'diatonic')
     else
         fprintf('Error: need to define semitones for this number of wheels')
     end
+else if strcmpi(scale_type, 'whole')
+    if wheel_num == 3
+        start_semitone_index = [1 3 5];
+    else
+        fprintf('Error: need to define semitones for this number of wheels')
+    end
 end
 
 for i = 1:wheel_num
@@ -32,7 +38,8 @@ for i = 1:wheel_num
         total_pitches = length(pitches.diatonic);
         list_of_pitches = pitches.diatonic;
     else      
-        temp = pitches.whole(i:(i+letters_wheel - 1));
+        % temp = pitches.whole(i:(i+letters_wheel - 1));
+        temp = pitches.whole(start_semitone_index(i) :(start_semitone_index(i) + letters_wheel - 1));
         total_pitches = length(pitches.whole);
         list_of_pitches = pitches.whole;
     end

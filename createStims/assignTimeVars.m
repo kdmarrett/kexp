@@ -1,5 +1,10 @@
-function [ ILI, IWI, tot_trial, tot_wheel, letter_difference, min_wheel ] = assignTimeVars(wheel_matrix_info, cycle_sample, fs, tot_cyc, letter_samples, token_rate_modulation, preblock, postblock )
-    
+function [ ILI, IWI, tot_trial, tot_wheel, letter_difference, min_wheel, preblock ] = assignTimeVars( wheel_matrix_info, fs, tot_cyc, letter_samples, token_rate_modulation, cycle_time, preblock_prime_sec, postblock_sec )
+
+	% CONVERT TO SAMPLES
+    cycle_sample = ceil(cycle_time * fs);
+    postblock = ceil(postblock_sec * fs);  
+    preblock = ceil(preblock_prime_sec * fs);
+
     % ASSIGN INTER-LETTER-INTERVAL (ILI) FOR EACH GROUP
     for i = 1:length(wheel_matrix_info)
 	    if token_rate_modulation

@@ -8,8 +8,9 @@ function [ wheel_matrix, target_wheel_index ] = assignLetters( possibleLetters, 
 % droppedLetter: only useful for tone_constant paradigm where pitch is assign according to the droppedLetter
 
 % GENERAL PARAMETERS
-letterO  = {'O'};
+letterO  = {'O'}; 
 wheel_num = length(wheel_matrix_info);
+target_wheel_index = [3];
 
 % CREATE GENERIC WHEELS, RECORD WHEEL AND LETTER INDEX OF TARGET
 index = 1;
@@ -24,12 +25,12 @@ for i=1:wheel_num
 end
 
 % CREATE TARGET WHEEL WITHOUT TARGET LETTER
-if ener_mask
-    for i = 1:wheel_num
-        base_wheel_matrix{i} = repmat(letterO, 1, lettersWheel(i));
-    end
-    base_wheel_matrix{target_wheel_index}(1, target_letter_index) = target_letter;
-end
+% if ener_mask
+%     for i = 1:wheel_num
+%         base_wheel_matrix{i} = repmat(letterO, 1, lettersWheel(i));
+%     end
+%     base_wheel_matrix{target_wheel_index}(1, target_letter_index) = target_letter;
+% end
 
 % DEFINE WHEEL_MATRIX
 wheel_matrix = cell(wheel_num, 1);
