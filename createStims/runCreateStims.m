@@ -4,7 +4,6 @@
 %   a post_block to provide time between trials. Stimuli saved in trials  block then trials
 
 % check that letter to pitch has no repeated elements
-% make sure each cycles letters have separate neighbors via spaces? code via charStreamer paradigm
 % fix file name from trimLetters
 % does EM still work?
 % male_trimmed 16000 
@@ -15,21 +14,32 @@
 % sloppy data clipping of final wav rms?
 % tie speaker weights to predefined speakers
 % for trim letters and trim instrNotes code in ways to stop if already been done?
-% is it updating to cycle time? why isn't it updating everytime
 % all wavrites need to scale to -1 to 1 but still keep on zero normalizeSoundVector email Ross
 % normalize amplitudes across wav files
 % make training doesnt work now
-% piano working
 % get marimba
 % shifted letter not working
-% widen range of pitches?
+% widen range of pitches
+% get pause, start, space, delete
+% trim zeros for piano in praat
+% now lots of zeros at the end of the file
+% assign time vars needs to be completely revamped with final design and conditions in mind
+% add in different speakers
+% square away the final paradigms to clean up all the code
+%  send sound samples with different speeds and different envelopes and add in the different conditoins that will be tested
+% copy all non code to lester create git ignore for these files in git
+% review all email to kc and add to updates
+% add all pictures and conversations with Michael to updates as well
+% decide on final parameters and hard code while leaving past code commented in case last minute decisions
+% get documentation for python like pydee in sublime
+% email everyone
 
 close all
 clear all
-
-all_cycle_time = [12.000]; % how long each wheel will last in seconds
-for irunCreateStims = 1:length(all_cycle_time)
 tic
+
+all_cycle_time = [1.000]; % how long each wheel will last in seconds
+for irunCreateStims = 1:length(all_cycle_time)
 
 % DEFINE PATHS
 PATH = '~/git/kexp/';%local letter and output directory
@@ -56,25 +66,30 @@ force_recreate = 1; %bool to force recreation of letters or pitches even if dir 
 instrument_dynamics = 'mf'; %mezzoforte 
 env_instrNotes = 0; % bool for creating instrument notes based off of letter envelopes
 start_sample_one = 1;
+descend_pitch = [0 0 1];
 
 % SET LETTERS
 letterArray.alphabetic = {'A' 'B' 'C' 'D' 'E' 'F' 'G' 'H' 'I' 'J' 'K' 'L' 'M' 'N' 'O' 'P' 'Q' 'R' 'S' 'T' 'U' 'V' 'W' 'X' 'Y' 'Z'}; 
+% letterArray.alphabetic = {'Space', 'Pause', 'A' 'B' 'C' 'D' 'E' 'F' 'G' 'H' 'I' 'J' 'K' 'L' 'M' 'N' 'O' 'P' 'Q' 'R' 'S' 'T' 'U' 'V' 'W' 'X' 'Y' 'Z', 'Read', 'Delete'}; 
 letterArray.displaced =  {'A' 'B' 'F' 'O' 'E' 'M' 'I' 'T' 'J' 'C' 'H' 'Q' 'G' 'N' 'U' 'V' 'K' 'D' 'L' 'U' 'P' 'S' 'Z' 'R' 'W' 'Y'}; %maximal phoneme separation
 letter_samples = 10000; %length of each letter
 total_letters = length(letterArray.alphabetic);
-instr_list = {'Flute', 'Trumpet', 'BbClar'};
+instr_list = {'Piano', 'Trumpet', 'Marimba'};
 version_num = 1;
-speaker_amp_weights = [1 1.8 .5];
-instr_amp_weights = [.35, .35, .35];
+speaker_amp_weights = [1 1 1];
+% speaker_amp_weights = [1 1.8 .5];
+instr_amp_weights = [.5, .5, .5];
 
 % ESTABLISH THE PITCH ORDERS FOR EACH WHEEL OF LETTERS
 pitches.pent = {'0', '1.0', '2.0', '4.0', '5.0'};
 pitches.diatonic = {'-9.0', '-8.0', '-7.0', '-6.0', '-5.0', '-4.0', '-3.0', '-2.0' '-1.0','0', '1.0', '2.0', '3.0', '4.0', '5.0', '6.0', '7.0'};
-pitches.whole = {'-9.0', '-7.0', '-5.0', '-3.0', '-1.0', '1.0', '3.0', '5.0', '7.0', '9.0'};   
-pitches.all = {'-9.0', '-8.0', '-7.0', '-6.0', '-5.0', '-4.0', '-3.0', '-2.0' '-1.0','0', '1.0', '2.0', '3.0', '4.0', '5.0', '6.0', '7.0', '8.0' '9.0'};
+pitches.whole = {'-21.0', '-19.0', '-17.0', '-15.0', '-13.0', '-11.0', '-9.0', '-7.0', '-5.0', '-3.0', '-1.0', '1.0', '3.0', '5.0', '7.0', '9.0'};
+pitches.all = {  '-21.0', '-20.0', '-19.0', '-18.0', '-17.0', '-16.0', '-15.0', '-14.0', '-13.0', '-12.0', '-11.0', '-10.0', '-9.0', '-8.0', '-7.0', '-6.0', '-5.0', '-4.0', '-3.0', '-2.0' '-1.0','0', '1.0', '2.0', '3.0', '4.0', '5.0', '6.0', '7.0', '8.0' '9.0'};
 % pitches.notes = {'C2' 'Db2' 'D2' 'Eb2' 'E2' 'F2' 'Gb2' 'G2' 'Ab2' 'A3' 'Bb3' 'B3' 'C3' 'Db3' 'D3' 'Eb3' 'E3' 'F3' 'Gb3'}; %encode by note name
-pitches.notes = {'C4' 'Db4' 'D4' 'Eb4' 'E4' 'F4' 'Gb4' 'G4' 'Ab4' 'A4' 'Bb4' 'B4' 'C5' 'Db5' 'D5' 'Eb5' 'E5' 'F5' 'Gb5'}; %encode by note name
+pitches.notes = {'C3' 'Db3' 'D3' 'Eb3' 'E3' 'F3' 'Gb3' 'G3' 'Ab3' 'A3' 'Bb3' 'B3' 'C4' 'Db4' 'D4' 'Eb4' 'E4' 'F4' 'Gb4' 'G4' 'Ab4' 'A4' 'Bb4' 'B4' 'C5' 'Db5' 'D5' 'Eb5' 'E5' 'F5' 'Gb5'}; %encode by note name
+pitches.notesWhole = {'C3', 'D3', 'E3', 'Gb3', 'Ab3', 'Bb3', 'C4', 'D4', 'E4', 'Gb4', 'Ab4', 'Bb4', 'C5'};
 assert((length(pitches.notes) == length(pitches.all)), 'Error: note names do not cover range of possible pitches')
+
 
 % BOOLEANS FOR DESIGN FEATURES, ORDERED: LETTERS PER WHEEL, ALPHABETIC VS. MAXIMALLY DISPLACED, TARGET LETTER 'R' AS OPPOSED TO X[i],
 % LETTER ORDERS ARE RETAINED ACROSS CYCLES, TONE IS ASSIGNED RANDOMLY AS OPPOSED TO CONTIGUOSLY, ENERGETIC VS. INFO MASK
@@ -110,25 +125,27 @@ for x = 1:reps
     
     %% GENERATE BLOCK FOR EACH CONDITION TYPE
     [m, n] = size(condition_type);
+    m = 1; % +++ only create the first 
     for y = 1:m; % repeats through each condition type
         
         % ASSIGN PARADIGM TO BLOCK
         block_name = strcat('block_', int2str(y));
         paradigm = condition_type(y, :);
-        [wheel_matrix_info, possibleLetters, target_letter, rearrangeCycles, tone_constant, ener_mask, letters_used, token_rate_modulation, speaker_list, AM_freq, AM_pow, shiftedLetters, instrNote_shifted, instrNote, envelope_type, letter_fine_structure  ] = assignParadigm(paradigm, letterArray, env_instrNotes);
+        [wheel_matrix_info, possibleLetters, target_letter, rearrangeCycles, tone_constant, ener_mask, letters_used, token_rate_modulation, speaker_list, AM_freq, AM_pow, shiftedLetters, instrNote_shifted, instrNote, envelope_type, letter_fine_structure, ILIms,  sync_cycles  ] = assignParadigm(paradigm, letterArray, env_instrNotes);
+        [pitch_wheel, angle_wheel, total_pitches, list_of_pitches, start_semitone_index ] = assignPitch(wheel_matrix_info, tot_cyc, scale_type, pitches, descend_pitch);
+
 
         % TEST
         if ~(letters_used == total_letters)
-            fprintf('Error: not all letters ') 
+            % fprintf('Error: not all letters ') % +++
         end
 
         % PREPARE LETTERS
         [fs, trim_letter_path, letterEnvelope, letterBits, mean_speaker_sample] = trimLetters(letter_samples, letter_path, letterArray, pitches, force_recreate, speaker_list, version_num, speaker_amp_weights, shiftedLetters, env_instrNotes);
-        [pitch_wheel, angle_wheel, total_pitches, list_of_pitches] = assignPitch(wheel_matrix_info, tot_cyc, scale_type, pitches); %returns corresponding cell arrays
-        trimInstrNotes(fs, instrNote_dir, letter_samples, pitches, instrument_dynamics, env_instrNotes, instr_list, speaker_list, letterEnvelope, list_of_pitches, force_recreate, letterArray, envelope_type, mean_speaker_sample, start_sample_one);
+        trimInstrNotes(fs, instrNote_dir, letter_samples, pitches, instrument_dynamics, env_instrNotes, instr_list, speaker_list, letterEnvelope, list_of_pitches, force_recreate, letterArray, envelope_type, mean_speaker_sample, start_sample_one, start_semitone_index, wheel_matrix_info);
 
         % COMPUTE MISC. BASIC PARAMS OF BLOCK
-        [ ILI, IWI, tot_trial, tot_wheel, letter_difference, min_wheel, preblock ] = assignTimeVars( wheel_matrix_info, fs, tot_cyc, letter_samples, token_rate_modulation, cycle_time, preblock_prime_sec, postblock_sec );
+        [ IWI, tot_trial, tot_wheel, letter_difference, min_wheel, preblock, ILI ] = assignTimeVars( wheel_matrix_info, fs, tot_cyc, letter_samples, token_rate_modulation, cycle_time, preblock_prime_sec, postblock_sec, ILIms );
         if tone_constant
             [ letter_to_pitch ] = assignConstantPitch( possibleLetters, total_letters, total_pitches);
         end
@@ -254,9 +271,11 @@ for x = 1:reps
                             % ADVANCE INDEX WHERE EACH LETTER WILL BE ADDED TO THE WHEEL TRACK BY ILI
                             track_sample_index = track_sample_index + ILI(j); 
                         end %for each letter
-                        if ~token_rate_modulation
-                            if (j == min_wheel)
-                                track_sample_index = track_sample_index + ILI(j) * letter_difference;
+                        if sync_cycles
+                            if ~token_rate_modulation
+                                if (j == min_wheel)
+                                    track_sample_index = track_sample_index + ILI(j) * letter_difference;
+                                end
                             end
                         end
                     end %for each cycle

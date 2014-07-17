@@ -1,5 +1,6 @@
-function [] = trimInstrNotes( fs, instrNote_dir, letter_samples, pitches, instrument_dynamics, env_instrNotes, instr_list, speaker_list, letterEnvelope, list_of_pitches, force_recreate, letterArray, envelope_type, mean_speaker_sample, start_sample_one)
+function [] = trimInstrNotes( fs, instrNote_dir, letter_samples, pitches, instrument_dynamics, env_instrNotes, instr_list, speaker_list, letterEnvelope, list_of_pitches, force_recreate, letterArray, envelope_type, mean_speaker_sample, start_sample_one, start_semitone_index, wheel_matrix_info)
 
+start_point = 4500;
 if ~env_instrNotes
 	note_length = ceil(letter_samples / 3);
 	half_note = ceil(note_length / 2);
@@ -38,7 +39,7 @@ if ~env_instrNotes
 end
 for i = 1:length(speaker_list)
 	for j = 1:length(instr_list)
-		for k = 1:length(list_of_pitches)
+		for k = start_semitone_index(j):(start_semitone_index(j) + wheel_matrix_info(j) - 1)  % check
 			for l = 1:length(letterArray.alphabetic)
 				output_path = fullfile(instrNote_dir, 'trim', speaker_list{i}, instr_list{j}, list_of_pitches{k}, envelope_type, letterArray.alphabetic{l});
 			    if ((~exist(output_path, 'dir')) || force_recreate)
@@ -50,16 +51,12 @@ for i = 1:length(speaker_list)
 					end
 			    	createStruct(output_path);
 			    	note = semitoneToNote(list_of_pitches{k}, pitches);
-			    	fn = strcat(instr_list{j}, '.', instrument_dynamics, '.', note, '.wav');
-			    	% fullfile(instrNote_dir, 'raw', instr_list{j}, fn) 
-			    	[instrNote, fs, nbits] = wavread(fullfile(instrNote_dir, 'raw', instr_list{j}, fn), letter_samples);
+			    	fn = strcat(instr_list{j}, '.', instrument_dynamics, '.', note, '.wav'); 
+			    	[instrNote, fs, nbits] = wavread(fullfile(instrNote_dir, 'raw', instr_list{j}, fn), [start_point (start_point + letter_samples - 1) ] );
 			    	        
-	    	        % VISUALIZE:
-			        % plot(final_envelope)
-			        % title(letterArray.alphabetic{l})
-			        % waitforbuttonpress
-			        % close
-
+		    	        	if (j == 1)   % piano has late start
+			    		[instrNote, fs, nbits] = wavread(fullfile(instrNote_dir, 'raw', instr_list{j}, fn), [start_point (start_point + letter_samples - 1) ] );
+			   	end
 			    	final_instrNote = final_envelope .* instrNote;
 			    	if env_instrNotes
 				    	trimInstrNotes_path = fullfile(instrNote_dir, 'trim', speaker_list{i}, instr_list{j}, list_of_pitches{k}, envelope_type, letterArray.alphabetic{l}, fn); % +++
@@ -68,13 +65,15 @@ for i = 1:length(speaker_list)
 				    end
 			    	final_instrNote = normalizeSoundVector(final_instrNote);
 			    	final_instrNote = trimSoundVector(final_instrNote, fs, letter_samples, 1, 1);
-			    	% plot(final_instrNote)
-			    	% sound(final_instrNote, 16000)
-			    	% waitforbuttonpress
 			    	wavwrite( final_instrNote, fs, nbits, trimInstrNotes_path )
 			    	assert(length(final_instrNote) == letter_samples, 'Error: instrNote does not match letter length')
 			    end
 			end
+						  %   	plot(final_instrNote)
+			    	% sound(final_instrNote, 16000)
+			    	% waitforbuttonpress
+			    	% close
+
 		end
 	end
 end

@@ -7,8 +7,13 @@ function [output] = createGate(input, fs, start_gate, end_gate)
 % DESIGN BASIC AMPLITUDE ENVELOPE
 gateDur = .03; % duration of the gate in seconds
 gate = cos(linspace(2 * pi, 3 * pi, fs * gateDur)); % diminish envelope by half one period of sine
-begGate = ((gate + 1) / 2)'; 
-endGate = fliplr(begGate); %inflection of begGate
+endGate = ((gate + 1) / 2)'; 
+begGate = flipud(endGate); %inflection of begGate
+% plot(begGate)
+% hold on
+% plot(endGate, '-r')
+% waitforbuttonpress
+
 [m, n] = size(endGate);
 sustain = ones((length(input) - 2 * m), 1); % leave inner section
 

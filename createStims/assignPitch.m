@@ -1,4 +1,4 @@
-function [pitch_wheel, angle_wheel, total_pitches, list_of_pitches ] = assignPitch(wheel_matrix_info, tot_cyc, scale_type, pitches)
+function [pitch_wheel, angle_wheel, total_pitches, list_of_pitches, start_semitone_index ] = assignPitch(wheel_matrix_info, tot_cyc, scale_type, pitches, descend_pitch)
 
 %establishes the angles to use for the varying amount of wheels
 baseline_angle{1} = [0];
@@ -23,7 +23,8 @@ if strcmpi(scale_type, 'diatonic')
     end
 else if strcmpi(scale_type, 'whole')
     if wheel_num == 3
-        start_semitone_index = [1 3 5];
+        start_semitone_index = [1 5 1];
+        % start_semitone_index = [1 7 1];
     else
         fprintf('Error: need to define semitones for this number of wheels')
     end
@@ -42,6 +43,9 @@ for i = 1:wheel_num
         temp = pitches.whole(start_semitone_index(i) :(start_semitone_index(i) + letters_wheel - 1));
         total_pitches = length(pitches.whole);
         list_of_pitches = pitches.whole;
+    end
+    if descend_pitch(i)
+        temp = fliplr(temp) ;
     end
     pitch_wheel{i} =  repmat(temp, tot_cyc, 1);
 end
