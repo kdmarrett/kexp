@@ -25,24 +25,27 @@ function [  IWI, tot_trial, tot_wheel, letter_difference, min_wheel, preblock, I
 	else
 	    IWI = ceil(ILI(1) / length(wheel_matrix_info));
 	    [minimum, min_wheel] = min(wheel_matrix_info);
-	    letter_difference = max(wheel_matrix_info) - minimum;
+	    letter_difference = max(wheel_matrix_info) - minimum; %used to sync wheels if specified by sync_wheel
 	end
 
-	% FIND SPECIFIC END TIMES FOR EACH WHEEL AND ENTIRE TRIAL
 	for i = 1:length(wheel_matrix_info)
-	    	tot_cycle_sample(i) = wheel_matrix_info(i) * ILI(i) + letter_samples;
-	    	spill_over(i) = tot_cycle_sample(i) - cycle_sample;
-	    	adjusted_spill_over(i) = spill_over(i) + IWI * (i - 1); % spillover with respect to wheel onset time
+	    	% tot_cycle_sample(i) = wheel_matrix_info(i) * ILI(i) + letter_samples;
+	    	% spill_over(i) = tot_cycle_sample(i) - cycle_sample;
+	    	% adjusted_spill_over(i) = spill_over(i) + IWI * (i - 1); % spillover with respect to wheel onset time
 	    	tot_wheel(i) = 1 + ((tot_cyc * wheel_matrix_info(i) - 1) * ILI(i)) + letter_samples; % final calc. of wheel length
-	    	if ~token_rate_modulation
-			if (i == min_wheel)
-				tot_wheel(i) = tot_wheel(1); % total hack; add difference to make same cycle
-			end
+	    	if token_rate_modulation
+	    		adjusted_wheel(i) = tot_wheel(i) + IWI * (i - 1);
 	    	end
 	end
-	trial_spill_over = max(adjusted_spill_over); % finds the spillover relative to the trial ambivalent to wheel spillover
-	tot_response_section = rough_tot_wheel + trial_spill_over;
-
+	
+	% FIND SPECIFIC END TIMES FOR EACH WHEEL AND ENTIRE TRIAL
+	if token_rate_modulation
+		% trial_spill_over = max(adjusted_spill_over); % finds the spillover relative to the trial ambivalent to wheel spillover
+		% tot_response_section = rough_tot_wheel + trial_spill_over;
+		tot_response_section = max(adjusted_wheel);
+	else 
+	    	tot_response_section = tot_wheel(length(wheel_matrix_info)) + IWI * 2; 
+	end
 	%TOTAL SAMPLES IN EACH TRIAL OF CYCLES
 	tot_trial = ceil(preblock + tot_response_section + postblock);
 end

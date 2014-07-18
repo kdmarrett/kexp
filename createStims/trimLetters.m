@@ -10,6 +10,7 @@ for x = 1:length(speaker_list)
     % fs = 24414; % default letter sample rate
     if shiftedLetters
         input_letter_path = fullfile(letter_path, 'shiftedLetters', speaker_list{x});
+        assert(exist(input_letter_path, 'dir'), 'Error: you must shift the letters using praat first before using this speaker')
     else
         input_letter_path = fullfile(letter_path, 'rawLetters', speaker_list{x});
     end
@@ -38,6 +39,9 @@ for x = 1:length(speaker_list)
                 else
                     fn = strcat(speaker_list{x}, '_', letterArray.alphabetic{j}, int2str(version_num), '.wav');
                 end
+                if (strcmpi(letterArray.alphabetic(j), 'Read') || strcmpi(letterArray.alphabetic(j), 'Space') || strcmpi(letterArray.alphabetic(j), 'Delete') || strcmpi(letterArray.alphabetic(j), 'Pause'))
+                    fn = fullfile('kdm', letterArray.alphabetic{j});
+                end
                 ff = fullfile(fp, fn); 
                 [letterSound{j}, fs_speaker, letterBits] = wavread(ff);  % letter wavs for each semitone
                 if env_instrNotes
@@ -65,7 +69,7 @@ for x = 1:length(speaker_list)
             % TRIM EACH LETTER 
             for j = 1:length(letterArray.alphabetic)
                 letterVector = letterSound{j};
-                trimmedLetters{j} = trimSoundVector(letterVector, fs_speaker, letter_samples, 0, 1);
+                trimmedLetters{j} = trimSoundVector(letterVector, fs_speaker, letter_samples, 1, 1);
                 if shiftedLetters
                     final_output_path = fullfile(output_path, pitches.all{i});
                 else

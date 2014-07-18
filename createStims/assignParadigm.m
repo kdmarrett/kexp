@@ -1,17 +1,17 @@
-function [wheel_matrix_info, possibleLetters, target_letter, rearrangeCycles, tone_constant, ener_mask, letters_used, token_rate_modulation, speaker_list, AM_freq, AM_pow, shiftedLetters, instrNote_shifted, instrNote, envelope_type, letter_fine_structure, ILIms, sync_cycles  ] = assignParadigm(paradigm, letterArray, env_instrNotes)
+function [wheel_matrix_info, possibleLetters, target_letter, rearrangeCycles, tone_constant, ener_mask, letters_used, token_rate_modulation, AM_freq, AM_pow, shiftedLetters, instrNote_shifted, instrNote, envelope_type, letter_fine_structure, ILIms, sync_cycles  ] = assignParadigm(paradigm, letterArray, env_instrNotes)
 	% Assign basic design parameters of each paradigm type
     % +++ assign conditions for last several parameters
-    ILImsBase = 600;
+    ILImsBase = 400;
 
 	% ASSIGN LETTERS PER WHEEL
     if paradigm(1)
         % wheel_matrix_info = [10 9 7]; % token rate changes according to letters in each wheel
-        wheel_matrix_info = [9 6 6]; % token rate changes according to letters in each wheel
+        wheel_matrix_info = [10 10 10]; % token rate changes according to letters in each wheel
         token_rate_modulation = 1;  % bool to change token rate
         ILIms = repmat(ILImsBase, 1, 3);
     else 
         % wheel_matrix_info = [9 9 8]; %token rate remains the same in all wheels
-        wheel_matrix_info = [9 6 6]; %token rate remains the same in all wheels
+        wheel_matrix_info = [10 10 10]; %token rate remains the same in alls wheels
         token_rate_modulation = 0;
         ILIms = repmat(ILImsBase, 1, 3);
     end
@@ -54,7 +54,7 @@ function [wheel_matrix_info, possibleLetters, target_letter, rearrangeCycles, to
     end
 
     %  ASSIGN SPEAKERS
-    speaker_list = {'female_trimmed', 'female_trimmed', 'female_trimmed'}; 
+
 
     %AMPLITUDE MODULATOR SHIFTS AMPLITUDE
     AM_freq = [0 0 0 0 0 0 0 0]; %Hz rate of amplitude modulator elements for each wheel 0 for none
@@ -62,6 +62,7 @@ function [wheel_matrix_info, possibleLetters, target_letter, rearrangeCycles, to
 
     % ASSIGN PITCH SHIFTING
     shiftedLetters = 0; % bool letters are monotonized and shifted within one octave above and below A3
+    assert(~shiftedLetters, 'kdm recordings of pause, read, etc must also be shifted before creating a shifted letter stimuli')
     instrNote_shifted = 1; % instrument tones go above and below A4 then are later combined with raw letter recordings
     instrNote = 1; % bool to include instrument notes
     letter_fine_structure = 1;

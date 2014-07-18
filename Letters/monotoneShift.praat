@@ -39,7 +39,8 @@ semis [23] = 10
 semis [24] = 11
 semis [25] = 12
 
-trimsilences = 0
+trimsilences = 1
+shiftSound = 0
 # RKM already trimmed silences manually
 
 for ifreq from 1 to nfreqs
@@ -148,7 +149,7 @@ for ifile to numberOfFiles
 		# Sampling frequency (Hz) 
 		# Phase: determines whether result is sum of sines or cosines
 		# Frequency step (Hz): the distance betw. components (fund freq)
-	        # First frequency (Hz): lowest freqy component 0:frequencyStep
+	            # First frequency (Hz): lowest freqy component 0:frequencyStep
 	  	# Ceiling (Hz): frequency above which no comps are used 0: Nyquist frequency
 		# Number of components: how many sinusoids are used 0: the maximum number of components is used, limited by ceiling
 		tempFreq = freqs [ifreq]
@@ -177,7 +178,7 @@ for ifile to numberOfFiles
 		plus Manipulation insound
 		Replace pitch tier
 
-        	# resynthesis
+	        	# resynthesis
 		select Manipulation insound
 		Get resynthesis (PSOLA)
 		select Sound insound

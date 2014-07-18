@@ -23,8 +23,8 @@ if strcmpi(scale_type, 'diatonic')
     end
 else if strcmpi(scale_type, 'whole')
     if wheel_num == 3
-        start_semitone_index = [1 5 1];
-        % start_semitone_index = [1 7 1];
+        % start_semitone_index = [1 5 1];
+        start_semitone_index = [1 4 1];
     else
         fprintf('Error: need to define semitones for this number of wheels')
     end

@@ -8,37 +8,29 @@
 % does EM still work?
 % male_trimmed 16000 
 % Original 24414 convert in itunes
-% F01 48000 convert in itunes
 % isolet files at 16000
-% good way to scale amplitudes of speakers by ear
-% sloppy data clipping of final wav rms?
-% tie speaker weights to predefined speakers
 % for trim letters and trim instrNotes code in ways to stop if already been done?
 % all wavrites need to scale to -1 to 1 but still keep on zero normalizeSoundVector email Ross
-% normalize amplitudes across wav files
 % make training doesnt work now
-% get marimba
 % shifted letter not working
-% widen range of pitches
-% get pause, start, space, delete
-% trim zeros for piano in praat
+% add in pause, start, space, delete
 % now lots of zeros at the end of the file
 % assign time vars needs to be completely revamped with final design and conditions in mind
-% add in different speakers
 % square away the final paradigms to clean up all the code
 %  send sound samples with different speeds and different envelopes and add in the different conditoins that will be tested
 % copy all non code to lester create git ignore for these files in git
-% review all email to kc and add to updates
-% add all pictures and conversations with Michael to updates as well
 % decide on final parameters and hard code while leaving past code commented in case last minute decisions
 % get documentation for python like pydee in sublime
-% email everyone
+% email everyone 
+% mrs0
+% mnre0
+% file saving in instrNotes needs to be revamped along with deleting all the old directories
 
 close all
 clear all
 tic
 
-all_cycle_time = [1.000]; % how long each wheel will last in seconds
+all_cycle_time = [809.000]; % how long each wheel will last in seconds
 for irunCreateStims = 1:length(all_cycle_time)
 
 % DEFINE PATHS
@@ -64,21 +56,22 @@ primer_start = 3000;  %sample # that primer letter will play in the preblock; mu
 makeTraining = 0;
 force_recreate = 1; %bool to force recreation of letters or pitches even if dir exists from previous run
 instrument_dynamics = 'mf'; %mezzoforte 
-env_instrNotes = 0; % bool for creating instrument notes based off of letter envelopes
+env_instrNotes = 1; % bool for creating instrument notes based off of letter envelopes
 start_sample_one = 1;
 descend_pitch = [0 0 1];
-
+speaker_list = {'mjc1', 'female_trimmed', 'mnre0'}; 
 % SET LETTERS
-letterArray.alphabetic = {'A' 'B' 'C' 'D' 'E' 'F' 'G' 'H' 'I' 'J' 'K' 'L' 'M' 'N' 'O' 'P' 'Q' 'R' 'S' 'T' 'U' 'V' 'W' 'X' 'Y' 'Z'}; 
-% letterArray.alphabetic = {'Space', 'Pause', 'A' 'B' 'C' 'D' 'E' 'F' 'G' 'H' 'I' 'J' 'K' 'L' 'M' 'N' 'O' 'P' 'Q' 'R' 'S' 'T' 'U' 'V' 'W' 'X' 'Y' 'Z', 'Read', 'Delete'}; 
-letterArray.displaced =  {'A' 'B' 'F' 'O' 'E' 'M' 'I' 'T' 'J' 'C' 'H' 'Q' 'G' 'N' 'U' 'V' 'K' 'D' 'L' 'U' 'P' 'S' 'Z' 'R' 'W' 'Y'}; %maximal phoneme separation
+% letterArray.alphabetic = {'A' 'B' 'C' 'D' 'E' 'F' 'G' 'H' 'I' 'J' 'K' 'L' 'M' 'N' 'O' 'P' 'Q' 'R' 'S' 'T' 'U' 'V' 'W' 'X' 'Y' 'Z'}; 
+letterArray.alphabetic = {'Space', 'Pause', 'A' 'B' 'C' 'D' 'E' 'F' 'G' 'H' 'I' 'J' 'K' 'L' 'M' 'N' 'O' 'P' 'Q' 'R' 'S' 'T' 'U' 'V' 'W' 'X' 'Y' 'Z', 'Read', 'Delete'}; 
+letterArray.displaced =  {'Space', 'Pause', 'A' 'B' 'F' 'O' 'E' 'M' 'I' 'T' 'J' 'C' 'H' 'Q' 'G' 'N' 'U' 'V' 'K' 'D' 'L' 'U' 'P' 'S' 'Z' 'R' 'W' 'Y' 'Read' 'Delete'}; %maximal phoneme separation
+assert(length(letterArray.alphabetic) == length(letterArray.displaced));
 letter_samples = 10000; %length of each letter
 total_letters = length(letterArray.alphabetic);
 instr_list = {'Piano', 'Trumpet', 'Marimba'};
 version_num = 1;
 speaker_amp_weights = [1 1 1];
 % speaker_amp_weights = [1 1.8 .5];
-instr_amp_weights = [.5, .5, .5];
+instr_amp_weights = [.5, .35, 1];
 
 % ESTABLISH THE PITCH ORDERS FOR EACH WHEEL OF LETTERS
 pitches.pent = {'0', '1.0', '2.0', '4.0', '5.0'};
@@ -91,8 +84,8 @@ pitches.notesWhole = {'C3', 'D3', 'E3', 'Gb3', 'Ab3', 'Bb3', 'C4', 'D4', 'E4', '
 assert((length(pitches.notes) == length(pitches.all)), 'Error: note names do not cover range of possible pitches')
 
 
-% BOOLEANS FOR DESIGN FEATURES, ORDERED: LETTERS PER WHEEL, ALPHABETIC VS. MAXIMALLY DISPLACED, TARGET LETTER 'R' AS OPPOSED TO X[i],
-% LETTER ORDERS ARE RETAINED ACROSS CYCLES, TONE IS ASSIGNED RANDOMLY AS OPPOSED TO CONTIGUOSLY, ENERGETIC VS. INFO MASK
+% BOOLEANS FOR DESIGN FEATURES, ORDERED: EACH WHEEL GROUP AT ORTHOGONAL FREQUENCY EM, EACH WHEEL GROUP GIVEN ON FREQUENCY AM , ALPHABETIC VS. MAXIMALLY DISPLACED, TARGET LETTER 'R' AS OPPOSED TO X[i],
+% LETTER ORDERS ARE RETAINED ACROSS CYCLES, TONE IS ASSIGNED RANDOMLY AS OPPOSED TO CONTIGUOSLY, NO PITCH INFORMATION
 condition_type = [0 0 0 0 0 0; 1 0 0 0 0 0; 0 1 0 0 0 0; 0 0 1 0 0 0; 0 1 0 1 0 0; 0 0 0 0 1 0; 0 0 0 0 0 1 ];
 [blocks, bar] = size(condition_type);
 trials_per_condition = 1;
@@ -131,9 +124,8 @@ for x = 1:reps
         % ASSIGN PARADIGM TO BLOCK
         block_name = strcat('block_', int2str(y));
         paradigm = condition_type(y, :);
-        [wheel_matrix_info, possibleLetters, target_letter, rearrangeCycles, tone_constant, ener_mask, letters_used, token_rate_modulation, speaker_list, AM_freq, AM_pow, shiftedLetters, instrNote_shifted, instrNote, envelope_type, letter_fine_structure, ILIms,  sync_cycles  ] = assignParadigm(paradigm, letterArray, env_instrNotes);
+        [wheel_matrix_info, possibleLetters, target_letter, rearrangeCycles, tone_constant, ener_mask, letters_used, token_rate_modulation,  AM_freq, AM_pow, shiftedLetters, instrNote_shifted, instrNote, envelope_type, letter_fine_structure, ILIms,  sync_cycles  ] = assignParadigm(paradigm, letterArray, env_instrNotes);
         [pitch_wheel, angle_wheel, total_pitches, list_of_pitches, start_semitone_index ] = assignPitch(wheel_matrix_info, tot_cyc, scale_type, pitches, descend_pitch);
-
 
         % TEST
         if ~(letters_used == total_letters)
@@ -142,7 +134,7 @@ for x = 1:reps
 
         % PREPARE LETTERS
         [fs, trim_letter_path, letterEnvelope, letterBits, mean_speaker_sample] = trimLetters(letter_samples, letter_path, letterArray, pitches, force_recreate, speaker_list, version_num, speaker_amp_weights, shiftedLetters, env_instrNotes);
-        trimInstrNotes(fs, instrNote_dir, letter_samples, pitches, instrument_dynamics, env_instrNotes, instr_list, speaker_list, letterEnvelope, list_of_pitches, force_recreate, letterArray, envelope_type, mean_speaker_sample, start_sample_one, start_semitone_index, wheel_matrix_info);
+        [nul] = trimInstrNotes(fs, instrNote_dir, letter_samples, pitches, instrument_dynamics, env_instrNotes, instr_list, speaker_list, letterEnvelope, list_of_pitches, force_recreate, letterArray, envelope_type, mean_speaker_sample, start_sample_one, start_semitone_index, wheel_matrix_info);
 
         % COMPUTE MISC. BASIC PARAMS OF BLOCK
         [ IWI, tot_trial, tot_wheel, letter_difference, min_wheel, preblock, ILI ] = assignTimeVars( wheel_matrix_info, fs, tot_cyc, letter_samples, token_rate_modulation, cycle_time, preblock_prime_sec, postblock_sec, ILIms );
@@ -200,11 +192,11 @@ for x = 1:reps
                                     fn = strcat(instr_list{j}, '.', instrument_dynamics, '.', 'A4', '.wav');
                                 end
                                 if env_instrNotes
-                                    trimInstrNotes_path = fullfile(instrNote_dir, 'trim', speaker_list{j}, instr_list{j}, pitch, envelope_type, letter, fn);
+                                    trimInstrNotes_path = fullfile(instrNote_dir, 'trim', envelope_type, speaker_list{j}, instr_list{j}, pitch, letter, fn);
                                 else
-                                    trimInstrNotes_path = fullfile(instrNote_dir, 'trim', speaker_list{j}, instr_list{j}, pitch, envelope_type, fn);
+                                    trimInstrNotes_path = fullfile(instrNote_dir, 'trim', envelope_type, instr_list{j}, pitch, fn);
                                 end
-                                instrNote_sound = wavread(trimInstrNotes_path);
+                                    instrNote_sound = wavread(trimInstrNotes_path);
                                 instrNote_sound = instr_amp_weights(j) .* instrNote_sound;
                             else
                                 instrNote_sound = zeros(letter_samples, 1);
@@ -224,6 +216,7 @@ for x = 1:reps
                             else
                                 combined_sound = instrNote_sound;
                             end
+                            combined_sound = createGate(combined_sound, fs, 1,1);
                             [L, R] = stimuliHRTF(combined_sound, fs, angle, distance_sound, K70_dir);
                             % [L, R] = stimuliHRTF(letter_sound, fs, angle, distance_sound, K70_dir);
                             % [instrNote_L, instrNote_R] = stimuliHRTF(instrNote_sound, fs, angle, distance_sound, K70_dir);
@@ -300,7 +293,7 @@ for x = 1:reps
             %STAMP WAV_NAME WITH EACH BLOCK LABELED BY PARADIGM CONDITION
             filename = strcat(data_dir, block_name, '_t_', int2str(z));
             wav_name = fullfile(final_output_path, strcat(int2str(z), '_', int2str(cycle_time * 1000), '_', speaker_list{1:length(speaker_list)}, '_', envelope_type, '_', 'ms', '.wav'));
-            if (exist(wav_name, 'file') ~= 0)
+            if exist(wav_name, 'file') %matlab does not overwrite on all systems
                 delete(wav_name)
             end
             final_sample = rms_amp * (final_sample / sqrt(mean(mean(final_sample.^2))));
