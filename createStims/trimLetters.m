@@ -12,7 +12,7 @@ for x = 1:length(speaker_list)
         input_letter_path = fullfile(letter_path, 'shiftedLetters', speaker_list{x});
         assert(exist(input_letter_path, 'dir'), 'Error: you must shift the letters using praat first before using this speaker')
     else
-        input_letter_path = fullfile(letter_path, 'rawLetters', speaker_list{x});
+        input_letter_path = fullfile(letter_path, 'rawLetters', strcat(speaker_list{x}, '_manuallyTrim'));
     end
     trim_letter_path = fullfile(letter_path, 'finalShiftTrimLetters', int2str(letter_samples));
     output_path = fullfile(trim_letter_path, speaker_list{x});
@@ -32,17 +32,18 @@ for x = 1:length(speaker_list)
                     fp = input_letter_path;
                 end
                 temp_fn = strcat(speaker_list{x}, '-', letterArray.alphabetic{j}, int2str(version_num), '-t', '.wav');
-                if (strcmpi(speaker_list{x}, 'Original') || strcmpi(speaker_list{x}, 'male_trimmed') || strcmpi(speaker_list{x}, 'female_trimmed'))
-                    fn = letterArray.alphabetic{j};
+                if (strcmpi(speaker_list{x}, 'Original') || strcmpi(speaker_list{x}, 'male_trimmed') || strcmpi(speaker_list{x}, 'female'))
+                    fn = strcat(letterArray.alphabetic{j});
                 elseif exist(fullfile(fp, temp_fn), 'file')
                     fn = temp_fn;
                 else
                     fn = strcat(speaker_list{x}, '_', letterArray.alphabetic{j}, int2str(version_num), '.wav');
                 end
                 if (strcmpi(letterArray.alphabetic(j), 'Read') || strcmpi(letterArray.alphabetic(j), 'Space') || strcmpi(letterArray.alphabetic(j), 'Delete') || strcmpi(letterArray.alphabetic(j), 'Pause'))
-                    fn = fullfile('kdm', letterArray.alphabetic{j});
+                    ff = fullfile(letter_path, 'rawLetters', 'kdm_manuallyTrim', letterArray.alphabetic{j});
+                else
+                    ff = fullfile(fp, fn); 
                 end
-                ff = fullfile(fp, fn); 
                 [letterSound{j}, fs_speaker, letterBits] = wavread(ff);  % letter wavs for each semitone
                 if env_instrNotes
                     letterEnvelope{j} = envelopeByLetter(letterSound{j}, letter_samples, fs_speaker); 
@@ -59,10 +60,18 @@ for x = 1:length(speaker_list)
                 letterSound{j} = speaker_amp_weights(x) .* letterSound{j};
             end
 
-            % % EXCEPTIONS 'C', 'W'
+            % % % EXCEPTIONS 'C', 'W'
+            %  All letters have been manually trimmed
             % c = letterSound{3}; % makes c more audible
             % [row, col] = size(c);
-            % letterSound{3}=c(1500:row);
+            % letterSound{3}=[1600; c]
+            % plot(c)
+            % waitforbuttonpress
+            % letterSound{3}= c(1500: row, 1);
+            % plot(letterSound{3})
+            % title('letterSound')
+            % waitforbuttonpress
+            % size(letterSound{3});
             % w = letterSound{23};
             % % letterSound{23} = w(1:4200); % 'W' to "dub"
 

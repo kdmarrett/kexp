@@ -1,21 +1,19 @@
-function [wheel_matrix_info, possibleLetters, target_letter, rearrangeCycles, tone_constant, ener_mask, letters_used, token_rate_modulation, AM_freq, AM_pow, shiftedLetters, instrNote_shifted, instrNote, envelope_type, letter_fine_structure, ILIms, sync_cycles  ] = assignParadigm(paradigm, letterArray, env_instrNotes)
+function [wheel_matrix_info, possibleLetters, target_letter, rearrangeCycles, tone_constant, ener_mask, letters_used, token_rate_modulation, AM_freq, AM_pow, shiftedLetters, instrNote_shifted, instrNote, envelope_type, letter_fine_structure, sync_cycles  ] = assignParadigm(paradigm, letterArray, env_instrNotes )
 	% Assign basic design parameters of each paradigm type
     % +++ assign conditions for last several parameters
-    ILImsBase = 400;
+    ener_mask = 0;% assigns all non target letters to letter O 
 
 	% ASSIGN LETTERS PER WHEEL
     if paradigm(1)
         % wheel_matrix_info = [10 9 7]; % token rate changes according to letters in each wheel
         wheel_matrix_info = [10 10 10]; % token rate changes according to letters in each wheel
         token_rate_modulation = 1;  % bool to change token rate
-        ILIms = repmat(ILImsBase, 1, 3);
     else 
         % wheel_matrix_info = [9 9 8]; %token rate remains the same in all wheels
         wheel_matrix_info = [10 10 10]; %token rate remains the same in alls wheels
         token_rate_modulation = 0;
-        ILIms = repmat(ILImsBase, 1, 3);
     end
-    letters_used = sum(wheel_matrix_info);
+    letters_used = sum(wheel_matrix_info); %why is this is in this function? +++
     
     % ASSIGN LETTER ORDERING
     if paradigm(2)
@@ -46,19 +44,17 @@ function [wheel_matrix_info, possibleLetters, target_letter, rearrangeCycles, to
         tone_constant = 0;
     end
 
-    %  USE SAME LETTER ACROSS WHEELS AND CYCLES
-    if paradigm(6)
-        ener_mask = 1;
-    else
-        ener_mask = 0;
-    end
-
-    %  ASSIGN SPEAKERS
-
-
     %AMPLITUDE MODULATOR SHIFTS AMPLITUDE
-    AM_freq = [0 0 0 0 0 0 0 0]; %Hz rate of amplitude modulator elements for each wheel 0 for none
-    AM_pow =  [0 0 0 0 0 0 0 0]; %decibel of each AM for each corresponding wheel
+        if paradigm(6)
+            AM_freq = [2 11 13 0 0 0 0 0]; %Hz rate of amplitude modulator elements for each wheel 0 for none
+            AM_pow =  [2 2 2 0 0 0 0 0]; %decibel of each AM for each corresponding wheel
+        elseif paradigm(7)
+           AM_freq = [11 11 11 0 0 0 0 0]; %Hz rate of amplitude modulator elements for each wheel 0 for none
+            AM_pow =  [2 2 2 0 0 0 0 0]; %decibel of each AM for each corresponding wheel
+        else
+          AM_freq = [0 0 0 0 0 0 0 0];  %Hz rate of amplitude modulator elements for each wheel 0 for none
+            AM_pow =  [0 0 0 0 0 0 0 0]; %decibel of each AM for each corresponding wheel
+        end
 
     % ASSIGN PITCH SHIFTING
     shiftedLetters = 0; % bool letters are monotonized and shifted within one octave above and below A3

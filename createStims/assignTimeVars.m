@@ -1,10 +1,17 @@
-function [  IWI, tot_trial, tot_wheel, letter_difference, min_wheel, preblock, ILI ] = assignTimeVars( wheel_matrix_info, fs, tot_cyc, letter_samples, token_rate_modulation, cycle_time, preblock_prime_sec, postblock_sec, ILIms )
+function [  IWI, tot_trial, tot_wheel, letter_difference, min_wheel, preblock, ILI ] = assignTimeVars( wheel_matrix_info, fs, tot_cyc, letter_samples, token_rate_modulation, preblock_prime_sec, postblock_sec, ILIms, token_rates )
 
 	% CONVERT TO SAMPLES
-    cycle_sample = ceil(cycle_time * fs);
+    % cycle_sample = ceil(cycle_time * fs);
     postblock = ceil(postblock_sec * fs);  
     preblock = ceil(preblock_prime_sec * fs);
-    ILI = ceil((ILIms ./ 1000) .* fs);
+    if token_rate_modulation
+    	for i = 1:length(wheel_matrix_info)
+    		ILIsec = 1 / (token_rates(i));
+    		ILI(i) = ceil(ILIsec * fs);
+    	end
+    else
+	ILI = repmat( (ceil((ILIms ./ 1000) .* fs)), length(wheel_matrix_info), 1);
+	end
 
     % ASSIGN INTER-LETTER-INTERVAL (ILI) FOR EACH GROUP
  %    for i = 1:length(wheel_matrix_info)
@@ -14,7 +21,7 @@ function [  IWI, tot_trial, tot_wheel, letter_difference, min_wheel, preblock, I
 	%         ILI(i) = ceil(cycle_sample / wheel_matrix_info(1)); %INTER-LETTER-TIME determined by first wheel
 	%     end
 	% end
-	rough_tot_wheel = cycle_sample * tot_cyc;
+	% rough_tot_wheel = cycle_sample * tot_cyc;
 
 	% ADJUST IWI FOR TOKEN-RATE MODULATED CONDITION
 	if token_rate_modulation 
