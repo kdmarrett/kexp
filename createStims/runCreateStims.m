@@ -17,6 +17,13 @@ close all
 clear all
 tic
 
+% instr_amp = 1.3:.10:2.5;
+% instr_amp = .5:.10:2.0;
+% instr_amp = .5:.5:3
+instr_amp = 3.5:.5:6
+for overall = 1: length(instr_amp)
+	instr_amp_weights = [.5, .35, instr_amp(overall)];
+	% instr_amp_weights = [instr_amp(overall), .35, 1.3];
 % DEFINE PATHS
 PATH = '~/git/kexp/';%local letter and output directory
 % stimuli_path = strcat(PATH, 'Stims/');%dir for all subject stimulus
@@ -41,11 +48,11 @@ primer_start = 3000;  %sample # that primer letter will play in the preblock; mu
 makeTraining = 0;
 force_recreate = 1; %bool to force recreation of letters or pitches even if dir exists from previous run
 instrument_dynamics = 'mf'; %mezzoforte
-env_instrNotes = 1; % bool for creating instrument notes based off of letter envelopes
+env_instrNotes = 0; % bool for creating instrument notes based off of letter envelopes
 start_sample_one = 1;
 descend_pitch = [0 0 1];
 speaker_list = {'mjc1', 'female', 'mnre0'};
-ILImsBase = 3 * 166;
+ILImsBase = 3 * 150;
 ILIms = repmat(ILImsBase, 3, 1);
 token_rates = [3 5 7];
 %  2 3 5 7 11 13
@@ -60,7 +67,8 @@ instr_list = {'Piano', 'Trumpet', 'Marimba'};
 version_num = 1;
 speaker_amp_weights = [1 1 1];
 % speaker_amp_weights = [1 1.8 .5];
-instr_amp_weights = [.5, .35, 1];
+% instr_amp_weights = [.5, .35, 1.3];
+% instr_amp_weights = [.65, .35, 1.3];
 
 % ESTABLISH THE PITCH ORDERS FOR EACH WHEEL OF LETTERS
 pitches.pent = {'0', '1.0', '2.0', '4.0', '5.0'};
@@ -111,7 +119,7 @@ for x = 1:reps
     %% GENERATE BLOCK FOR EACH CONDITION TYPE
     [m, n] = size(condition_type);
     m = 1; % +++ only create the first
-    for y = 1:m; % repeats through each condition type
+    for y = 1:m; % repeats through each condition type +++
         
         % ASSIGN PARADIGM TO BLOCK
         block_name = strcat('block_', int2str(y));
@@ -284,7 +292,7 @@ for x = 1:reps
 
             %STAMP WAV_NAME WITH EACH BLOCK LABELED BY PARADIGM CONDITION
             filename = strcat(data_dir, block_name, '_t_', int2str(z));
-            wav_name = fullfile(final_output_path, strcat(int2str(z), '_', int2str( paradigm), 'ms', 'trial_', int2str(z), '_', int2str(rand * 1000), '_ILIms', int2str(ILImsBase), '.wav'));
+            wav_name = fullfile(final_output_path, strcat(int2str(z), '_', int2str( paradigm), 'ms', 'trial_', int2str(z), '_', int2str(rand * 1000), '_ILIms', int2str(ILImsBase), 'speakerAmp', int2str(instr_amp(overall) * 100), '.wav'));
             if exist(wav_name, 'file') %matlab does not overwrite on all systems
                 delete(wav_name)
                 fprintf('Warning: matlab file may not have been recorded');
@@ -300,6 +308,7 @@ for x = 1:reps
         end
     end
 end
+end  % for sound testing
 [done, fs] = wavread(fullfile(PATH, 'CLICKloud.WAV')); % to alert user
 toc %print elapsed time
 sound((.6 * done), fs);
