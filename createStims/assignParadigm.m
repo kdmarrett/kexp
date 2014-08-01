@@ -1,6 +1,8 @@
 function [wheel_matrix_info, possibleLetters, target_letter, rearrangeCycles, tone_constant, ener_mask, letters_used, token_rate_modulation, AM_freq, AM_pow, shiftedLetters, instrNote_shifted, instrNote, envelope_type, letter_fine_structure, sync_cycles  ] = assignParadigm(paradigm, letterArray, env_instrNotes )
-	% Assign basic design parameters of each paradigm type
-    % +++ assign conditions for last several parameters
+    % Assign basic design parameters of each paradigm type
+    % BOOLEANS FOR DESIGN FEATURES, ORDERED: EACH WHEEL GROUP AT ORTHOGONAL FREQUENCY EM, EACH WHEEL GROUP GIVEN ON FREQUENCY AM , ALPHABETIC VS. MAXIMALLY DISPLACED, TARGET LETTER 'R' AS OPPOSED TO X[i],
+    % LETTER ORDERS ARE RETAINED ACROSS CYCLES, TONE IS ASSIGNED RANDOMLY AS OPPOSED TO CONTIGUOSLY, NO PITCH INFORMATION
+
     ener_mask = 0;% assigns all non target letters to letter O 
 
 	% ASSIGN LETTERS PER WHEEL

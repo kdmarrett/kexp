@@ -1,4 +1,4 @@
-function [envelope] = envelopeByLetter(signal, letter_samples, fs)
+nfunction [envelope] = envelopeByLetter(signal, letter_samples, fs)
 % A quickly designed envelope detector 
 
 SPAN = 150;

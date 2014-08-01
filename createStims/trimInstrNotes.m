@@ -41,7 +41,7 @@ start_point = 4500;
 		note_length = ceil(letter_samples / 3);
 		half_note = ceil(note_length / 2);
 		x = linspace(0, pi, note_length);
-		y = ((sin(x)).^2)';
+		y = ((sin(x)).^3)';
 		% plot(x, y)
 		% waitforbuttonpress
 		% close
