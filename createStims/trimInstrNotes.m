@@ -78,6 +78,7 @@ start_point = 4500;
 						if (j == 2)
 						    	[instrNote, fs, nbits] = wavread(fullfile(instrNote_dir, 'raw', instr_list{j}, fn), [start_point (start_point + letter_samples - 1) ] );
 						end
+					    	fn = strcat( note, '.wav');
 					    	final_instrNote = final_envelope .* instrNote;
 					    	trimInstrNotes_path = fullfile(instrNote_dir, 'trim', envelope_type, instr_list{j}, list_of_pitches{k}, fn); % pitch and instrument is redundant
 					    	final_instrNote = normalizeSoundVector(final_instrNote);

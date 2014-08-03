@@ -49,5 +49,6 @@ for i = 1:wheel_num
     end
     pitch_wheel{i} =  repmat(temp, tot_cyc, 1);
 end
+
 end
 

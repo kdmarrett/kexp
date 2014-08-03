@@ -1,28 +1,26 @@
-function [ letter_to_pitch ] = assignConstantPitch( letterArray, total_letters, total_pitches )
+function [ letter_to_pitch ] = assignConstantPitch( possibleLetters, total_letters, total_pitches, wheel_matrix_info, pitch_wheel )
 %Puts all possible letters into a cell where the column decides which pitch
 %is assigned to the letter
 
-%GET/ASSIGN ROUGH ESTIMATES OF CELL SIZE
-ratio = floor(total_letters / total_pitches);
-left_over = (total_letters - (ratio * total_pitches));
-extra_rows = 3; 
-ltp_rows = ratio + extra_rows;
+letter_index = 1;
+for i = 1:length(wheel_matrix_info)
 
-%CREATE A VECTOR OF SHUFFLED INDICES
-mixed_indices = randperm(total_letters, total_letters);
+	wheel_letters{i} = cell(1, wheel_matrix_info(i));
+	wheel_index = 1;
+	for j =(letter_index):((letter_index - 1) + wheel_matrix_info(i));
+		wheel_letters{i}{wheel_index} = possibleLetters{j};
+		wheel_index = wheel_index + 1;
+	end
+	letter_index = letter_index + wheel_matrix_info(i);
 
-%CREATE CELLS
-letter_to_pitch = cell(ltp_rows, total_pitches);
+	%CREATE A VECTOR OF SHUFFLED INDICES
+	mixed_indices = randperm(wheel_matrix_info(i), wheel_matrix_info(i));
 
-col_indexer = 1;
-row_indexer = 1;
-for i = 1:length(mixed_indices)
-    letter_to_pitch{row_indexer, col_indexer} = letterArray{mixed_indices(i)};
-    col_indexer = col_indexer + 1;
-    if (col_indexer > total_pitches)
-        col_indexer = 1;
-        row_indexer = row_indexer + 1;
-    end
+	%CREATE CELLS
+	letter_to_pitch{i} = cell(1, wheel_matrix_info(i));
+	for j = 1:length(mixed_indices)
+		letter_to_pitch{i}{1, j} = wheel_letters{i}{mixed_indices(j)};
+	end
 end
 end
 

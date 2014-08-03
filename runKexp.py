@@ -5,15 +5,18 @@ Script ' Karl's Experiment (Kexp)'
 
 This script runs an experiment with spatially distributed letter streams.
 """
-# Author: Karl Marrett <kdmarret@uw.edu>
+# Author: Karl Marrett <kdmarret@uw.edu>, <kdmarrett@gmail.com>
 
 # TO DO
 # add in pupil script from voc_meg and pupil...py
-# catch vars.mat
-# reading from 
-# check the subject id and session number exist
+# reading/writing from Stims, Data
+# assert the subject id and session number exist
+# learn identifity trial and trial ok
+# clean all instructions
+# draw tri o speller
+# getting input responses for NASA
 
-#mainDir = /Users/nancygrulke/git/
+#mainDir = /Users/nancygrulke/git/kexp
 #stimDir 
 # varsfile = 'expVars.mat'
 stimdir = 'Stims'
@@ -25,7 +28,7 @@ from glob import glob
 import numpy as np
 import os.path as op
 import expyfun as ef
-from expyfun import ExperimentController
+from expyfun import ExperimentController, get_keyboard_input
 import expyfun.analyze as ea
 
 #assert ef.__version__ == '2.0.0.DASCogLoad'
@@ -53,137 +56,191 @@ std_kwargs = dict(screen_num=0, window_size=[800, 600], full_screen=True,
 # RANDOM NUMBER GENERATOR
 rng = np.random.RandomState(0)
 
-# # GROUP FILENAMES OF STIMULI BY BLOCK
+# # GROUP FILENAMES OF STIMULI BY PARADIGM BINARY STRING
 # stim_blocks['t_one'] = sorted(glob(op.join(stimdir, 'train-one*')))
-# stim_blocks['t_two'] = sorted(glob(op.join(stimdir, 'train-two*')))
-# stim_blocks['t_fa_'] = sorted(glob(op.join(stimdir, 'train-four-a-*')))
-# stim_blocks['t_faa'] = sorted(glob(op.join(stimdir, 'train-four-aa*')))
-# stim_blocks['t_fab'] = sorted(glob(op.join(stimdir, 'train-four-ab*')))
-# stim_blocks['e_one'] = sorted(glob(op.join(stimdir, 'trial-0[01]*')))  # 0-19
-# stim_blocks['e_two'] = sorted(glob(op.join(stimdir, 'trial-0[23]*')))  # 20-39
-# stim_blocks['e_thr'] = sorted(glob(op.join(stimdir, 'trial-0[45]*')))  # etc
-# stim_blocks['e_fou'] = sorted(glob(op.join(stimdir, 'trial-0[67]*')))
-# stim_blocks['e_fiv'] = sorted(glob(op.join(stimdir, 'trial-0[89]*')))
-# stim_blocks['e_six'] = sorted(glob(op.join(stimdir, 'trial-1*')))
 
 # INSTRUCTIONS AND FEEDBACK
 #instr_args = [cont_btn_label, resp_btn, streams, bnum]  # , 2 * blocks]
 instr = dict()
-instr[0] = ('In this experiment you will be listening to letter streams '
-				  'in different spatial locations. The letters will contain'
-				  'the alphabet with the extra commands '
-				  'Most trials will have letters grouped consecutively.'
-						  'Your job is to press the "{} button when you '
-				  'hear that the target letter that does not match the target letter '
-				  'spatial location where the word occurred. There will be a '
-				  'little bit of background noise to make the task more '
-				  'challenging. Push {} to continue.').format(resp_btn, cont_btn_label)
 
-# TRAINING INSTRUCTIONS
-# instr['start_train'] = ('Practice first with just one letter stream. Push "{}" when '
-#                   'you\'re ready to start, then push the {} button when you '
-#                   'hear a word that does not match the category.'
-#                   ''.format(cont_btn_label, resp_btn))
-# instr['t_two'] = ('Now there will be two word streams. Listen to BOTH streams '
-#                   'and press the {} button for words in EITHER stream that '
-#                   'don\'t match the category of the stream they occur in. '
-#                   'Push "{}" to start.'.format(resp_btn, cont_btn_label))
-# instr['t_fa_'] = ('Good job. This time there will be four streams. Ignore the '
-#                   'streams whose category names are grey, and attend to the '
-#                   'stream whose category name is green. When you hear words '
-#                   'in that stream that don\'t match the category, press {}. '
-#                   'Push "{}" to start.'.format(resp_btn, cont_btn_label))
-# instr['t_faa'] = ('Good job. This time, you will have to attend to streams in '
-#                   'two different locations at the same time, but the '
-#                   'category will be the same across the two locations. Push '
-#                   '"{}" to start, then when you hear words in either stream '
-#                   'that don\'t match the category, press {}.'
-#                   ''.format(cont_btn_label, resp_btn))
-# instr['t_fab'] = ('Good job. Time for the last training block. Like the last '
-#                   'round, there are four streams and you have to ignore the '
-#                   'ones whose categories are grey. Only this time, the two '
-#                   'green categories will be different from each other. Press '
-#                   '"{}" to start, then when you hear a word in either one of '
-#                   'the green streams that doesn\'t match the category of that '
-#                   'stream, press {}.'
-#                   ''.format(cont_btn_label, resp_btn))
-# instr['tpass'] = ('Good job! You passed the training. Press "{}" to move on '
-#                   'to the experiment.'.format(cont_btn_label))
-# instr['twrna'] = ('It seems like you\'re struggling with this part of the '
-#                   'training. To pass, you will need to get all targets '
-#                   'correct with no extra button presses, on two trials in a '
-#                   'row. If you want to keep trying, press "{}". If you want '
-#                   'to stop the experiment now, you can just get up and leave '
-#                   'the booth (you will still be paid for the time you spent '
-#                   'so far).'.format(cont_btn_label))
-# instr['twrnb'] = ('It seems like you\'re struggling with this part of the '
-#                   'training. To pass, you will need to do two trials in a '
-#                   'row with no more than one mistake in each. If you want to '
-#                   'keep trying, press "{}". If you want '
-#                   'to stop the experiment now, you can just get up and leave '
-#                   'the booth (you will still be paid for the time you spent '
-#                   'so far).'.format(cont_btn_label))
-# instr['tfail'] = ('You have not passed this part of the training after 20 '
-#                   'attempts, so unfortunately we cannot let you continue '
-#                   'with the experiment (please don\'t feel bad; it is a hard '
-#                   'task and not everyone can do it well). Thank you for '
-#                   'participating; you will still be paid for the time you '
-#                   'spent so far.')
+# SECTION 1 (INTRODUCTION) INSTRUCTIONS
+instr[0] = ('In this experiment you will be listening to the letters of the alphabet grouped into'
+	  'three different spatial locations left, middle, and right. Together, the groups will span'
+	  'the full alphabet with the extra commands \'Read\' , \'Pause\', \'Space\', and \'Delete\'. '
+	  'Most trials will have letters grouped consecutively in alphabetic order.'
+	  'You will also notice that other than the voice commands each spatial location has a distinct'
+	  ' speaker for the letters. Your task is to hear every occurence of your target letter although '
+	  'you will not be given any feedback on your performance. There will also be a little bit of background noise to make the task more '
+	  'challenging. Push {} to continue.').format(cont_btn_label)
 
-instr['e_one'] = ('In this half of the experiment the categories have three '
-				  'words each (just like in the training). There are 20 '
-				  'trials in this block; you won\'t get any feedback whether '
-				  'each trial was correct, and new trials will begin '
-				  'automatically shortly after the previous trial finishes. '
-				  'There will be three blocks like this, with breaks in '
-				  'between blocks. When you\'re ready, to begin this block, '
-				  'press "{}" to begin, then use the {} button to respond.'
-				  ''.format(cont_btn_label, resp_btn))
-instr['e_two'] = ('You\'re about to begin the second block in this half of '
-				  'the experiment. Reminder: there is no feedback, and new '
-				  'trials start automatically shortly after the previous '
-				  'trial ends. There are 20 trials in this block and three '
-				  'words in each category. Press "{}" to begin and then press '
-				  '{} to respond during the '
-				  'trials.'.format(cont_btn_label, resp_btn))
-instr['e_thr'] = ('You\'re about to begin the last block in this half of '
-				  'the experiment. Reminder: there is no feedback, and new '
-				  'trials start automatically shortly after the previous '
-				  'trial ends. There are 20 trials in this block and three '
-				  'words in each category. Press "{}" to begin and then press '
-				  '{} to respond during the '
-				  'trials.'.format(cont_btn_label, resp_btn))
-instr['e_fou'] = ('In this half of the experiment the categories are '
-				  'different, and they have six words each (instead of three, '
-				  'like in the training). '
-				  'There are 20 trials in this block; you won\'t get any '
-				  'feedback whether each trial was correct, and new trials '
-				  'will begin automatically shortly after the previous trial '
-				  'finishes. There will be three blocks like this, with '
-				  'breaks in between blocks. When you\'re ready, to begin '
-				  'this block, press "{}" to begin, then use the {} button to '
-				  'respond.'.format(cont_btn_label, resp_btn))
-instr['e_fiv'] = ('You\'re about to begin the second block in this half of '
-				  'the experiment. Reminder: there is no feedback, and new '
-				  'trials start automatically shortly after the previous '
-				  'trial ends. There are 20 trials in this block and six '
-				  'words in each category. Press "{}" to begin and then press '
-				  '{} to respond during the '
-				  'trials.'.format(cont_btn_label, resp_btn))
-# instr['e_six'] = ('You\'re about to begin the last block in this half of '
-#                   'the experiment. Reminder: there is no feedback, and new '
-#                   'trials start automatically shortly after the previous '
-#                   'trial ends. There are 20 trials in this block and six '
-#                   'words in each category. Press "{}" to begin and then press '
-#                   '{} to respond during the '
-#                   'trials.'.format(cont_btn_label, resp_btn))
-instr['midpt'] = ('Good work! You\'re done with the first section of the '
-				  'experiment. Take a break (you can leave the booth if you '
-				  'need to). Press "{}" when you\'re ready to resume.'
-				  ''.format(cont_btn_label))
-instr['edone'] = ('All done! Thank you very much for participating!')
+instr[] = ('In this first section you will just be introduced to the different condition types. This section has '
+	' 1 block with a trial for every condition for a total of 8 trials. Ignore the letters that are colored'
+	'grey, and attend to the green highlighted letter that is spoken at the beginning of each trial.'
+	'Don\'t worry if hearing the letter is difficult at first.  Just try to attend every occurrence of the target letter.' )
+	'for the entire trial. Push {} to start.'.format(cont_btn_label)
+
+instr[1] = ('In this condition letters are assigned a spatial location in alphabetic order with their own'
+	'individual tone.  You can use the speaker, the location, and the tone to help you listen for each occurrence of'
+	'the target letter in this condition.  Try listening to this condition now by pushing {} to continue').format(cont_btn_label)
+
+instr[2] = ('In this condition letters are assigned a spatial location in alphabetic order with their own'
+	'individual tone.  In this conditon however, each location is given a different speed. You can'
+	' use the speaker, the location, the tone,  and the speed to help you listen for each occurrence of'
+	'the target letter in this condition.  Try listening to this condition now by pushing {} to continue').format(cont_btn_label)
+
+instr[3] = ('In this condition letters are assigned a spatial location in alphabetic order with their own'
+	'individual tone. The targets in this condition are always one of \'B\', \'C\'\'D\'\'E\'\'G\'\'P\'\'T\''
+	'\'V\', or \'Z\' You can use the speaker, the location, and the tone to help you listen for each occurrence of'
+	'the target letter in this condition.  Try listening to this condition now by pushing {} to continue').format(cont_btn_label)
+
+instr[4] = ('In this condition letters are assigned a spatial location in alphabetic order with their own'
+	'individual tone.  In this conditon after each cycle of letters the ordering will change. This means'
+	'You can use the speaker, the location, but not the tone to help you listen for each occurrence of'
+	'the target letter in this condition.  Try listening to this condition now by pushing {} to continue').format(cont_btn_label)
+
+instr[5] = ('In this condition letters are assigned a spatial location in alphabetic order with their own'
+	'individual tone.  Each letter is assigned a unique tone but these tones are assigned randomly, '
+	'meaning that you can get not rely on the any particular pattern of tones to help guide you.  '
+	'You can use the speaker, the location, and the unique tone to help you listen for each occurrence of'
+	'the target letter in this condition.  Try listening to this condition now by pushing {} to continue').format(cont_btn_label)
+
+instr[6] = ('In this condition letters are assigned a spatial location in alphabetic order with their own'
+	'individual tone. In this condition the loudness of each speaker is oscillating at the same rate'
+	' although the phase of each speaker will be unique.  This means you can use the speaker, the'
+	' location, the tone,  and the differences in loudness to help you listen for each occurrence of'
+	'the target letter in this condition.  Try listening to this condition now by pushing {} to continue').format(cont_btn_label)
+
+instr[7] = ('In this condition letters are assigned a spatial location in alphabetic order with their own'
+	'individual tone. In this condition the loudness of each speaker is oscillating at the different rates'
+	'This means you can use the speaker, the location, the tone,  and the differences in oscillation' 
+	' rate to help you listen for each occurrence of the target letter in this condition.  Try listening'
+	' to this condition now by pushing {} to continue').format(cont_btn_label)
+
+instr[8] = ('In this condition letters are assigned a spatial location in random order with their own'
+	'individual tone. Despite the random ordering, each letter has the same tone throughout the'
+	'trial and the tones are ascended in a regular ascending or descending pattern. You can'
+	' use the speaker, the location, the tone,  and the speed to help you listen for each occurrence of'
+	'the target letter in this condition.  Try listening to this condition now by pushing {} to continue').format(cont_btn_label)
+
+instr[9] = ('Good work! You\'re done with the first section of the '
+	  'experiment. Take a break (you can leave the booth if you '
+	  'need to). Press "{}" when you\'re ready to resume.'.format(cont_btn_label))
+
+# SECTION 2 INSTRUCTIONS
+instr[] = ('You\'re about to begin the second section of the experiment. Reminder: Just as'
+	' in the introduction section there is no feedback, and new trials of different conditions'
+	'will start automatically shortly after the previous trial ends. Note that in this section the different condition'
+	' are interspersed meaning that you must orient yourself to the particular condition by either the primer or'
+	' by listening to the unique cues of the particular trial. There are about 9 trials in each'
+	' block and 5 blocks in this section, with breaks in between blocks. When you\'re ready, to begin press "{}"'.format(cont_btn_label))
+
 instr['break'] = ('Good job! Take a break if you like, then press "{}" when '
 				  'you\'re ready for the next block.'.format(cont_btn_label))
+
+instr[] = ('You\'re about to begin the second block in this section of '
+	  'the experiment. Reminder: there is no feedback, and new '
+	  'trials start automatically shortly after the previous '
+	  'trial ends. There are 20 trials in this block and three '
+	  'words in each category. Press "{}" to begin.'.format(cont_btn_label))
+
+instr[] = ('You\'re about to begin the third block in this section of '
+	  'the experiment. Reminder: there is no feedback, and new '
+	  'trials start automatically shortly after the previous '
+	  'trial ends. There are 20 trials in this block and three '
+	  'words in each category. Press "{}" to begin.'.format(cont_btn_label))
+
+instr[] = ('You\'re about to begin the fourth block in this section of '
+	  'the experiment. Reminder: there is no feedback, and new '
+	  'trials start automatically shortly after the previous '
+	  'trial ends. There are 20 trials in this block and three '
+	  'words in each category. Press "{}" to begin.'.format(cont_btn_label))
+
+instr[] = ('You\'re about to begin the last block in this section of '
+	  'the experiment. Reminder: there is no feedback, and new '
+	  'trials start automatically shortly after the previous '
+	  'trial ends. There are 20 trials in this block and three '
+	  'words in each category. Press "{}" to begin.'.format(cont_btn_label))
+
+instr[] = ('Good work! You\'re done with the second section of the '
+	  'experiment. Take a break (you can leave the booth if you '
+	  'need to). Press "{}" when you\'re ready to resume.'.format(cont_btn_label))
+
+# SECTION 3 COGNTIVE LOAD ASSESSMENT INSTRUCTIONS
+survey_text = dict();
+instr[] = ('You\'re about to begin the last section of the experiment. Reminder: Just as'
+	' in the introduction section there is no feedback, but in this section you be presented with 2'
+	' trials of the same condition then asked to answer several questions about the relative'
+	'difficulty of each condition.  In this secton there are eight blocks for each section.'
+	' Press "{}" to begin'.format(cont_btn_label))
+
+survey_text[] = ('We are interested in the experiences you had during the experiment. In the most general sense we'
+		'are examining the “workload” you experienced. The factors that influence you experience of'
+		'workload may come from the task itself, your feelings about your own performance, how much effort'
+		'you put in, or the stress and frustration you felt. Because workload may be caused by many different'
+		'factors, we would like you to evaluate several of them.  '
+		'Please read the descriptions of the set of six scales carefully. If you have a question about any of the'
+		'scales in the table, please ask me about it. It is important that they be clear to you. You may keep the'
+		'descriptions with you for reference during the study.').format(cont_btn_label)
+
+survey_text[] = ('After performing the experiment you will be given a sheet of rating scales. Each line has two endpoint'
+		' descriptors that describe the scale. Please consider each rating scale and condition type separately'
+		' when answering the questions.').format(cont_btn_label)
+
+survey_text[] = ('How mentally demanding was the task? How much mental and perceptual activity was required (e.g.'
+		'thinking, deciding, remembering, looking, searching)? Was the task easy or demanding, simple or '
+		'complex, exacting or forgiving?  When you are finished entering in a value, press {} to continue.').format(cont_btn_label)
+
+survey_text[] = ('How much physical activity was required (e.g. pushing, pulling, turning, controlling, activating)?'
+		' Was the task easy or demanding, slow or brisk, slack or strenuous, restful or laborious?When'
+		' you are finished entering in a value, press {} to continue.').format(cont_btn_label)
+
+survey_text[] = ('How much time pressure did you feel due to the rate or pace at which the task or task elements'
+		' occurred? Was the pace slow and leisurely or rapid and frantic? When you are finished entering'
+		' in a value, press {} to continue.').format(cont_btn_label)
+
+survey_text[] = ('How successful do you think you were in accomplishing the goals of the task set by the'
+		' experimenter (or yourself)? How satisfied were you with your performance in accomplishing'
+		' these goals?  When you are finished entering in a value, press {} to continue.').format(cont_btn_label)
+
+survey_text[] = ('How hard did you have to work (mentally and physically) to accomplish your level of performance?'
+		' When you are finished entering in a value, press {} to continue.').format(cont_btn_label)
+
+survey_text[] = ('How insecure, discouraged, irritated, stressed and annoyed versus secure, gratified, content,'
+		 'relaxed and complacent did you feel during the task? When you are finished entering in a value,'
+		 ' press {} to continue.').format(cont_btn_label)
+
+survey_text[] = ('Throughout this experiment the rating scales are used to assess your experiences in the different task'
+		'conditions. People interpret these scales in individual ways. For example, some people feel that'
+		'mental or temporal demands are the essential aspects of workload regardless of the effort they'
+		'expended on a given task or the level of performance they achieved.'
+		'The evaluation you are about to perform is a technique to assess the relative importance of six factors'
+		'in determining how much workload you experienced.'.format(cont_btn_label)
+
+survey_text[] = 'The procedure is simple: You will be presented with a series of pairs of rating scale titles (for'
+		'example Effort versus Mental Demands) and asked to choose which of the items was more'
+		'important to your experience of workload in the task that you just performed.'
+		'Indicate the Scale Title that represents the more important contributor to workload for the specific'
+		'task you performed in the experiment.'
+		'Please consider your choices carefully and make them consistent with how you used the rating scales'
+		'during the particular task you were asked to evaluate. Do not think there is any correct pattern: we'
+		'are only interested in your opinions.')
+
+survey_text[1] = '1. Physical Demand or 2. Temporal Demand. Press the number corresponding to the aspect that you consider the larger factor contributing to the workload.'
+survey_text[1] = '1. Effort or 2. Mental Demand. Press the number corresponding to the aspect that you consider the larger factor contributing to the workload.'
+survey_text[1] = '1. Frustration or 2. Physical Demand. Press the number corresponding to the aspect that you consider the larger factor contributing to the workload.'
+survey_text[1] = '1. Effort or 2. Frustration. Press the number corresponding to the aspect that you consider the larger factor contributing to the workload.'
+survey_text[1] = '1. Mental Demand or 2. Temporal Demand. Press the number corresponding to the aspect that you consider the larger factor contributing to the workload.'
+survey_text[1] = '1. Physical Demand or 2. Effort. Press the number corresponding to the aspect that you consider the larger factor contributing to the workload.'
+survey_text[1] = '1. Temporal Demand or 2. Performance. Press the number corresponding to the aspect that you consider the larger factor contributing to the workload.'
+survey_text[1] = '1. Frustration or 2. Mental Demand. Press the number corresponding to the aspect that you consider the larger factor contributing to the workload.'
+survey_text[1] = '1. Temporal Demand or 2. Frustration. Press the number corresponding to the aspect that you consider the larger factor contributing to the workload.'
+survey_text[1] = '1. Performance or 2. Effort. Press the number corresponding to the aspect that you consider the larger factor contributing to the workload.'
+survey_text[1] = '1. Effort or 2. Temporal Demand. Press the number corresponding to the aspect that you consider the larger factor contributing to the workload.'
+survey_text[1] = '1. Frustration or 2. Performance. Press the number corresponding to the aspect that you consider the larger factor contributing to the workload.'
+survey_text[1] = '1. Performance or 2. Physical Demand. Press the number corresponding to the aspect that you consider the larger factor contributing to the workload.'
+survey_text[1] = '1. Mental Demand or 2. Performance. Press the number corresponding to the aspect that you consider the larger factor contributing to the workload.'
+survey_text[1] = '1. Mental Demand or 2. Physical Demand. Press the number corresponding to the aspect that you consider the larger factor contributing to the workload.'
+instr['done'] = ('All done! Thank you very much for participating!')
 
 # VARIOUS VARIABLES
 cum_trial = 0  # cumulative trial counter (not including training)
@@ -191,7 +248,7 @@ xpos = [-0.75, -0.25, 0.25, 0.75]  # on-screen text locations
 ypos = [-0.25, 0.25, 0.25, -0.25]
 curr = False  # for passing training
 prev = False
-block_in_sections = [7 5 7]
+block_in_sections = [7 5 ]
 stim_trial_indices = np.zeros(len(condition_binary))
 
 # DEFINE TRIAL RECORDING FUNCTION
@@ -230,7 +287,13 @@ def recordTrial(stim_trial_indices, instr_key, condition_binary, record_pupil, t
 
 	return stim_trial_indices
 
-# Make tuples
+def cogLoadSurvey(paradigm,  survey_text, ec):
+	for qnum in len(survey_text)
+		ec.write_data_line(str(paradigm) + str(qnum))
+		ec.write_data_line(input(survey_text([qnum])))
+
+
+# MAKE BLOCK DESIGN
 section = (); 
 
 #  Make sections 1 and 3 structure
@@ -287,21 +350,21 @@ with ef.ExperimentController(*std_args, **std_kwargs) as ec:
 			# show instructions
 			ec.screen_prompt(instr[block], live_keys=[cont_btn])
 
-			# loop through trials in this block
-			tnum = 0
-			cnum = 0  # cumulative training trial number
-			while tnum < len(stims):
-				# training warning?
-				if cnum == 10:
-					if block in ('t_one', 't_two', 't_fa_'):
-						ec.screen_prompt(instr['twrna'])
-					elif block in ('t_faa', 't_fab'):
-						ec.screen_prompt(instr['twrnb'])
-				elif cnum == 20 and block in tr_blocks:
-					ec.screen_prompt(instr['tfail'], max_wait=20.0, live_keys=[])
-					ec.close()
+			# # loop through trials in this block
+			# tnum = 0
+			# cnum = 0  # cumulative training trial number
+			# while tnum < len(stims):
+			# 	# training warning?
+			# 	if cnum == 10:
+			# 		if block in ('t_one', 't_two', 't_fa_'):
+			# 			ec.screen_prompt(instr['twrna'])
+			# 		elif block in ('t_faa', 't_fab'):
+			# 			ec.screen_prompt(instr['twrnb'])
+			# 	elif cnum == 20 and block in tr_blocks:
+			# 		ec.screen_prompt(instr['tfail'], max_wait=20.0, live_keys=[])
+			# 		ec.close()
 
-				stim = stims[tnum]
+			# 	stim = stims[tnum]
 
 				# logging
 				# if block in tr_blocks:
@@ -317,13 +380,13 @@ with ef.ExperimentController(*std_args, **std_kwargs) as ec:
 				ec.identify_trial(ec_id=ecid, ttl_id=ttlid)
 
 				# iterate
-				cnum += 1
-				if block not in tr_blocks:
-					cum_trial += 1
-				if block in tr_blocks and tnum == len(stims) - 1:
-					tnum = 0
-				else:
-					tnum += 1
+				# cnum += 1
+				# if block not in tr_blocks:
+				# 	cum_trial += 1
+				# if block in tr_blocks and tnum == len(stims) - 1:
+				# 	tnum = 0
+				# else:
+				# 	tnum += 1
 
 	# finished!
-	ec.screen_prompt(instr['edone'], max_wait=6.0, live_keys=[])
+	ec.screen_prompt(instr['done'], max_wait=6.0, live_keys=[])

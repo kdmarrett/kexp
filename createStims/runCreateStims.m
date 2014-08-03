@@ -4,11 +4,8 @@
 %  Main program to create all wav files and data files for each subject and place in respective locations in kexp directory
 
 % TASKS TO DO
-% check that letter to pitch has no repeated elements
-% all wavrites need to scale to -1 to 1 but still keep on zero normalizeSoundVector email Ross
-% see if force create is actually useful
-% file saving in instrNotes needs to be revamped along with deleting all the old directories
 % comment or delete all +++
+% check ratio of amplitudes
 
 close all
 clear all
@@ -62,7 +59,8 @@ postblock_sec = 1.5; %secs after letterblocks
 preblock_prime_sec = 4.5; %seconds until letters start playing
 primer_start = 3000;  %sample # that primer letter will play in the preblock; must be less than preblock
 makeTraining = 0;
-force_recreate = 1; %bool to force recreation of letters or pitches even if dir exists from previous run
+force_recreate = 0; %bool to force recreation of letters or pitches even if dir exists from previous run
+default_fs = 16000;
 instrument_dynamics = 'mf'; %mezzoforte
 env_instrNotes = 0; % bool for creating instrument notes based off of letter envelopes
 start_sample_one = 1; % start each instrument envelope at the begining of each letter regardless of letter power
@@ -137,9 +135,9 @@ for x = 1:reps
 		block_name = strcat('block_', int2str(y));
 		paradigm = condition_type(y, :);
 		if x == 1
-			condition_bin(y, :)  = dec2bin(paradigm)';
+			% condition_bin(y, :)  = dec2bin(paradigm)';
 		end
-		[wheel_matrix_info, possibleLetters, target_letter, rearrangeCycles, tone_constant, ener_mask, letters_used, token_rate_modulation,  AM_freq, AM_pow, shiftedLetters, instrNote_shifted, instrNote, envelope_type, letter_fine_structure, sync_cycles  ] = assignParadigm(paradigm, letterArray, env_instrNotes);
+		[wheel_matrix_info, possible_letters, target_letter, rearrangeCycles, tone_constant, ener_mask, letters_used, token_rate_modulation,  AM_freq, AM_pow, shiftedLetters, instrNote_shifted, instrNote, envelope_type, letter_fine_structure, sync_cycles  ] = assignParadigm(paradigm, letterArray, env_instrNotes);
 		[pitch_wheel, angle_wheel, total_pitches, list_of_pitches, start_semitone_index ] = assignPitch(wheel_matrix_info, tot_cyc, scale_type, pitches, descend_pitch );
 		
 		% TEST
@@ -148,19 +146,19 @@ for x = 1:reps
 		% end
 		
 		% PREPARE LETTERS
-		[fs, trim_letter_path, letterEnvelope, letterBits, mean_speaker_sample] = trimLetters(letter_samples, letter_path, letterArray, pitches, force_recreate, speaker_list, version_num, speaker_amp_weights, shiftedLetters, env_instrNotes);
+		[fs, trim_letter_path, letterEnvelope, mean_speaker_sample] = trimLetters(letter_samples, letter_path, letterArray, pitches, force_recreate, speaker_list, version_num, speaker_amp_weights, shiftedLetters, env_instrNotes, default_fs);
 		[nul] = trimInstrNotes(fs, instrNote_dir, letter_samples, pitches, instrument_dynamics, env_instrNotes, instr_list, speaker_list, letterEnvelope, list_of_pitches, force_recreate, letterArray, envelope_type, mean_speaker_sample, start_sample_one, start_semitone_index, wheel_matrix_info);
 		
 		% COMPUTE MISC. BASIC PARAMS OF BLOCK
 		[ IWI, tot_trial, tot_wheel, letter_difference, min_wheel, preblock, ILI, tot_wav_time ] = assignTimeVars( wheel_matrix_info, fs, tot_cyc, letter_samples, token_rate_modulation, preblock_prime_sec, postblock_sec, ILIms, token_rates );
 		if tone_constant
-			[ letter_to_pitch ] = assignConstantPitch( possibleLetters, total_letters, total_pitches);
+			[ letter_to_pitch ] = assignConstantPitch( possible_letters, total_letters, total_pitches, wheel_matrix_info, pitch_wheel);
 		end
 		
 		%%  GENERATE EACH TRIAL WAV
 		for z = 1:condition_trials(y);
-			% target_time = []; % also clear target time from last trial
-			[ wheel_matrix, target_wheel_index ] = assignLetters( possibleLetters, wheel_matrix_info, target_letter, tot_cyc, rearrangeCycles, ener_mask); % returns cell array of wheel_num elements
+			target_time = []; % also clear target time from last trial
+			[ wheel_matrix, target_wheel_index ] = assignLetters( possible_letters, wheel_matrix_info, target_letter, tot_cyc, rearrangeCycles, ener_mask); % returns cell array of wheel_num elements
 			if (x == 2) %if a training trial
 				play_wheel = zeros(1,3); %bool array to include certain wheels for training trials
 				play_wheel(target_wheel_index) = 1; % only include the target wheel
@@ -189,12 +187,13 @@ for x = 1:reps
 							
 							% FIND CONSTANT PITCH
 							if tone_constant
-								columnPitch = find(sum(strcmp(letter, letter_to_pitch)));
-								pitch_wheel{j}{k, l} = list_of_pitches{columnPitch};
+								columnPitch = find(strcmp(letter, letter_to_pitch{j}));
+								pitch = pitch_wheel{j}{1, columnPitch};
+							else
+								pitch = pitch_wheel{j}{k, l}; %finds the pitch in pitch_wheel cell
 							end
 							
 							% GET LETTER WAV FILE
-							pitch = pitch_wheel{j}{k, l}; %finds the pitch in pitch_wheel cell
 							angle = angle_wheel{j}(k, l); %finds the angle in angle_wheel for each letter
 							if shiftedLetters
 								path = fullfile(final_letter_path, pitch, letter);
@@ -209,11 +208,12 @@ for x = 1:reps
 									fn = strcat(instr_list{j}, '.', instrument_dynamics, '.', 'A4', '.wav');
 								end
 								if env_instrNotes
-									trimInstrNotes_path = fullfile(instrNote_dir, 'trim', envelope_type, speaker_list{j}, instr_list{j}, pitch, letter, fn);
+									note_path = fullfile(instrNote_dir, 'trim', envelope_type, speaker_list{j}, instr_list{j}, pitch, letter, fn);
 								else
-									trimInstrNotes_path = fullfile(instrNote_dir, 'trim', envelope_type, instr_list{j}, pitch, fn);
+									note_path = fullfile(instrNote_dir, 'trim', envelope_type, instr_list{j}, pitch, strcat(note, '.wav' ));
 								end
-								instrNote_sound = wavread(trimInstrNotes_path);
+								% output_path = fullfile(instrNote_dir, 'trim', envelope_type, instr_list{j}, list_of_pitches{k}, letterArray.alphabetic{l});
+								instrNote_sound = wavread(note_path);
 								instrNote_sound = instr_amp_weights(j) .* instrNote_sound;
 							else
 								instrNote_sound = zeros(letter_samples, 1);
@@ -238,16 +238,16 @@ for x = 1:reps
 							combined_sound_proc = (10 ^(letter_decibel / 20)) * [L R];
 							
 							% % RECORD TARGET TIME
-							% if strcmp(letter, target_letter)
-							%     target_sample_index = wheel_sample_index + track_sample_index;
-							%     target_time = [target_time (target_sample_index / fs)];
-							%     if tone_constant %check that tone target tone is constant
-							%         if (length(target_time) > 2)
-							%             assert(strcmpi(pitch, old_pitch), 'Error: target tone not constant')
-							%         end
-							%         old_pitch = pitch;
-							%     end
-							% end
+							if strcmp(letter, target_letter)
+							    target_sample_index = wheel_sample_index + track_sample_index;
+							    target_time = [target_time (target_sample_index / fs)];
+							    if tone_constant %check that tone target tone is constant
+							        if (length(target_time) > 2)
+							            assert(strcmpi(pitch, old_pitch), 'Error: target tone not constant')
+							        end
+							        old_pitch = pitch;
+							    end
+							end
 							
 							% ADD LETTER TO WHEEL TRACK
 							local_index = track_sample_index;
@@ -305,12 +305,14 @@ for x = 1:reps
 
 			end %for each wheel
 
+			% CREATETRIAL() END HERE
+
 			%STAMP WAV_NAME WITH EACH BLOCK LABELED BY PARADIGM CONDITION
 			% pass strings and binaries to Python for checking
 			% out = str2num(reshape(bstr',[],1))'
 			% file_name = strcat( dec2bin(paradigm), '_', 'tr', int2str(z));
 			% final_data_dir  = fullfile(data_dir, file_name)
-			% save(final_data_dir, 'target_letter', 'target_times', 'token_rate_modulation', 'tot_wav_time', 'preblock_prime_sec', 'condition_no', 'possible_letters' );
+			% save(final_data_dir, 'target_letter', 'target_time', 'token_rate_modulation', 'tot_wav_time', 'preblock_prime_sec', 'condition_no', 'possible_letters' );
 			wav_name = fullfile(final_output_path, strcat(int2str(z), '_', int2str( paradigm), 'ms', 'trial_', int2str(z), '_', int2str(rand * 1000), '_ILIms', int2str(ILImsBase), 'speakerAmp', int2str(overall), '.wav'));
 			if exist(wav_name, 'file') % accounts for bug: matlab does not overwrite on all systems
 				delete(wav_name)
