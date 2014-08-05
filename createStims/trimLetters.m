@@ -14,7 +14,7 @@ for x = 1:length(speaker_list)
 	else
 		input_letter_path = fullfile(letter_path, 'rawLetters', strcat(speaker_list{x}, '_manuallyTrim'));
 	end
-	trim_letter_path = fullfile(letter_path, 'finalShiftTrimLetters', int2str(letter_samples));
+	trim_letter_path = fullfile(letter_path, 'finalShiftTrimLetters', int2str(letter_samples)); % needs to also include the speaker folders for force_recreate to work properly
 	output_path = fullfile(trim_letter_path, speaker_list{x});
 	if ((~exist(trim_letter_path, 'dir')) || force_recreate)
 		letterSound = {};
@@ -40,11 +40,10 @@ for x = 1:length(speaker_list)
 					fn = strcat(speaker_list{x}, '_', letterArray.alphabetic{j}, int2str(version_num), '.wav');
 				end
 				if (strcmpi(letterArray.alphabetic(j), 'Read') || strcmpi(letterArray.alphabetic(j), 'Space') || strcmpi(letterArray.alphabetic(j), 'Delete') || strcmpi(letterArray.alphabetic(j), 'Pause'))
-					ff = fullfile(letter_path, 'rawLetters', 'kdm_manuallyTrim', letterArray.alphabetic{j});
+					ff = fullfile(letter_path, 'rawLetters', 'kdm_manuallyTrim', strcat(letterArray.alphabetic{j}, '.wav'));
 				else
 					ff = fullfile(fp, fn); 
 				end
-				ff
 				[letterSound{j}, fs_speaker, letterBits] = wavread(ff);  % letter wavs for each semitone
 				if env_instrNotes
 					letterEnvelope{j} = envelopeByLetter(letterSound{j}, letter_samples, fs_speaker); 

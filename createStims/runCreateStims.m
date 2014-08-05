@@ -6,6 +6,7 @@
 % TASKS TO DO
 % comment or delete all +++
 % check ratio of amplitudes
+% pop at D
 
 close all
 clear all
@@ -20,7 +21,7 @@ tic
 % instr_amp = .5:.5:3
 % instr_amp = 3.5:.5:6
 % instr_amp = [1.5 .35 4; 2 .35 4.0; 1.5 .35 4.5; 2 .35 4]
-instr_amp = [1.5 .7 4]
+instr_amp = [1.5 .7 4];
 [m,n]= size( instr_amp);
 for overall = 1: m
 	% instr_amp_weights = [.5, .35, instr_amp(overall)];
@@ -55,12 +56,12 @@ white_noise_decibel = 0;  %amplitude
 noise = 0;  % bool adds noise
 distance_sound = 5; %distance for stimuli to be played in HRTF
 scale_type = 'whole'; %string 'whole' or 'diatonic'
-tot_cyc = 12;
+tot_cyc = 15;
 postblock_sec = 1.5; %secs after letterblocks
 preblock_prime_sec = 4.5; %seconds until letters start playing
 primer_start = 3000;  %sample # that primer letter will play in the preblock; must be less than preblock
 makeTraining = 0;
-force_recreate = 0; %bool to force recreation of letters or pitches even if dir exists from previous run
+force_recreate = 1; %bool to force recreation of letters or pitches even if dir exists from previous run
 default_fs = 16000;
 instrument_dynamics = 'mf'; %mezzoforte
 env_instrNotes = 0; % bool for creating instrument notes based off of letter envelopes
@@ -76,7 +77,7 @@ token_rates = [3 5 7];
 letterArray.alphabetic = {'Space', 'Pause', 'A' 'B' 'C' 'D' 'E' 'F' 'G' 'H' 'I' 'J' 'K' 'L' 'M' 'N' 'O' 'P' 'Q' 'R' 'S' 'T' 'U' 'V' 'W' 'X' 'Y' 'Z', 'Read', 'Delete'};
 letterArray.displaced =  {'Space', 'Pause', 'A' 'B' 'F' 'O' 'E' 'M' 'I' 'T' 'J' 'C' 'H' 'Q' 'G' 'N' 'U' 'V' 'K' 'D' 'L' 'U' 'P' 'S' 'Z' 'R' 'W' 'Y' 'Read' 'Delete'}; %maximal phoneme separation
 assert(length(letterArray.alphabetic) == length(letterArray.displaced));
-letter_samples = 10000; %length of each letter
+letter_samples = 8000; %length of each letter
 total_letters = length(letterArray.alphabetic);
 instr_list = {'Piano', 'Trumpet', 'Marimba'};
 version_num = 1;
@@ -129,14 +130,13 @@ for x = 1:reps
 	
 	%% GENERATE BLOCK FOR EACH CONDITION TYPE
 	% condition_no = 1; % +++ only create the first
-	condition_bin = zeros(condition_no, 1);
 	for y = 1:condition_no; % repeats through each condition type +++
 		
 		% ASSIGN PARADIGM TO BLOCK
 		block_name = strcat('block_', int2str(y));
 		paradigm = condition_type(y, :);
 		if x == 1
-			% condition_bin(y, :)  = dec2bin(paradigm)';
+			condition_bin(y, :)  = dec2bin(paradigm)';
 		end
 		[wheel_matrix_info, possible_letters, target_letter, rearrangeCycles, tone_constant, ener_mask, letters_used, token_rate_modulation,  AM_freq, AM_pow, shiftedLetters, instrNote_shifted, instrNote, envelope_type, letter_fine_structure, sync_cycles  ] = assignParadigm(paradigm, letterArray, env_instrNotes);
 		[pitch_wheel, angle_wheel, total_pitches, list_of_pitches, start_semitone_index ] = assignPitch(wheel_matrix_info, tot_cyc, scale_type, pitches, descend_pitch );
@@ -311,23 +311,21 @@ for x = 1:reps
 			%STAMP WAV_NAME WITH EACH BLOCK LABELED BY PARADIGM CONDITION
 			% pass strings and binaries to Python for checking
 			% out = str2num(reshape(bstr',[],1))'
-			% file_name = strcat( dec2bin(paradigm), '_', 'tr', int2str(z));
-			% final_data_dir  = fullfile(data_dir, file_name)
-			save(final_data_dir, 'target_letter', 'target_time','token_rate_modulation', 'tot_wav_time', 'preblock_prime_sec', 'condition_no', 'possible_letters', 'preblock_prime_sec' );
-			wav_name = fullfile(final_output_path, strcat(int2str(z), '_', int2str( paradigm), 'ms', 'trial_', int2str(z), '_', int2str(rand * 1000), '_ILIms', int2str(ILImsBase), 'speakerAmp', int2str(overall), '.wav'));
+			file_name = strcat( dec2bin(paradigm)', '_', 'tr', int2str(z));
+			final_data_dir = fullfile(data_dir, file_name);
+			save(final_data_dir, 'target_letter', 'target_time','token_rate_modulation', 'tot_wav_time', 'preblock_prime_sec', 'condition_bin', 'possible_letters', 'preblock_prime_sec');
+			% wav_name = fullfile(final_output_path, strcat(int2str(z), '_', int2str( paradigm), 'ms', 'trial_', int2str(z), '_', int2str(rand * 1000), '_ILIms', int2str(ILImsBase), 'speakerAmp', int2str(overall), '.wav'));
+			wav_name = fullfile(final_output_path, strcat(file_name,'.wav'));
 			if exist(wav_name, 'file') % accounts for bug: matlab does not overwrite on all systems
 				delete(wav_name)
-				fprintf('Warning: matlab file may not have been recorded');
+				% fprintf('Warning: matlab file may not have been recorded');
 			end
 			final_sample = rms_amp * (final_sample / sqrt(mean(mean(final_sample.^2))));
-			% final_sample = normalizeSoundVector(final_sample);
 			wavwrite(final_sample, fs, wav_name);   %  Stimuli saved by trial 
 
 		end
 	end
 end
 end  % for sound testing
-[done, fs] = wavread(fullfile(PATH, 'done.WAV')); % to alert user
   % save( fullfile( data_dir, 'global_vars'), 'condition_bin', 'wheel_matrix_info', preblock_prime_sec) % global variables for each subject and session
 toc %print elapsed time
-sound((.6 * done), fs);
