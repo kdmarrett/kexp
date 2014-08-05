@@ -30,18 +30,19 @@ for overall = 1: m
 % DEFINE PATHS
 PATH = '~/git/kexp';%local letter and output directory
 % stimuli_path = strcat(PATH, 'Stims/');%dir for all subject stimulus
-stimuli_path = '~/Desktop/Stims/';%dir for all subject stimulus
-letter_path = fullfile(PATH, 'Letters'); %dir to untrimmed letters
+% stimuli_path = '~/Desktop/Stims/';%dir for all subject stimulus
+stimuli_path = fullfile(PATH, 'Stims/');%dir for all subject stimulus
+letter_path = fullfile(PATH, 'Letters', 'Files'); %dir to untrimmed letters
 K70_dir = fullfile(PATH, 'K70'); % computed HRTF
 instrNote_dir = fullfile(PATH, 'instrNotes/'); % instrument notes
 lester_dir = '/Volumes/labdocs/kdmarrett/kexp';
 
-subject_id = 'foo';
-session_no = 1;
-% subject_id = input('Enter subject id: ');
-% session_no = input('Enter session number: ');
-data_dir = fullfile(PATH, 'data', subject_id, int2str(session_no));
-stimuli_path = fullfile(stimuli_path, subject_id, int2str(session_no));
+participant = 'foo';
+session = 1;
+% participant = input('Enter subject id: ');
+% session = input('Enter session number: ');
+data_dir = fullfile(PATH, 'Data', participant , int2str(session ));
+stimuli_path = fullfile(stimuli_path, participant , int2str(session ));
 createStruct(data_dir);
 createStruct(stimuli_path);
 
@@ -312,7 +313,7 @@ for x = 1:reps
 			% out = str2num(reshape(bstr',[],1))'
 			% file_name = strcat( dec2bin(paradigm), '_', 'tr', int2str(z));
 			% final_data_dir  = fullfile(data_dir, file_name)
-			% save(final_data_dir, 'target_letter', 'target_time', 'token_rate_modulation', 'tot_wav_time', 'preblock_prime_sec', 'condition_no', 'possible_letters' );
+			save(final_data_dir, 'target_letter', 'target_time','token_rate_modulation', 'tot_wav_time', 'preblock_prime_sec', 'condition_no', 'possible_letters', 'preblock_prime_sec' );
 			wav_name = fullfile(final_output_path, strcat(int2str(z), '_', int2str( paradigm), 'ms', 'trial_', int2str(z), '_', int2str(rand * 1000), '_ILIms', int2str(ILImsBase), 'speakerAmp', int2str(overall), '.wav'));
 			if exist(wav_name, 'file') % accounts for bug: matlab does not overwrite on all systems
 				delete(wav_name)
@@ -327,6 +328,6 @@ for x = 1:reps
 end
 end  % for sound testing
 [done, fs] = wavread(fullfile(PATH, 'done.WAV')); % to alert user
-  % save( fullfile( data_dir, 'global'), 'condition_bin', 'wheel_matrix_info') % global variables for each subject and session
+  % save( fullfile( data_dir, 'global_vars'), 'condition_bin', 'wheel_matrix_info', preblock_prime_sec) % global variables for each subject and session
 toc %print elapsed time
 sound((.6 * done), fs);

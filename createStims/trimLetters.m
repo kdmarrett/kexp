@@ -44,6 +44,7 @@ for x = 1:length(speaker_list)
 				else
 					ff = fullfile(fp, fn); 
 				end
+				ff
 				[letterSound{j}, fs_speaker, letterBits] = wavread(ff);  % letter wavs for each semitone
 				if env_instrNotes
 					letterEnvelope{j} = envelopeByLetter(letterSound{j}, letter_samples, fs_speaker); 
