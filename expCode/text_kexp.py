@@ -7,7 +7,7 @@ cont_btn_label = 'Next'
 instr = dict()
 
 # SECTION 1 (INTRODUCTION) INSTRUCTIONS
-instr['s1_start_sect'] = ('In this experiment you will be listening to letters grouped into'
+instr['s0_start_sect'] = ('In this experiment you will be listening to letters grouped into'
     'three different spatial locations (left, middle, and right).'
     'Each letter group has a distinct speaker for the letters. Most trials will have letters grouped consecutively in alphabetic order,'
     'but to orient you to the layout, each trial will begin with a primer which includes a visual representation of the spatial location of the letters.'
@@ -18,104 +18,110 @@ instr['s1_start_sect'] = ('In this experiment you will be listening to letters g
     ' will appear in the center of screen. Keep your eyes fixated on this dot for as long as it remains visible.'
     ' Push "{}" to continue.'.format(cont_btn_label))
 
-instr['s1_start_block'] = ('In the first section, you will be introduced to the different condition types. This section contains'
+instr['s0_start_block_0'] = ('In the first section, you will be introduced to the different condition types. This section contains'
 	' 1 block with a trial for every condition for a total of 8 trials. Ignore the letters that are'
 	'grey, and pay attention to the green highlighted letter that is spoken at the beginning of each trial.'
 	' There will also be background noise to make the task more challenging.'
 	'Don\'t worry if the letter is difficult to hear first.  Do your best to attend every occurrence of the target letter throughout the trial.'
 	'Push "{}" to start.'.format(cont_btn_label))
 
-instr['s1_start_trial_1'] = ('In this condition, letters are assigned a spatial location and individual tone in alphabetic order.'
+instr['s0_start_trial_0'] = ('In this condition, letters are assigned a spatial location and individual tone in alphabetic order.'
 	' You can use the speaker, the location, and the tone to help you listen for each occurrence of'
 	'the target letter. Push "{}" to continue.'.format(cont_btn_label))
 
-instr['s1_start_trial_2'] = ('In this condition, letters are assigned a spatial location and individual tone in alphabetic order.'
+instr['s0_start_trial_1'] = ('In this condition, letters are assigned a spatial location and individual tone in alphabetic order.'
 	'Additionaly, the rate in which letters are presented differs for each of the three '
 	'spatial locations. You can use the speaker, the location, the tone, and the presentation rate to help you listen for each occurrence of'
 	'the target letter.  Push "{}" to continue'.format(cont_btn_label))
 
-instr['s1_start_trial_3'] = ('In this condition, letters are assigned a spatial location and individual tone in alphabetic order.'
+instr['s0_start_trial_2'] = ('In this condition, letters are assigned a spatial location and individual tone in alphabetic order.'
 	'The targets in this condition are always one of \'B\', \'C\', \'D\', \'E\', \'G\', \'P\', \'T\','
 	'\'V\', or \'Z\'. You can use the speaker, the location, and the tone to help you listen for each occurrence of'
 	'the target letter.  Push "{}" to continue'.format(cont_btn_label))
 
-instr['s1_start_trial_4'] = ('In this condition, letters are assigned a spatial location in alphabetic order but not their own'
+instr['s0_start_trial_3'] = ('In this condition, letters are assigned a spatial location in alphabetic order but not their own'
 	'individual tone. However, after each cycle of letters the ordering will change. Therefore,'
 	'you can use the speaker, the location, but not the tone to help you listen for each occurrence of'
 	'the target letter.  Push "{}" to continue'.format(cont_btn_label))
 
-instr['s1_start_trial_5'] = ('In this condition, letters are assigned a spatial location and individual tone in alphabetic order.'
+instr['s0_start_trial_4'] = ('In this condition, letters are assigned a spatial location and individual tone in alphabetic order.'
 	' Each letter is assigned a unique tone but these tones are assigned randomly, '
 	'so you can get not rely on the any particular pattern of tones to help guide you.  '
 	'You can use the speaker, the location, and the unique tone to help you listen for each occurrence of'
 	'the target letter.  Push "{}" to continue'.format(cont_btn_label))
 
-instr['s1_start_trial_6'] = ('In this condition, letters are assigned a spatial location and individual tone in alphabetic order.'
+instr['s0_start_trial_5'] = ('In this condition, letters are assigned a spatial location and individual tone in alphabetic order.'
 	'The loudness of each speaker will oscillate at the same rate'
 	' although the phase of each speaker will be unique.  This means you can use the speaker, the'
 	' location, the tone,  and the differences in loudness to help you listen for each occurrence of'
 	'the target letter.  Push "{}" to continue'.format(cont_btn_label))
 
-instr['s1_start_trial_7'] = ('In this condition, letters are assigned a spatial location and individual tone in alphabetic order.'
+instr['s0_start_trial_6'] = ('In this condition, letters are assigned a spatial location and individual tone in alphabetic order.'
 	'In this condition the loudness of each speaker is oscillating at the different rates'
 	'This means you can use the speaker, the location, the tone,  and the differences in oscillation'
 	' rate to help you listen for each occurrence of the target letter.'
 	'Push "{}" to continue'.format(cont_btn_label))
 
-instr['s1_start_trial_8'] = ('In this condition, letters are assigned a spatial location and individual tone in random order.'
+instr['s0_start_trial_7'] = ('In this condition, letters are assigned a spatial location and individual tone in random order.'
 	'Despite the random ordering, each letter has the same tone throughout the'
 	'trial and the tones are ascended in a regular ascending or descending pattern. You can'
 	' use the speaker, the location, the tone,  and the speed to help you listen for each occurrence of'
 	'the target letter in this condition.  Push "{}" to continue'.format(cont_btn_label))
 
-instr['s1_end_sect'] = ('Good work! You\'re done with the first section of the '
+instr['s0_end_trial'] = ('Good work! You\'re done with this trial.'.format(cont_btn_label))
+
+instr['s0_end_block'] = ('You\'re done with the only block for this section'.format(cont_btn_label))
+
+instr['s0_end_sect'] = ('Great! You\'re done with the first section of the '
                         'experiment. Take a break (you can leave the booth). Press "{}" when you\'re ready to resume.'.format(cont_btn_label))
 
-instr['s1_end_trial'] = ('Good work! You\'re done with this trial.'.format(cont_btn_label))
-
 # SECTION 2 INSTRUCTIONS
-instr['s2_start_sect'] = ('You\'re about to begin the second section of the experiment. There are about 9 trials in each'
+instr['s1_start_sect'] = ('You\'re about to begin the second section of the experiment. There are about 9 trials in each'
 ' block and 5 blocks in this section, with breaks in between blocks. Just as'
 	' in the introduction, there is no feedback. In this section, a new trial of a different condition'
 	'will start automatically shortly after the previous trial ends. Note that in this section the different condition'
 	' are interspersed and there is no longer a description before each trial.  This means that you must orient yourself to the particular condition by either the primer or'
 	' by listening to the unique cues of the particular trial. '.format(cont_btn_label))
 
-instr['s2_start_block_1'] = ('When you\'re ready to begin, press "{}"'.format(cont_btn_label))
+instr['s1_start_block_0'] = ('When you\'re ready to begin, press "{}"'.format(cont_btn_label))
 
-instr['s2_start_block_2'] = ('You\'re about to begin the second block in this section of '
+instr['s1_start_trial_0'] = ('When you\'re ready to begin, press "{}"'.format(cont_btn_label))
+
+instr['s1_start_block_1'] = ('You\'re about to begin the second block in this section of '
                              'the experiment. Reminder: there is no feedback, and new '
                              'trials start automatically shortly after the previous '
                              'trial ends. There are 20 trials in this block and three '
                              'words in each category. Press "{}" to begin.'.format(cont_btn_label))
 
-instr['s2_start_block_3'] = ('You\'re about to begin the third block in this section of '
+instr['s1_start_block_2'] = ('You\'re about to begin the third block in this section of '
                              'the experiment. Reminder: there is no feedback, and new '
                              'trials start automatically shortly after the previous '
                              'trial ends. There are 20 trials in this block and three '
                              'words in each category. Press "{}" to begin.'.format(cont_btn_label))
 
-instr['s2_start_block_4'] = ('You\'re about to begin the fourth block in this section of '
+instr['s1_start_block_3'] = ('You\'re about to begin the fourth block in this section of '
                              'the experiment. Reminder: there is no feedback, and new '
                              'trials start automatically shortly after the previous '
                              'trial ends. There are 20 trials in this block and three '
                              'words in each category. Press "{}" to begin.'.format(cont_btn_label))
 
-instr['s2_start_block_5'] = ('You\'re about to begin the last block in this section of '
+instr['s1_start_block_4'] = ('You\'re about to begin the last block in this section of '
                              'the experiment. Reminder: there is no feedback, and new '
                              'trials start automatically shortly after the previous '
                              'trial ends. There are 20 trials in this block and three '
                              'words in each category. Press "{}" to begin.'.format(cont_btn_label))
 
-instr['s2_end_block'] = ('Good job! Take a break if you like, then press "{}" when '
+instr['s1_end_trial'] = ('')
+
+instr['s1_end_block'] = ('Good job! Take a break if you like, then press "{}" when '
                          'you\'re ready for the next block.'.format(cont_btn_label))
 
-instr['s2_end_sect'] = ('Good work! You\'re done with the second section of the '
+instr['s1_end_sect'] = ('Good work! You\'re done with the second section of the '
                         'experiment. Take a break (you can leave the booth if you '
                         'need to). Press "{}" when you\'re ready to resume.'.format(cont_btn_label))
 
 # SECTION 3 COGNTIVE LOAD ASSESSMENT INSTRUCTIONS
-instr['s3_start_sect'] = ('You\'re about to begin the last section of the experiment. Reminder: Just as'
+instr['s2_start_sect'] = ('You\'re about to begin the last section of the experiment. Reminder: Just as'
 		' in the introduction section there is no feedback, but in this section you be presented with 1'
 		' trial of the same condition then asked to answer several questions about the relative'
 		'difficulty of each condition.  In this secton there are eight blocks, one for each condition out_type. '
@@ -126,18 +132,18 @@ instr['s3_start_sect'] = ('You\'re about to begin the last section of the experi
 		'factors, we would like you to evaluate several of them.'
 		' Press "{}" to begin'.format(cont_btn_label))
 
-instr['s3_start_block_1'] = ( 'After performing the task for each condition,'
+instr['s2_start_block_0'] = ( 'After performing the task for each condition,'
 		' you will be asked to rate your experience from 0 to 9 for several factors. Please consider each rating'
 		' scale and condition type separately when answering the questions.'
 		'Please read the descriptions of the set of six scales carefully. '
 		'If you have a question about any of the scales, please don\'t hesitate to ask someone outside the booth.'.format(cont_btn_label))
 
-instr['s3_end_trial'] = ('Thank you for your responses.') #continue automatically
+instr['s2_end_trial'] = ('Thank you for your responses.') #continue automatically
 
-instr['s3_end_block'] = ('Good job! Take a break if you like, then press "{}" when '
+instr['s2_end_block'] = ('Good job! Take a break if you like, then press "{}" when '
 				  'you\'re ready for the next block.'.format(cont_btn_label))
 
-instr['s3_end_sect'] = ('All done! Thank you very much for participating!')
+instr['s2_end_sect'] = ('All done! Thank you very much for participating!')
 
 gen_survey = dict()
 gen_survey[0] = ('How mentally demanding was the task? How much mental and perceptual activity was required (e.g.'

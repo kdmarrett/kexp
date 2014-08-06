@@ -112,7 +112,7 @@ end
 
 %CREATE STIM FILE STRUCTURE +++
 for i = 1:condition_no
-	fn = fullfile(stimuli_path, strcat('block_', int2str(i)));
+	fn = fullfile(stimuli_path);
 	createStruct(fn);
 end
 
@@ -133,10 +133,11 @@ for x = 1:reps
 	for y = 1:condition_no; % repeats through each condition type +++
 		
 		% ASSIGN PARADIGM TO BLOCK
-		block_name = strcat('block_', int2str(y));
+		% block_name = strcat('block_', int2str(y));
 		paradigm = condition_type(y, :);
 		if x == 1
-			condition_bin(y, :)  = dec2bin(paradigm)';
+			condition_bin(y, :)  = reshape(dec2bin(paradigm)', [], 1)'
+			% condition_bin(y, :)  = paradigm;
 		end
 		[wheel_matrix_info, possible_letters, target_letter, rearrangeCycles, tone_constant, ener_mask, letters_used, token_rate_modulation,  AM_freq, AM_pow, shiftedLetters, instrNote_shifted, instrNote, envelope_type, letter_fine_structure, sync_cycles  ] = assignParadigm(paradigm, letterArray, env_instrNotes);
 		[pitch_wheel, angle_wheel, total_pitches, list_of_pitches, start_semitone_index ] = assignPitch(wheel_matrix_info, tot_cyc, scale_type, pitches, descend_pitch );
@@ -169,7 +170,8 @@ for x = 1:reps
 				output_path = stimuli_path;
 			end
 			play_wheel = [1 1 1]; % +++++
-			final_output_path = fullfile(output_path, block_name); % create dir for each block
+			% final_output_path = fullfile(output_path, block_name); % create dir for each block
+			final_output_path = output_path;	
 			
 			% createTrial() start here
 			final_sample = floor(zeros(tot_trial, 2)); % creates background track for each letter to be added on
@@ -309,11 +311,13 @@ for x = 1:reps
 			% CREATETRIAL() END HERE
 
 			%STAMP WAV_NAME WITH EACH BLOCK LABELED BY PARADIGM CONDITION
-			% pass strings and binaries to Python for checking
-			% out = str2num(reshape(bstr',[],1))'
-			file_name = strcat( dec2bin(paradigm)', '_', 'tr', int2str(z));
+			% pass strings of binaries to Python for checking
+			paradigm = dec2bin(paradigm)' %cast to bin then to string
+			paradigm_reshape = reshape(paradigm',[],1)'
+			% paradigm = strStamp(paradigm);
+			file_name = strcat( paradigm, '_', 'tr', int2str(z - 1));
 			final_data_dir = fullfile(data_dir, file_name);
-			save(final_data_dir, 'target_letter', 'target_time','token_rate_modulation', 'tot_wav_time', 'preblock_prime_sec', 'condition_bin', 'possible_letters', 'preblock_prime_sec');
+			save(final_data_dir, 'target_letter', 'target_time', 'tot_wav_time', 'preblock_prime_sec', 'paradigm', 'possible_letters', 'preblock_prime_sec');
 			% wav_name = fullfile(final_output_path, strcat(int2str(z), '_', int2str( paradigm), 'ms', 'trial_', int2str(z), '_', int2str(rand * 1000), '_ILIms', int2str(ILImsBase), 'speakerAmp', int2str(overall), '.wav'));
 			wav_name = fullfile(final_output_path, strcat(file_name,'.wav'));
 			if exist(wav_name, 'file') % accounts for bug: matlab does not overwrite on all systems
@@ -327,5 +331,6 @@ for x = 1:reps
 	end
 end
 end  % for sound testing
-  % save( fullfile( data_dir, 'global_vars'), 'condition_bin', 'wheel_matrix_info', preblock_prime_sec) % global variables for each subject and session
+% condition_bin = strStamp(condition_bin);
+  save( fullfile( data_dir, 'global_vars'), 'condition_bin', 'wheel_matrix_info', 'preblock_prime_sec') % global variables for each subject and session
 toc %print elapsed time
