@@ -8,22 +8,22 @@ instr = dict()
 
 # SECTION 1 (INTRODUCTION) INSTRUCTIONS
 instr['s1_start_sect'] = ('In this experiment you will be listening to letters grouped into'
-	  'three different spatial locations (left, middle, and right).'
-      'Each letter group has a distinct speaker for the letters. Most trials will have letters grouped consecutively in alphabetic order,'
-      'but to orient you to the layout, each trial will begin with a primer which includes a visual representation of the spatial location of the letters.'
-	  'In these primers, you will notice that one of the letters is colored green and spoken, this is the target letter for the trial.'
-      'Together, the groups will span the full alphabet along with the extra voiced commands \'Read\' , \'Pause\', \'Space\', and \'Delete\'. '
-	  ' Your task for each trial in this experiment is to listen for every occurence of your target letter for the duration of'
-	  ' the trial. This experiment will assess pupil responses, so after the primer for each trial a small fixation dot '
-	  ' will appear in the center of screen. Keep your eyes fixated on this dot for as long as it remains visible.'
-	  ' Push "{}" to continue.'.format(cont_btn_label))
+    'three different spatial locations (left, middle, and right).'
+    'Each letter group has a distinct speaker for the letters. Most trials will have letters grouped consecutively in alphabetic order,'
+    'but to orient you to the layout, each trial will begin with a primer which includes a visual representation of the spatial location of the letters.'
+    'In these primers, you will notice that one of the letters is colored green and spoken, this is the target letter for the trial.'
+    'Together, the groups will span the full alphabet along with the extra voiced commands \'Read\' , \'Pause\', \'Space\', and \'Delete\'. '
+    ' Your task for each trial in this experiment is to listen for every occurence of your target letter for the duration of'
+    ' the trial. This experiment will assess pupil responses, so after the primer for each trial a small fixation dot '
+    ' will appear in the center of screen. Keep your eyes fixated on this dot for as long as it remains visible.'
+    ' Push "{}" to continue.'.format(cont_btn_label))
 
 instr['s1_start_block'] = ('In the first section, you will be introduced to the different condition types. This section contains'
-		' 1 block with a trial for every condition for a total of 8 trials. Ignore the letters that are'
-		'grey, and pay attention to the green highlighted letter that is spoken at the beginning of each trial.'
-		' There will also be background noise to make the task more challenging.'
-		'Don\'t worry if the letter is difficult to hear first.  Do your best to attend every occurrence of the target letter throughout the trial.'
-		'Push "{}" to start.'.format(cont_btn_label))
+	' 1 block with a trial for every condition for a total of 8 trials. Ignore the letters that are'
+	'grey, and pay attention to the green highlighted letter that is spoken at the beginning of each trial.'
+	' There will also be background noise to make the task more challenging.'
+	'Don\'t worry if the letter is difficult to hear first.  Do your best to attend every occurrence of the target letter throughout the trial.'
+	'Push "{}" to start.'.format(cont_btn_label))
 
 instr['s1_start_trial_1'] = ('In this condition, letters are assigned a spatial location and individual tone in alphabetic order.'
 	' You can use the speaker, the location, and the tone to help you listen for each occurrence of'
