@@ -50,6 +50,6 @@ class CircularLayout(object):
 			else:
 				phi = angles[i]
 
-			x = relative_center[0] + round (radius * math.cos(phi)) 
-			y = relative_center[1] + round (radius * math.sin(phi))
+			x = relative_center[0] + (radius * math.cos(phi)) 
+			y = relative_center[1] + (radius * math.sin(phi))
 			self.positions.append((x, y))
