@@ -38,11 +38,13 @@ import math
 from numpy import array
 
 class CircularLayout(object):
-	def __init__(self, nr_elements, radius, start= - math.pi / 2, relative_center = array([0, 0]), angles = None):
+	def __init__(self, nr_elements, radius, start= - math.pi / 2, relative_center = array([0, 0]), angles = None, clock_wise = True):
 		# assert(len(nr_elements) == len(angles), "nr_elements and specified angles must match in length")
 
 		self.positions = []
 		step = 2 * math.pi / nr_elements
+		if clock_wise:
+			step *= -1
 		for i in range(nr_elements):
 			if angles is None:
 				phi = start + i * step
