@@ -1,22 +1,23 @@
-
-function [wheel_matrix_info, possibleLetters, target_letter, rearrangeCycles, tone_constant, ener_mask, letters_used, token_rate_modulation, AM_freq, AM_pow, shiftedLetters, instrNote_shifted, instrNote, envelope_type, letter_fine_structure, sync_cycles  ] = assignParadigm(paradigm, letterArray, env_instrNotes )
+function [wheel_matrix_info, possibleLetters, target_letter, rearrangeCycles, tone_constant, ener_mask, letters_used, token_rate_modulation, AM_freq, AM_pow, shiftedLetters, instrNote_shifted, instrNote, envelope_type, letter_fine_structure, sync_cycles  ] = assignParadigm(paradigm, letterArray, env_instrNotes, total_letters )
     % Assign basic design parameters of each paradigm type
-    % BOOLEANS FOR DESIGN FEATURES, ORDERED: EACH WHEEL GROUP AT ORTHOGONAL FREQUENCY EM, EACH WHEEL GROUP GIVEN ON FREQUENCY AM , ALPHABETIC VS. MAXIMALLY DISPLACED, TARGET LETTER 'R' AS OPPOSED TO X[i],
-    % LETTER ORDERS ARE RETAINED ACROSS CYCLES, TONE IS ASSIGNED RANDOMLY AS OPPOSED TO CONTIGUOSLY, NO PITCH INFORMATION
+    % BOOLEANS FOR DESIGN FEATURES, ORDERED: CONTROL, EACH WHEEL GROUP AT AN ORTHOGONAL FREQUENCY OF TOKEN RATE, MAXIMALLY DISPLACED ORDERING, TARGET LETTER 'R' AS OPPOSED TO X[i],
+    % LETTER ORDERS ARE RETAINED ACROSS CYCLES, TONE IS ASSIGNED RANDOMLY AS OPPOSED TO CONTIGUOSLY, EACH WHEEL GROUP GIVEN A UNIQUE FREQUENCY AM, EACH GROUP GIVEN THE SAME AM FREQUENCY 
 
     ener_mask = 0;% assigns all non target letters to letter O 
 
 	% ASSIGN LETTERS PER WHEEL
     if paradigm(1)
-        % wheel_matrix_info = [10 9 7]; % token rate changes according to letters in each wheel
         wheel_matrix_info = [10 10 10]; % token rate changes according to letters in each wheel
         token_rate_modulation = 1;  % bool to change token rate
     else 
-        % wheel_matrix_info = [9 9 8]; %token rate remains the same in all wheels
         wheel_matrix_info = [10 10 10]; %token rate remains the same in alls wheels
         token_rate_modulation = 0;
     end
-    letters_used = sum(wheel_matrix_info); %why is this is in this function? +++
+    letters_used = sum(wheel_matrix_info); 
+    % TEST
+    if ~(letters_used == total_letters)
+        fprintf('Error: not all letters used')
+    end
     
     % ASSIGN LETTER ORDERING
     if paradigm(2)

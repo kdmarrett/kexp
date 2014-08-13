@@ -52,4 +52,4 @@ class CircularLayout(object):
 
 			x = relative_center[0] + (radius * math.cos(phi)) 
 			y = relative_center[1] + (radius * math.sin(phi))
-			self.positions.append((x, y))
+			self.positions.append([x, y])

@@ -3,11 +3,6 @@
 
 %  Main program to create all wav files and data files for each subject and place in respective locations in kexp directory
 
-% TASKS TO DO
-% comment or delete all +++
-% check ratio of amplitudes
-% pop at D
-
 close all
 clear all
 tic
@@ -15,17 +10,9 @@ tic
 % cd ..
 % PATH = cd
 
-% TESTING DIFFERENT AMPLITUDES
-% instr_amp = 1.3:.10:2.5;
-% instr_amp = .5:.10:2.0;
-% instr_amp = .5:.5:3
-% instr_amp = 3.5:.5:6
-% instr_amp = [1.5 .35 4; 2 .35 4.0; 1.5 .35 4.5; 2 .35 4]
 instr_amp = [1.5 .7 4];
 [m,n]= size( instr_amp);
 for overall = 1: m
-	% instr_amp_weights = [.5, .35, instr_amp(overall)];
-	% instr_amp_weights = [instr_amp(overall), .35, 1.3];
 	instr_amp_weights = instr_amp(overall, :);
 	
 % DEFINE PATHS
@@ -38,10 +25,10 @@ K70_dir = fullfile(PATH, 'K70'); % computed HRTF
 instrNote_dir = fullfile(PATH, 'instrNotes/'); % instrument notes
 lester_dir = '/Volumes/labdocs/kdmarrett/kexp';
 
-participant = 'foo';
-session = 1;
-% participant = input('Enter subject id: ');
-% session = input('Enter session number: ');
+% participant = 'foo';
+% session = 1;
+participant = input('Enter subject id: ');
+session = input('Enter session number: ');
 data_dir = fullfile(PATH, 'Data', participant , int2str(session ));
 stimuli_path = fullfile(stimuli_path, participant , int2str(session ));
 createStruct(data_dir);
@@ -73,7 +60,6 @@ ILIms = repmat(ILImsBase, 3, 1);
 token_rates = [3 5 7];
 
 % SET LETTERS
-% letterArray.alphabetic = {'A' 'B' 'C' 'D' 'E' 'F' 'G' 'H' 'I' 'J' 'K' 'L' 'M' 'N' 'O' 'P' 'Q' 'R' 'S' 'T' 'U' 'V' 'W' 'X' 'Y' 'Z'};
 letterArray.alphabetic = {'Space', 'Pause', 'A' 'B' 'C' 'D' 'E' 'F' 'G' 'H' 'I' 'J' 'K' 'L' 'M' 'N' 'O' 'P' 'Q' 'R' 'S' 'T' 'U' 'V' 'W' 'X' 'Y' 'Z', 'Read', 'Delete'};
 letterArray.displaced =  {'Space', 'Pause', 'A' 'B' 'F' 'O' 'E' 'M' 'I' 'T' 'J' 'C' 'H' 'Q' 'G' 'N' 'U' 'V' 'K' 'D' 'L' 'U' 'P' 'S' 'Z' 'R' 'W' 'Y' 'Read' 'Delete'}; %maximal phoneme separation
 assert(length(letterArray.alphabetic) == length(letterArray.displaced));
@@ -82,9 +68,6 @@ total_letters = length(letterArray.alphabetic);
 instr_list = {'Piano', 'Trumpet', 'Marimba'};
 version_num = 1;
 speaker_amp_weights = [1 1 1];
-% speaker_amp_weights = [1 1.8 .5];
-% instr_amp_weights = [.5, .35, 1.3];
-% instr_amp_weights = [.65, .35, 1.3];
 
 % ESTABLISH THE PITCH ORDERS FOR EACH WHEEL OF LETTERS
 pitches.pent = {'0', '1.0', '2.0', '4.0', '5.0'};
@@ -110,7 +93,7 @@ else
 	reps= 1;
 end
 
-%CREATE STIM FILE STRUCTURE +++
+%CREATE STIM FILE STRUCTURE 
 for i = 1:condition_no
 	fn = fullfile(stimuli_path);
 	createStruct(fn);
@@ -129,23 +112,16 @@ end
 for x = 1:reps
 	
 	%% GENERATE BLOCK FOR EACH CONDITION TYPE
-	% condition_no = 1; % +++ only create the first
-	for y = 1:condition_no; % repeats through each condition type +++
+	for y = 1:condition_no; % repeats through each condition type
 		
 		% ASSIGN PARADIGM TO BLOCK
-		% block_name = strcat('block_', int2str(y));
 		paradigm = condition_type(y, :);
 		if x == 1
-			condition_bin(y, :)  = reshape(dec2bin(paradigm)', [], 1)'
-			% condition_bin(y, :)  = paradigm;
+			condition_bin(y, :)  = reshape(dec2bin(paradigm)', [], 1)';
 		end
-		[wheel_matrix_info, possible_letters, target_letter, rearrangeCycles, tone_constant, ener_mask, letters_used, token_rate_modulation,  AM_freq, AM_pow, shiftedLetters, instrNote_shifted, instrNote, envelope_type, letter_fine_structure, sync_cycles  ] = assignParadigm(paradigm, letterArray, env_instrNotes);
+		[wheel_matrix_info, possible_letters, target_letter, rearrangeCycles, tone_constant, ener_mask, letters_used, token_rate_modulation,  AM_freq, AM_pow, shiftedLetters, instrNote_shifted, instrNote, envelope_type, letter_fine_structure, sync_cycles  ] = assignParadigm(paradigm, letterArray, env_instrNotes, total_letters);
 		[pitch_wheel, angle_wheel, total_pitches, list_of_pitches, start_semitone_index ] = assignPitch(wheel_matrix_info, tot_cyc, scale_type, pitches, descend_pitch );
 		
-		% TEST
-		% if ~(letters_used == total_letters)
-		%     % fprintf('Error: not all letters ') % +++
-		% end
 		
 		% PREPARE LETTERS
 		[fs, trim_letter_path, letterEnvelope, mean_speaker_sample] = trimLetters(letter_samples, letter_path, letterArray, pitches, force_recreate, speaker_list, version_num, speaker_amp_weights, shiftedLetters, env_instrNotes, default_fs);
@@ -169,8 +145,6 @@ for x = 1:reps
 				play_wheel = [1 1 1];
 				output_path = stimuli_path;
 			end
-			play_wheel = [1 1 1]; % +++++
-			% final_output_path = fullfile(output_path, block_name); % create dir for each block
 			final_output_path = output_path;	
 			
 			% createTrial() start here
@@ -312,9 +286,8 @@ for x = 1:reps
 
 			%STAMP WAV_NAME WITH EACH BLOCK LABELED BY PARADIGM CONDITION
 			% pass strings of binaries to Python for checking
-			paradigm = dec2bin(paradigm)' %cast to bin then to string
-			paradigm_reshape = reshape(paradigm',[],1)'
-			% paradigm = strStamp(paradigm);
+			paradigm = dec2bin(paradigm)'; %cast to bin then to string
+			paradigm_reshape = reshape(paradigm',[],1)';
 			file_name = strcat( paradigm, '_', 'tr', int2str(z - 1));
 			final_data_dir = fullfile(data_dir, file_name);
 			save(final_data_dir, 'target_letter', 'target_time', 'tot_wav_time', 'preblock_prime_sec', 'paradigm', 'possible_letters', 'preblock_prime_sec');
@@ -322,15 +295,13 @@ for x = 1:reps
 			wav_name = fullfile(final_output_path, strcat(file_name,'.wav'));
 			if exist(wav_name, 'file') % accounts for bug: matlab does not overwrite on all systems
 				delete(wav_name)
-				% fprintf('Warning: matlab file may not have been recorded');
+				% fprintf('Warning: matlab file may not have been recorded'); %depending on system
 			end
 			final_sample = rms_amp * (final_sample / sqrt(mean(mean(final_sample.^2))));
 			wavwrite(final_sample, fs, wav_name);   %  Stimuli saved by trial 
-
 		end
 	end
 end
 end  % for sound testing
-% condition_bin = strStamp(condition_bin);
-  save( fullfile( data_dir, 'global_vars'), 'condition_bin', 'wheel_matrix_info', 'preblock_prime_sec') % global variables for each subject and session
+save( fullfile( data_dir, 'global_vars'), 'condition_bin', 'wheel_matrix_info', 'preblock_prime_sec') % global variables for each subject and session
 toc %print elapsed time

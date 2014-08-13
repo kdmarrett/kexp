@@ -24,7 +24,7 @@ start_point = 4500;
 							    	[instrNote, fs, nbits] = wavread(fullfile(instrNote_dir, 'raw', instr_list{j}, fn), [start_point (start_point + letter_samples - 1) ] );
 							end
 						    	final_instrNote = final_envelope .* instrNote;
-						    	trimInstrNotes_path = fullfile(instrNote_dir, 'trim', envelope_type, speaker_list{i}, instr_list{j}, list_of_pitches{k}, letterArray.alphabetic{l}, fn); % +++
+						    	trimInstrNotes_path = fullfile(instrNote_dir, 'trim', envelope_type, speaker_list{i}, instr_list{j}, list_of_pitches{k}, letterArray.alphabetic{l}, fn); 
 						    	final_instrNote = normalizeSoundVector(final_instrNote);
 						    	final_instrNote = trimSoundVector(final_instrNote, fs, letter_samples, 1, 1);
 						    	wavwrite( final_instrNote, fs, nbits, trimInstrNotes_path )
@@ -42,9 +42,6 @@ start_point = 4500;
 		half_note = ceil(note_length / 2);
 		x = linspace(0, pi, note_length);
 		y = ((sin(x)).^3)';
-		% plot(x, y)
-		% waitforbuttonpress
-		% close
 		envelope_base = zeros(letter_samples, 1);
 		envelope = zeros(letter_samples, 3);
 		for i = 1:length(speaker_list)

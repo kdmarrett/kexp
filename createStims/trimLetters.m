@@ -89,7 +89,6 @@ for x = 1:length(speaker_list)
 				% size(final_trimmedLetters{j})
 				% size(summed_letter_speaker(:, x))
 				pwr_est = final_trimmedLetters{j}.^2;
-				size(pwr_est); % +++
 				summed_letter_speaker(:, x) = summed_letter_speaker(:, x) + pwr_est;
 				wavwrite(final_trimmedLetters{j}, fs_speaker, fullfile(final_output_path, strcat(letterArray.alphabetic{j}, '.wav')));
 			end    
