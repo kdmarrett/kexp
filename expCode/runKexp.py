@@ -56,13 +56,14 @@ rng = np.random.RandomState(0)
 # GLOBAL VARIABLES
 block_in_sections = [1, 5, 8]
 trial_in_block = [8, 9, 1]
-controls_in_block = 2 # only applies to section 2
+controls_in_block = 3 # only applies to section 2
+num_enforced_wraps = 1  # takes too long if above 1
 wait_brief = .2
 wait_long = 2
 msg_dur = 3.0
 postblock = 5  # time after each trial to record pupil
 
-def ExperimentOrdering(block_in_sections, trial_in_block, condition_nums, controls_in_block):
+def ExperimentOrdering(block_in_sections, trial_in_block, condition_nums, controls_in_block, num_enforced_wraps):
     """Creates the random ordering of the conditions for each trial
     by section, block, and trial.  Refer to block_in_sections and 
     trial_in_block for final shape of section.
@@ -84,29 +85,30 @@ def ExperimentOrdering(block_in_sections, trial_in_block, condition_nums, contro
             repeats = True
             bicontrol = False
             while repeats:
-            # while (repeats or not bicontrol):
-                # generate trial
-                # trial = np.random.randint(
-                #     0, condition_nums, condition_nums).tolist()
-                # require at least two controls
-                # bicontrol = len(np.where(trial == 0)) >= 2
-
-                # alternate way of generating trial
                 trial = random.sample(range(0, condition_nums), 
                             condition_nums) #creates a shuffled range(8)
-                # add an extra control to every trial for more comparisons
-                control_ind = trial.index(0)
-                # import ipdb; ipdb.set_trace()
-                # control_ind = np.where(np.array(trial) == 0)[0]
-                second_range = range(condition_nums)
-                del second_range[control_ind]
-                second_ind = random.sample(second_range, 1)[0]
-                trial[second_ind] = 0
-
+                # add an extra controls to every trial for more comparisons
+                for j in range(controls_in_block - 1):
+                    control_ind = np.where(np.array(trial) == 0)[0].tolist()
+                    replacement_range = range(condition_nums) # range of acceptable indices
+                    other_ind = []
+                    for k in range(len(control_ind)):
+                        other_ind.append(control_ind[k] + 1)
+                        other_ind.append(control_ind[k] - 1)
+                    control_ind.extend(other_ind)
+                    for k in range(len(control_ind)):
+                        try:
+                            replacement_range.remove(control_ind[k]) # delete by value
+                        except:
+                            pass
+                    next_control_ind = random.sample(replacement_range, 1)[0]
+                    trial[next_control_ind] = 0
                 # check no condition has consecutive trials 
                 repeats = checkRepeats(trial)
             block.append(trial)
-        control_wraps = controlProceedsFollows(block)
+        # import ipdb; ipdb.set_trace()
+        control_wraps = controlProceedsFollows(block, num_enforced_wraps)
+    import ipdb; ipdb.set_trace()
     section.append(block)
 
     # Make section 3
@@ -126,7 +128,7 @@ def checkRepeats(trial):
             repeats = True
     return repeats
 
-def controlProceedsFollows(block):
+def controlProceedsFollows(block, num_enforced_wraps):
     """ For section 2 checks whether the block as
     a whole has at least one occurrence of the control
     condition before and after every other condition"""
@@ -134,8 +136,8 @@ def controlProceedsFollows(block):
     # Create arrays with elements counting which condition
     # has proceeded/followed a control
     # control element compared to all other conditions
-    proceeds_condition = np.zeros((condition_nums - 1), int).tolist()
-    follows_condition = np.zeros((condition_nums - 1), int).tolist()
+    proceeds_condition = np.zeros((condition_nums - 1), int)
+    follows_condition = np.zeros((condition_nums - 1), int)
     for i in range(len(block)):
         trial = np.array(block[i])
         control_ind = np.where(trial == 0)[0]
@@ -146,9 +148,10 @@ def controlProceedsFollows(block):
             if ind != (condition_nums - 1):
                 follows_condition[trial[ind + 1] - 1] += 1
     control_wraps = False
-    # check that all conditions proceeded and followed by control
-    if (len(np.nonzero(proceeds_condition)[0]) == (condition_nums - 1)):
-        if (len(np.nonzero(follows_condition)[0]) == (condition_nums - 1)):
+    # check that all conditions proceeded and followed by control by at least enforced wraps
+    # import ipdb; ipdb.set_trace()
+    if (len(np.where(proceeds_condition >= num_enforced_wraps)[0]) == (condition_nums - 1)):
+        if (len(np.where(follows_condition >= num_enforced_wraps)[0]) == (condition_nums - 1)):
             control_wraps = True
     return control_wraps
 
@@ -268,7 +271,7 @@ with ef.ExperimentController(*std_args, **std_kwargs) as ec:
 
     # MAKE CONDITION ORDERING
     section = ExperimentOrdering(
-        block_in_sections, trial_in_block, condition_nums, controls_in_block)
+        block_in_sections, trial_in_block, condition_nums, controls_in_block, num_enforced_wraps)
 
     for snum in range(len(block_in_sections)):
         ec.write_data_line('Section: ', snum)
