@@ -51,10 +51,10 @@ function [wheel_matrix_info, possibleLetters, target_letter, rearrangeCycles, to
     %AMPLITUDE MODULATOR SHIFTS AMPLITUDE
         if paradigm(6)
             AM_freq = [2 11 13 0 0 0 0 0]; %Hz rate of amplitude modulator elements for each wheel 0 for none
-            AM_pow =  [2 2 2 0 0 0 0 0]; %decibel of each AM for each corresponding wheel
+            AM_pow =  [.15 .15 .15 0 0 0 0 0]; %decibel of each AM for each corresponding wheel
         elseif paradigm(7)
            AM_freq = [11 11 11 0 0 0 0 0]; %Hz rate of amplitude modulator elements for each wheel 0 for none
-            AM_pow =  [2 2 2 0 0 0 0 0]; %decibel of each AM for each corresponding wheel
+            AM_pow =  [.15 .15 .15 0 0 0 0 0]; %decibel of each AM for each corresponding wheel
         else
           AM_freq = [0 0 0 0 0 0 0 0];  %Hz rate of amplitude modulator elements for each wheel 0 for none
             AM_pow =  [0 0 0 0 0 0 0 0]; %decibel of each AM for each corresponding wheel

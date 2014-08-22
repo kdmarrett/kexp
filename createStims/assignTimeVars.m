@@ -1,4 +1,4 @@
-function [  IWI, tot_trial, tot_wheel, letter_difference, min_wheel, preblock, ILI, tot_wav_time ] = assignTimeVars( wheel_matrix_info, fs, tot_cyc, letter_samples, token_rate_modulation, preblock_prime_sec, postblock_sec, ILIms, token_rates )
+function [  IWI, tot_trial, tot_wheel, letter_difference, min_wheel, preblock, ILI, tot_wav_time, min_wheel_time, min_wheel_time_ind ] = assignTimeVars( wheel_matrix_info, fs, tot_cyc, letter_samples, token_rate_modulation, preblock_prime_sec, postblock_sec, ILIms, token_rates )
 
 	% CONVERT TO SAMPLES
     % cycle_sample = ceil(cycle_time * fs);
@@ -36,13 +36,13 @@ function [  IWI, tot_trial, tot_wheel, letter_difference, min_wheel, preblock, I
 	end
 
 	for i = 1:length(wheel_matrix_info)
-	    	% tot_cycle_sample(i) = wheel_matrix_info(i) * ILI(i) + letter_samples;
-	    	% spill_over(i) = tot_cycle_sample(i) - cycle_sample;
-	    	% adjusted_spill_over(i) = spill_over(i) + IWI * (i - 1); % spillover with respect to wheel onset time
-	    	tot_wheel(i) = 1 + ((tot_cyc * wheel_matrix_info(i) - 1) * ILI(i)) + letter_samples; % final calc. of wheel length
-	    	if token_rate_modulation
-	    		adjusted_wheel(i) = tot_wheel(i) + IWI * (i - 1);
-	    	end
+    	% tot_cycle_sample(i) = wheel_matrix_info(i) * ILI(i) + letter_samples;
+    	% spill_over(i) = tot_cycle_sample(i) - cycle_sample;
+    	% adjusted_spill_over(i) = spill_over(i) + IWI * (i - 1); % spillover with respect to wheel onset time
+    	tot_wheel(i) = 1 + ((tot_cyc * wheel_matrix_info(i) - 1) * ILI(i)) + letter_samples; % final calc. of wheel length
+    	if token_rate_modulation
+    		adjusted_wheel(i) = tot_wheel(i) + IWI * (i - 1);
+    	end
 	end
 	
 	% FIND SPECIFIC END TIMES FOR EACH WHEEL AND ENTIRE TRIAL
@@ -50,8 +50,11 @@ function [  IWI, tot_trial, tot_wheel, letter_difference, min_wheel, preblock, I
 		% trial_spill_over = max(adjusted_spill_over); % finds the spillover relative to the trial ambivalent to wheel spillover
 		% tot_response_section = rough_tot_wheel + trial_spill_over;
 		tot_response_section = max(adjusted_wheel);
+		[min_wheel_time, min_wheel_time_ind] = min(adjusted_wheel)
 	else 
-	    	tot_response_section = tot_wheel(length(wheel_matrix_info)) + IWI * 2; 
+    	tot_response_section = tot_wheel(length(wheel_matrix_info)) + IWI * 2; 
+		min_wheel_time = [];
+		min_wheel_time_ind = [];
 	end
 	%TOTAL SAMPLES IN EACH TRIAL OF CYCLES
 	tot_trial = ceil(preblock + tot_response_section + postblock);

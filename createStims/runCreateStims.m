@@ -2,33 +2,30 @@
 %   Author: Karl Marrett
 
 %  Main program to create all wav files and data files for each subject and place in respective locations in kexp directory
+% popping in right wheel
+% when different speeds of letters wheels still need to end at the same time
 
 close all
 clear all
 tic
 
-% cd ..
-% PATH = cd
+% condition_trials = repmat(trials_per_condition, length(condition_type));
 
-instr_amp = [1.5 .7 4];
+instr_amp = [2 1 4];
 [m,n]= size( instr_amp);
 for overall = 1: m
 	instr_amp_weights = instr_amp(overall, :);
 	
 % DEFINE PATHS
 PATH = '~/git/kexp';%local letter and output directory
-% stimuli_path = strcat(PATH, 'Stims/');%dir for all subject stimulus
-% stimuli_path = '~/Desktop/Stims/';%dir for all subject stimulus
 stimuli_path = fullfile(PATH, 'Stims/');%dir for all subject stimulus
 letter_path = fullfile(PATH, 'Letters', 'Files'); %dir to untrimmed letters
 K70_dir = fullfile(PATH, 'K70'); % computed HRTF
 instrNote_dir = fullfile(PATH, 'instrNotes/'); % instrument notes
 lester_dir = '/Volumes/labdocs/kdmarrett/kexp';
 
-% participant = 'foo';
-% session = 1;
-participant = input('Enter subject id: ');
 session = input('Enter session number: ');
+participant = input('Enter subject id: ', 's');
 data_dir = fullfile(PATH, 'Data', participant , int2str(session ));
 stimuli_path = fullfile(stimuli_path, participant , int2str(session ));
 createStruct(data_dir);
@@ -83,8 +80,9 @@ condition_type = eye(7);
 condition_type = [zeros(1, 7); condition_type];
 condition_type(5, 2) = 1;
 [condition_no, bar] = size(condition_type);
-trials_per_condition = 1;
-condition_trials = repmat(trials_per_condition, length(condition_type));
+trials_per_condition = 7;
+condition_trials = repmat(trials_per_condition, length(condition_type), 1);
+condition_trials(1) = 17;
 if makeTraining
 	trials_per_training = 1;
 	condition_trials_training = repmat(trials_per_condition,length(condition_type));
@@ -128,13 +126,14 @@ for x = 1:reps
 		[nul] = trimInstrNotes(fs, instrNote_dir, letter_samples, pitches, instrument_dynamics, env_instrNotes, instr_list, speaker_list, letterEnvelope, list_of_pitches, force_recreate, letterArray, envelope_type, mean_speaker_sample, start_sample_one, start_semitone_index, wheel_matrix_info);
 		
 		% COMPUTE MISC. BASIC PARAMS OF BLOCK
-		[ IWI, tot_trial, tot_wheel, letter_difference, min_wheel, preblock, ILI, tot_wav_time ] = assignTimeVars( wheel_matrix_info, fs, tot_cyc, letter_samples, token_rate_modulation, preblock_prime_sec, postblock_sec, ILIms, token_rates );
+		[ IWI, tot_trial, tot_wheel, letter_difference, min_wheel, preblock, ILI, tot_wav_time, min_wheel_time, min_wheel_time_ind ] = assignTimeVars( wheel_matrix_info, fs, tot_cyc, letter_samples, token_rate_modulation, preblock_prime_sec, postblock_sec, ILIms, token_rates );
 		if tone_constant
 			[ letter_to_pitch ] = assignConstantPitch( possible_letters, total_letters, total_pitches, wheel_matrix_info, pitch_wheel);
 		end
 		
 		%%  GENERATE EACH TRIAL WAV
 		for z = 1:condition_trials(y);
+			paradigm = condition_type(y, :);
 			target_time = []; % also clear target time from last trial
 			[ wheel_matrix, target_wheel_index ] = assignLetters( possible_letters, wheel_matrix_info, target_letter, tot_cyc, rearrangeCycles, ener_mask); % returns cell array of wheel_num elements
 			if (x == 2) %if a training trial
@@ -266,6 +265,11 @@ for x = 1:reps
 					[final_wheel] = createAMEnvelope(wheel_track, AM_freq(j), AM_pow(j), fs);
 					[final_wheel_rows(j), cols] = size(final_wheel);
 					assert((final_wheel_rows(j) == tot_wheel(j)), 'Error: check final track sample number calculation in assignTimeVars')
+
+					% CUT WHEEL TRACKS TO MATCH IN LENGTH
+					if j ~= min_wheel_time_ind
+						final_wheel = trimSoundVector(final_wheel, fs, min_wheel, 1, 1)
+					end
 					
 					% ADD EACH WHEEL TRACK TO FINAL SAMPLE TRACK
 					local_index = wheel_sample_index;
@@ -288,7 +292,7 @@ for x = 1:reps
 			% pass strings of binaries to Python for checking
 			paradigm = dec2bin(paradigm)'; %cast to bin then to string
 			paradigm_reshape = reshape(paradigm',[],1)';
-			file_name = strcat( paradigm, '_', 'tr', int2str(z - 1));
+			file_name = strcat( paradigm, '_', 'tr', int2str(z - 1))
 			final_data_dir = fullfile(data_dir, file_name);
 			save(final_data_dir, 'target_letter', 'target_time', 'tot_wav_time', 'preblock_prime_sec', 'paradigm', 'possible_letters', 'preblock_prime_sec');
 			% wav_name = fullfile(final_output_path, strcat(int2str(z), '_', int2str( paradigm), 'ms', 'trial_', int2str(z), '_', int2str(rand * 1000), '_ILIms', int2str(ILImsBase), 'speakerAmp', int2str(overall), '.wav'));

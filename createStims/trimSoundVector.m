@@ -1,5 +1,5 @@
 function [output] = trimSoundVector(input, fs, new_length, gate_start, gate_end)
-% trims a vector by the length specified by new_length and gates the trimmed ends to prevent popping
+% trims a vector by the length specified by new_length (starting from the beginning in samples) and gates the trimmed ends to prevent popping
 
 [rows, cols] = size(input);
 if rows < new_length
