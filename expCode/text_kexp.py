@@ -1,7 +1,7 @@
 # text_kexp.py
 # Author: Karl Marrett
-# Text dicts for kexp
-# EC PARAMETERS
+# Text and other related dictionaries for runKexp.py script
+
 import numpy as np
 
 cont_btn = 8
@@ -37,20 +37,20 @@ instr['s0_start_block_0'] = ('In the first section, you will be introduced to th
 
 button_keys['s0_start_block_0'] = [cont_btn]
 
-instr['s0_start_trial_0'] = ('In this condition, letters are assigned a spatial location and individual tone in alphabetic order.'
+instr['s0_start_trial_0'] = ('In this condition, letters are assigned a spatial location and unique tone in alphabetic order.'
                              ' You can use the speaker, the location, and the tone to help you listen for each occurrence of'
                              ' the target letter. Push "{}" to start.'.format(cont_btn_label))
 
 button_keys['s0_start_trial_0'] = [cont_btn]
 
-instr['s0_start_trial_1'] = ('In this condition, letters are assigned a spatial location and individual tone in alphabetic order. '
+instr['s0_start_trial_1'] = ('In this condition, letters are assigned a spatial location and unique tone in alphabetic order. '
                              'Additionally, the rate in which letters are presented differs for each of the three '
                              'spatial locations. You can use the speaker, the location, the tone, and the presentation rate to help you listen for each occurrence of'
                              ' the target letter. Push "{}" to start.'.format(cont_btn_label))
 
 button_keys['s0_start_trial_1'] = [cont_btn]
 
-instr['s0_start_trial_2'] = ('In this condition, letters are assigned a spatial location and individual tone in random order. '
+instr['s0_start_trial_2'] = ('In this condition, letters are assigned a spatial location and unique tone in random order. '
                              'Despite the random ordering, each letter has the same tone throughout the '
                              'trial and the tones are ascended in a regular ascending or descending pattern. You can'
                              ' use the speaker, the location, the tone,  and the speed to help you listen for each occurrence of'
@@ -58,7 +58,7 @@ instr['s0_start_trial_2'] = ('In this condition, letters are assigned a spatial 
 
 button_keys['s0_start_trial_2'] = [cont_btn]
 
-instr['s0_start_trial_3'] = ('In this condition, letters are assigned a spatial location and individual tone in alphabetic order. '
+instr['s0_start_trial_3'] = ('In this condition, letters are assigned a spatial location and unique tone in alphabetic order. '
                              'The targets in this condition are always one of \'B\', \'C\', \'D\', \'E\', \'G\', \'P\', \'T\','
                              ' \'V\', or \'Z\'. You can use the speaker, the location, and the tone to help you listen for each occurrence of'
                              ' the target letter. Push "{}" to start.'.format(cont_btn_label))
@@ -66,13 +66,13 @@ instr['s0_start_trial_3'] = ('In this condition, letters are assigned a spatial 
 button_keys['s0_start_trial_3'] = [cont_btn]
 
 instr['s0_start_trial_4'] = ('In this condition, letters are assigned a spatial location in alphabetic order but not their own'
-                             ' individual tone. In other words, after each cycle of letters the ordering will change. Therefore,'
+                             ' unique tone. In other words, after each cycle of letters the ordering will change. Therefore,'
                              ' you can use the speaker, the location, but not the tone to help you listen for each occurrence of'
                              ' the target letter. Push "{}" to start.'.format(cont_btn_label))
 
 button_keys['s0_start_trial_4'] = [cont_btn]
 
-instr['s0_start_trial_5'] = ('In this condition, letters are assigned a spatial location and individual tone in alphabetic order.'
+instr['s0_start_trial_5'] = ('In this condition, letters are assigned a spatial location and unique tone in alphabetic order.'
                              ' Each letter is assigned a unique tone but these tones are assigned randomly, '
                              'so you can get not rely on the any particular pattern of tones to help guide you. '
                              'You can use the speaker, the location, and the unique tone to help you listen for each occurrence of'
@@ -80,7 +80,7 @@ instr['s0_start_trial_5'] = ('In this condition, letters are assigned a spatial 
 
 button_keys['s0_start_trial_5'] = [cont_btn]
 
-instr['s0_start_trial_6'] = ('In this condition, letters are assigned a spatial location and individual tone in alphabetic order. '
+instr['s0_start_trial_6'] = ('In this condition, letters are assigned a spatial location and unique tone in alphabetic order. '
                              'In this condition the loudness of each speaker is oscillating at the different rates'
                              ' This means you can use the speaker, the location, the tone,  and the differences in oscillation'
                              ' rate to help you listen for each occurrence of the target letter. '
@@ -88,7 +88,7 @@ instr['s0_start_trial_6'] = ('In this condition, letters are assigned a spatial 
 
 button_keys['s0_start_trial_6'] = [cont_btn]
 
-instr['s0_start_trial_7'] = ('In this condition, letters are assigned a spatial location and individual tone in alphabetic order. '
+instr['s0_start_trial_7'] = ('In this condition, letters are assigned a spatial location and unique tone in alphabetic order. '
                              'The loudness of each speaker will oscillate at the same rate'
                              ' although the phase of each speaker will be unique. This means you can use the speaker, the'
                              ' location, the tone,  and the differences in loudness to help you listen for each occurrence of'
@@ -213,7 +213,6 @@ instr['s2_start_block_0'] = ('After performing the task for each condition,'
 button_keys['s2_start_block_0'] = [cont_btn]
 
 # trial instr taken from section 1
-
 #continue automatically
 instr['s2_end_trial'] = ('Thank you for your responses.')
 
@@ -248,6 +247,8 @@ gen_survey[4] = ('How hard did you have to work overall (both mentally and physi
 
 gen_survey[5] = ('How insecure, discouraged, irritated, stressed and annoyed versus secure, gratified, content, '
                  'relaxed and complacent did you feel during the task? Enter a digit value from 0 to 9 on the keyboard with 9 being heavily demanding.'.format(cont_btn_label))
+
+gen_survey['ValueError'] = 'Please enter a single digit value on the keyboard'
 
 mid_survey = dict()
 mid_survey[0] = ('Throughout this experiment the rating scales are used to assess your experiences in the different task '
@@ -298,6 +299,7 @@ rel_survey[
 rel_survey[
     14] = '1. Mental Demand or 2. Physical Demand. Press the key corresponding to the aspect that you consider the larger factor contributing to the workload.'
 
+# ASSIGN BUTTON_KEYS AND WAIT TIMES BY GENERAL PATTERN
 template = dict.fromkeys(instr)
 #override template with explicit values so far
 button_keys = dict(template.items() + button_keys.items())
