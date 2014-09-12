@@ -4,6 +4,9 @@
 
 import numpy as np
 
+
+# add in how letters are ordered at the beginning
+# explaining pattern after the fact for first trial (ascending and descending)
 cont_btn = 8
 cont_btn_label = 'Next'
 
@@ -236,17 +239,17 @@ gen_survey[1] = ('How much physical activity was required (e.g. pushing, pulling
                  ' Was the task easy or demanding, slow or brisk, slack or strenuous, restful or laborious? Enter a digit value from 0 to 9 on the keyboard with 9 being heavily demanding.'.format(cont_btn_label))
 
 gen_survey[2] = ('How much time pressure did you feel to keep up with the rate or pace at which the task or task elements'
-                 ' occurred? Was the pace slow and leisurely or rapid and frantic? Enter a digit value from 0 to 9 on the keyboard with 9 being heavily demanding.'.format(cont_btn_label))
+                 ' occurred? Was the pace slow and leisurely or rapid and frantic? Enter a digit value from 0 to 9 on the keyboard with 9 being heavily pressured by time.'.format(cont_btn_label))
 
 gen_survey[3] = ('How successful do you think you were in accomplishing the goals of the task set by the'
                  ' experimenter (or yourself)? How satisfied were you with your performance in accomplishing'
-                 ' these goals?  Enter a digit value from 0 to 9 on the keyboard with 9 being heavily demanding.'.format(cont_btn_label))
+                 ' these goals?  Enter a digit value from 0 to 9 on the keyboard with 9 being highly successful.'.format(cont_btn_label))
 
 gen_survey[4] = ('How hard did you have to work overall (both mentally and physically) to accomplish your level of performance?'
-                 ' Enter a digit value from 0 to 9 on the keyboard with 9 being heavily demanding.'.format(cont_btn_label))
+                 ' Enter a digit value from 0 to 9 on the keyboard with 9 being extremely hard.'.format(cont_btn_label))
 
 gen_survey[5] = ('How insecure, discouraged, irritated, stressed and annoyed versus secure, gratified, content, '
-                 'relaxed and complacent did you feel during the task? Enter a digit value from 0 to 9 on the keyboard with 9 being heavily demanding.'.format(cont_btn_label))
+                 'relaxed and complacent did you feel during the task? Enter a digit value from 0 to 9 on the keyboard with 9 being highly relaxed.'.format(cont_btn_label))
 
 gen_survey['ValueError'] = 'Please enter a single digit value on the keyboard'
 

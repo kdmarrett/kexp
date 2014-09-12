@@ -6,12 +6,13 @@ function [output] = createGate(input, fs, start_gate, end_gate)
 
 % DESIGN BASIC AMPLITUDE ENVELOPE
 gateDur = .03; % duration of the gate in seconds
-gate = cos(linspace(2 * pi, 3 * pi, fs * gateDur)); % diminish envelope by half one period of sine
+gate = cos(linspace(0, pi, floor(fs * gateDur))); % diminish envelope by one half period of cos 
 endGate = ((gate + 1) / 2)'; 
 begGate = flipud(endGate); %inflection of begGate
 
 [m, n] = size(endGate);
-sustain = ones((length(input) - 2 * m), 1); % leave inner section
+[row, col] = size(input);
+sustain = ones((row - 2 * m), 1); % leave inner section
 
 % INCORPORATE BOOLS
 if ~start_gate
@@ -23,6 +24,8 @@ end
 
 % COMBINE FINAL ENVELOPE AROUND INPUT SOUND
 envelope = [begGate; sustain; endGate];
+if col ~= 1
+	envelope = repmat(envelope, 1, col);
+end
 output = envelope .* input;
-
 end

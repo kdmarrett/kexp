@@ -1,4 +1,4 @@
-function [wheel_matrix_info, possibleLetters, target_letter, rearrangeCycles, tone_constant, ener_mask, letters_used, token_rate_modulation, AM_freq, AM_pow, shiftedLetters, instrNote_shifted, instrNote, envelope_type, letter_fine_structure, sync_cycles  ] = assignParadigm(paradigm, letterArray, env_instrNotes, total_letters )
+function [possibleLetters, target_letter, rearrangeCycles, tone_constant, ener_mask, letters_used, token_rate_modulation, AM_freq, AM_pow, shiftedLetters, instrNote_shifted, instrNote, envelope_type, letter_fine_structure, sync_cycles  ] = assignParadigm(paradigm, letterArray, env_instrNotes, total_letters, wheel_matrix_info )
     % Assign basic design parameters of each paradigm type
     % BOOLEANS FOR DESIGN FEATURES, ORDERED: CONTROL, EACH WHEEL GROUP AT AN ORTHOGONAL FREQUENCY OF TOKEN RATE, MAXIMALLY DISPLACED ORDERING, TARGET LETTER 'R' AS OPPOSED TO X[i],
     % LETTER ORDERS ARE RETAINED ACROSS CYCLES, TONE IS ASSIGNED RANDOMLY AS OPPOSED TO CONTIGUOSLY, EACH WHEEL GROUP GIVEN A UNIQUE FREQUENCY AM, EACH GROUP GIVEN THE SAME AM FREQUENCY 
@@ -7,10 +7,8 @@ function [wheel_matrix_info, possibleLetters, target_letter, rearrangeCycles, to
 
 	% ASSIGN LETTERS PER WHEEL
     if paradigm(1)
-        wheel_matrix_info = [10 10 10]; % token rate changes according to letters in each wheel
         token_rate_modulation = 1;  % bool to change token rate
     else 
-        wheel_matrix_info = [10 10 10]; %token rate remains the same in alls wheels
         token_rate_modulation = 0;
     end
     letters_used = sum(wheel_matrix_info); 

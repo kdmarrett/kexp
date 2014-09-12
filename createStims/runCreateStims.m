@@ -1,8 +1,6 @@
 % createStim.m
 %   Author: Karl Marrett
 
-%  Main program to create all wav files and data files for each subject and place in respective locations in kexp directory
-% popping in right wheel
 % when different speeds of letters wheels still need to end at the same time
 
 close all
@@ -10,6 +8,8 @@ clear all
 tic
 
 % condition_trials = repmat(trials_per_condition, length(condition_type));
+% needs to fix differing letters in wheels
+% create gate input * envelope
 
 instr_amp = [2 1 4];
 [m,n]= size( instr_amp);
@@ -51,20 +51,29 @@ instrument_dynamics = 'mf'; %mezzoforte
 env_instrNotes = 0; % bool for creating instrument notes based off of letter envelopes
 start_sample_one = 1; % start each instrument envelope at the begining of each letter regardless of letter power
 descend_pitch = [0 0 1];
-speaker_list = {'mjc1', 'female', 'mnre0'};
 ILImsBase = 3 * 150;
 ILIms = repmat(ILImsBase, 3, 1);
 token_rates = [3 5 7];
+English = 0; % English, or German
+wheel_matrix_info = [9 10 11]
 
 % SET LETTERS
-letterArray.alphabetic = {'Space', 'Pause', 'A' 'B' 'C' 'D' 'E' 'F' 'G' 'H' 'I' 'J' 'K' 'L' 'M' 'N' 'O' 'P' 'Q' 'R' 'S' 'T' 'U' 'V' 'W' 'X' 'Y' 'Z', 'Read', 'Delete'};
-letterArray.displaced =  {'Space', 'Pause', 'A' 'B' 'F' 'O' 'E' 'M' 'I' 'T' 'J' 'C' 'H' 'Q' 'G' 'N' 'U' 'V' 'K' 'D' 'L' 'U' 'P' 'S' 'Z' 'R' 'W' 'Y' 'Read' 'Delete'}; %maximal phoneme separation
+if English
+	letterArray.alphabetic = {'Space', 'Pause', 'A' 'B' 'C' 'D' 'E' 'F' 'G' 'H' 'I' 'J' 'K' 'L' 'M' 'N' 'O' 'P' 'Q' 'R' 'S' 'T' 'U' 'V' 'W' 'X' 'Y' 'Z', 'Read', 'Delete'};
+	letterArray.displaced =  {'Space', 'Pause', 'A' 'B' 'F' 'O' 'E' 'M' 'I' 'T' 'J' 'C' 'H' 'Q' 'G' 'N' 'U' 'V' 'K' 'D' 'L' 'U' 'P' 'S' 'Z' 'R' 'W' 'Y' 'Read' 'Delete'}; %maximal phoneme separation
+	speaker_list = {'mjc1', 'female', 'mnre0'};
+	speaker_amp_weights = [1 1 1];
+else
+	letterArray.alphabetic = {'Leer', 'Paus', 'A' 'B' 'C' 'D' 'E' 'F' 'G' 'H' 'I' 'J' 'K' 'L' 'M' 'N' 'O' 'P' 'Q' 'R' 'S' 'T' 'U' 'V' 'W' 'X' 'Y' 'Z', 'Lesen', 'Losche'};
+	letterArray.displaced =  {'Leer', 'Paus', 'A' 'B' 'F' 'O' 'E' 'M' 'I' 'T' 'J' 'C' 'H' 'Q' 'G' 'N' 'U' 'V' 'K' 'D' 'L' 'U' 'P' 'S' 'Z' 'R' 'W' 'Y' 'Lesen' 'Losche'}; %maximal phoneme separation
+	speaker_list = {'male_1_G', 'female_1_G', 'male_2_G'}
+	speaker_amp_weights = [1 1.5 1];
+end
 assert(length(letterArray.alphabetic) == length(letterArray.displaced));
-letter_samples = 8000; %length of each letter
+letter_samples = 12000; %length of each letter
 total_letters = length(letterArray.alphabetic);
 instr_list = {'Piano', 'Trumpet', 'Marimba'};
 version_num = 1;
-speaker_amp_weights = [1 1 1];
 
 % ESTABLISH THE PITCH ORDERS FOR EACH WHEEL OF LETTERS
 pitches.pent = {'0', '1.0', '2.0', '4.0', '5.0'};
@@ -79,10 +88,15 @@ assert((length(pitches.notes) == length(pitches.all)), 'Error: note names do not
 condition_type = eye(7);
 condition_type = [zeros(1, 7); condition_type];
 condition_type(5, 2) = 1;
+% remove conditions where the letters are displaced for German
+if ~English
+	condition_type = condition_type([1:2, 4, 6:end], :)
+end
 [condition_no, bar] = size(condition_type);
 trials_per_condition = 7;
 condition_trials = repmat(trials_per_condition, length(condition_type), 1);
 condition_trials(1) = 17;
+
 if makeTraining
 	trials_per_training = 1;
 	condition_trials_training = repmat(trials_per_condition,length(condition_type));
@@ -117,12 +131,11 @@ for x = 1:reps
 		if x == 1
 			condition_bin(y, :)  = reshape(dec2bin(paradigm)', [], 1)';
 		end
-		[wheel_matrix_info, possible_letters, target_letter, rearrangeCycles, tone_constant, ener_mask, letters_used, token_rate_modulation,  AM_freq, AM_pow, shiftedLetters, instrNote_shifted, instrNote, envelope_type, letter_fine_structure, sync_cycles  ] = assignParadigm(paradigm, letterArray, env_instrNotes, total_letters);
+		[possible_letters, target_letter, rearrangeCycles, tone_constant, ener_mask, letters_used, token_rate_modulation,  AM_freq, AM_pow, shiftedLetters, instrNote_shifted, instrNote, envelope_type, letter_fine_structure, sync_cycles  ] = assignParadigm(paradigm, letterArray, env_instrNotes, total_letters, wheel_matrix_info);
 		[pitch_wheel, angle_wheel, total_pitches, list_of_pitches, start_semitone_index ] = assignPitch(wheel_matrix_info, tot_cyc, scale_type, pitches, descend_pitch );
 		
-		
 		% PREPARE LETTERS
-		[fs, trim_letter_path, letterEnvelope, mean_speaker_sample] = trimLetters(letter_samples, letter_path, letterArray, pitches, force_recreate, speaker_list, version_num, speaker_amp_weights, shiftedLetters, env_instrNotes, default_fs);
+		[fs, trim_letter_path, letterEnvelope, mean_speaker_sample] = trimLetters(letter_samples, letter_path, letterArray, pitches, force_recreate, speaker_list, version_num, speaker_amp_weights, shiftedLetters, env_instrNotes, English, wheel_matrix_info, default_fs);
 		[nul] = trimInstrNotes(fs, instrNote_dir, letter_samples, pitches, instrument_dynamics, env_instrNotes, instr_list, speaker_list, letterEnvelope, list_of_pitches, force_recreate, letterArray, envelope_type, mean_speaker_sample, start_sample_one, start_semitone_index, wheel_matrix_info);
 		
 		% COMPUTE MISC. BASIC PARAMS OF BLOCK
@@ -266,11 +279,6 @@ for x = 1:reps
 					[final_wheel_rows(j), cols] = size(final_wheel);
 					assert((final_wheel_rows(j) == tot_wheel(j)), 'Error: check final track sample number calculation in assignTimeVars')
 
-					% CUT WHEEL TRACKS TO MATCH IN LENGTH
-					if j ~= min_wheel_time_ind
-						final_wheel = trimSoundVector(final_wheel, fs, min_wheel, 1, 1)
-					end
-					
 					% ADD EACH WHEEL TRACK TO FINAL SAMPLE TRACK
 					local_index = wheel_sample_index;
 					for m = 1:(final_wheel_rows(j) - 1)
@@ -306,6 +314,6 @@ for x = 1:reps
 		end
 	end
 end
-end  % for sound testing
-save( fullfile( data_dir, 'global_vars'), 'condition_bin', 'wheel_matrix_info', 'preblock_prime_sec') % global variables for each subject and session
+end  
+save( fullfile( data_dir, 'global_vars'), 'condition_bin', 'wheel_matrix_info', 'preblock_prime_sec', 'English') % global variables for each subject and session
 toc %print elapsed time

@@ -8,9 +8,7 @@ This script runs an experiment with spatially distributed letter streams.
 # Author: Karl Marrett <kdmarret@uw.edu>, <kdmarrett@gmail.com>
 
 # TO DO
-# el instance can not be made in mint el must be included in identify trial
 # set luminosity via calibration
-# getting input responses for NASA all logged
 # what is np.random.RandomState(0)
 
 import scipy
@@ -32,7 +30,6 @@ from text_kexp import *
 PATH = '/home/kdmarrett/git/kexp'
 # datadir = op.join(PATH, 'Data', participant, session)
 datadir = op.join(PATH, 'Data')
-
 
 # EC PARAMETERS
 cont_btn = 8
@@ -98,6 +95,7 @@ def ExperimentOrdering(block_in_sections, trial_in_block, condition_nums, contro
                             # delete by value
                             replacement_range.remove(control_ind[k])
                         except:
+                            # ignore all exceptions for out of range
                             pass
                     next_control_ind = random.sample(replacement_range, 1)[0]
                     trial[next_control_ind] = 0
@@ -183,8 +181,8 @@ def recordTrial(wheel_matrix_info, preblock, id_, wav_indices, instr, ec, el, st
     drawPrimer(wheel_matrix_info, target_letter, possible_letters)
     # load WAVs for this block
     id_list = map(int, list(id_))
-    ec.identify_trial(ec_id=id_list, ttl_id=id_list)
-    # ec.identify_trial(ec_id=id_list, el_id=id_list, ttl_id=id_list)
+    # ec.identify_trial(ec_id=id_list, ttl_id=id_list)
+    ec.identify_trial(ec_id=id_list, el_id=id_list, ttl_id=id_list)
     stims = []
     stims.append(read_wav(trial_stim_path)[0])  # ignore fs
     stim_dur = stims[0].shape[-1] / ec.stim_fs
@@ -238,6 +236,8 @@ def drawPrimer(wheel_matrix_info, target_letter, possible_letters):
 
 
 def cogLoadSurvey(gen_survey, mid_survey, rel_survey, id_, ec):
+    """ Prompt users with cognitive load questions for each condition"""
+
     ec.write_data_line('cogLoadSurvey')
     ec.write_data_line(id_)
     # import ipdb; ipdb.set_trace()
@@ -268,15 +268,14 @@ def surveyInput(text, response_btns, ec):
         try:
             assert(int(response) in response_btns)
         except ValueError:
-            ec.screen_text(
-                "Please enter a single digit value on the keyboard")
+            ec.screen_text(gen_survey['ValueError'])
             ec.flip()
             ec.wait_secs(wait_long)
             response = ''
             continue
         except AssertionError:
-            ec.screen_text(
-                "Please enter a digit value in the range of " + str(min(response_btns)) + " to " + str(max(response_btns)))
+            ec.screen_text('Please enter a digit value in the range of ' + str(
+                min(response_btns)) + ' to ' + str(max(response_btns)))
             ec.flip()
             ec.wait_secs(wait_long)
             response = ''
@@ -284,9 +283,8 @@ def surveyInput(text, response_btns, ec):
         except:  # if any other exception arises start over
             response = ''
             continue
-        feedback = ('You pressed ' + str(response) +
-                    ', if this is the number you want press "{}" to continue otherwise press any other key to redo'.format(cont_btn_label))
-        check_response = ec.screen_prompt(feedback, timestamp=False)
+        check_response = ec.screen_prompt('You pressed ' + str(
+            response) + ', if this is the number you want press "{}" to continue otherwise press any other key to redo'.format(cont_btn_label), timestamp=False)
         if check_response == str(cont_btn):
             break
         else:
@@ -295,13 +293,11 @@ def surveyInput(text, response_btns, ec):
 
 # RUN EXPERIMENT
 with ef.ExperimentController(*std_args, **std_kwargs) as ec:
-    # import ipdb; ipdb.set_trace()
     stimdir = op.join(PATH, 'Stims', ec._exp_info[
                       'participant'], ec._exp_info['session'])
-    # el = EyelinkController(ec)  # create el instance
-    # el.calibrate(prompt=False)
-    el = ''  # temporary hack to be deleted on Marlo
-    ec.set_visible(True)  # what does this do?
+    el = EyelinkController(ec)  # create el instance
+    el.calibrate(prompt=True)
+    ec.set_visible(True)
     ec.set_background_color([0.1] * 3)
     ec.flip()
     ec.start_noise()
@@ -315,12 +311,13 @@ with ef.ExperimentController(*std_args, **std_kwargs) as ec:
     final_datadir = op.join(
         datadir, ec._exp_info['participant'], ec._exp_info['session'])
     global_vars = scipy.io.loadmat(op.join(final_datadir, 'global_vars.mat'))
-    condition_uni = global_vars['condition_bin']
-    condition_asc = []
+    condition_uni = global_vars['condition_bin']  # Unicode by default
+    condition_asc = []  # ASCII
     for i in range(len(condition_uni)):
         condition_asc.append(condition_uni[i].encode('ascii'))
     condition_nums = len(condition_asc)
     wheel_matrix_info = global_vars['wheel_matrix_info'][0]
+    # keep track of which new wav file to use
     wav_indices = dict(
         zip(condition_asc, np.zeros(len(condition_asc), dtype=int)))
     preblock = global_vars['preblock_prime_sec'][0]
@@ -333,7 +330,6 @@ with ef.ExperimentController(*std_args, **std_kwargs) as ec:
         ec.write_data_line('Section: ', snum)
         # Initialize section vars
         section_key = 's' + str(snum) + '_' + 'start_sect'
-        # import ipdb; ipdb.set_trace()
         ec.screen_prompt(
             instr[(section_key)], live_keys=button_keys[(section_key)], max_wait=wait_keys[section_key])
 
@@ -365,7 +361,6 @@ with ef.ExperimentController(*std_args, **std_kwargs) as ec:
                     trial_key = 's' + \
                         str(snum) + '_' + 'start_trial_' + str(condition_no)
                 # start trial
-                # import ipdb; ipdb.set_trace()
                 ec.screen_prompt(
                     instr[(trial_key)], live_keys=button_keys[(trial_key)], max_wait=wait_keys[trial_key])
                 wav_indices = recordTrial(
@@ -384,4 +379,4 @@ with ef.ExperimentController(*std_args, **std_kwargs) as ec:
         section_end_key = 's' + str(snum) + '_' + 'end_sect'
         ec.screen_prompt(
             instr[(section_end_key)], live_keys=button_keys[(section_end_key)], max_wait=wait_keys[section_end_key])
-ec.stop_noise()
+    ec.stop_noise()
