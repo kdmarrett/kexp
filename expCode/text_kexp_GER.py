@@ -1,6 +1,8 @@
 # text_kexp.py
 # Author: Karl Marrett
 # Text and other related dictionaries for runKexp.py script
+# send translation (most challenging to norah)
+# any other final corrections?
 
 import numpy as np
 
@@ -146,16 +148,11 @@ instr['s1_start_block_1'] = ('Es folgt der zweite Block dieses Teils des Experim
                              'Zur Erinnerung: ein neuer Trial startet immer kurz nach dem der letzte beendet wurde.'
                              'Es gibt 8 Trials in diesem Block. Dr\"ucken Sie "{}" um zu beginnen.'.format(cont_btn_label))
 
-
-
 button_keys['s1_start_block_1'] = [cont_btn]
 
 instr['s1_start_block_2'] = ('Es folgt der dritte Block dieses Teils des Experiments. '
                              'Zur Erinnerung: ein neuer Trial startet immer kurz nach dem der letzte beendet wurde.'
                              'Es gibt 8 Trials in diesem Block. Dr\"ucken Sie "{}" um zu beginnen.'.format(cont_btn_label))
-
-
-
 
 button_keys['s1_start_block_2'] = [cont_btn]
 
@@ -163,16 +160,13 @@ instr['s1_start_block_3'] = ('Es folgt der vierte Block dieses Teils des Experim
                              'Zur Erinnerung: ein neuer Trial startet immer kurz nach dem der letzte beendet wurde.'
                              'Es gibt 8 Trials in diesem Block. Dr\"ucken Sie "{}" um zu beginnen.'.format(cont_btn_label))
 
-
 button_keys['s1_start_block_3'] = [cont_btn]
 
 instr['s1_start_block_4'] = ('Es folgt der letzte Block dieses Teils des Experiments. '
                              'Zur Erinnerung: ein neuer Trial startet immer kurz nach dem der letzte beendet wurde.'
                             'Es gibt 8 Trials in diesem Block. Dr\"ucken Sie "{}" um zu beginnen.'.format(cont_btn_label))
 
-
 button_keys['s1_start_block_4'] = [cont_btn]
-
 
 instr['s1_end_trial'] = ('')
 
@@ -197,21 +191,17 @@ instr['s2_start_sect'] = ('Sie beginnen jetzt mit dem letzten Teil des Experimen
                           ' Daher m\"ochten wir Sie bitten diese Faktoren zu gut wie m\"oglich zu evaluieren.'
                           ' Dr\"ucken Sie "{}" um fortzufahren.'.format(cont_btn_label))
 
-
-
 utton_keys['s2_start_sect'] = [cont_btn]
 instr['s2_start_block_0'] = ('Nach jeder Kondition,'
                              ' bitten wir Sie ihre Erfahrung im Bezug auf verschiedene Faktoren von 0 bis 9 zu bewerten.' 
                              'Bitte bewerten Sie jede Kondition unabh\"angig von den anderen und beachten Sie die Beschreibung der Bewertung gr\"undlich. '
                              'Falls Sie fragen zum Bewertungsbogen haben, z\"ogern Sie nicht uns zu fragen. Dr\"ucken Sie "{}" um fortzufahren.'.format(cont_btn_label))
 
-
 button_keys['s2_start_block_0'] = [cont_btn]
 
 # trial instr taken from section 1
 #continue automatically
 instr['s2_end_trial'] = ('Vielen Dank f\"ur Ihre Antworten..')
-
 
 button_keys['s2_end_trial'] = []
 instr['s2_end_block'] = ('Vielen Dank f\"ur Ihre Antworten. Machen Sie eine Pause wenn Sie m\"ochten und dr\"ucken Sie "{}" wenn  '
@@ -271,7 +261,6 @@ mid_survey[0] = ('W\"ahrend des Experiments wurden Ihre Bewertungen verwendet um
                  ' Dr\"ucken Sie "{}" um fortzufahren.'.format(cont_btn_label))
 
 
-
 mid_survey[1] = ('Jetzt werden wir Ihnen eine Reihe von Paaren von Begriffen zeigen (z. B. Anstrengung versus Mentale Anforderung )'
                  'Bitte w\"ahlen Sie den Begriff, der Ihrer Meinung nach gr\"osseren Einfluss auf ihre Belastung w\"ahrend der Aufgabe hatte.'
                  'W\"ahlen Sie sorgf\"altig und beachten Sie dass ihre Wahl konsistent mit Ihren Angaben w\"ahrend der Bewertung ist.'
@@ -283,14 +272,14 @@ rel_survey = dict()
 rel_survey[
     0] = '1. K\"orperlicher Anspruch oder 2. Zeitlicher Anspruch. Dr\"ucken Sie die Zahl des Aspekts, der Sie Ihrer Meinung nach mehr beeinflusst hat.'
 
-    rel_survey[
-    1] = '1. Anstrengung oder 2. Mentaler Anspruch. Dr\"ucken Sie die Zahl des Aspekts, der Sie Ihrer Meinung nach mehr beeinflusst hat.'
+rel_survey[
+1] = '1. Anstrengung oder 2. Mentaler Anspruch. Dr\"ucken Sie die Zahl des Aspekts, der Sie Ihrer Meinung nach mehr beeinflusst hat.'
 
-    rel_survey[
-    2] = '1. Frustration oder 2. K\"orperlicher Anspruch. Dr\"ucken Sie die Zahl des Aspekts, der Sie Ihrer Meinung nach mehr beeinflusst hat.'
+rel_survey[
+2] = '1. Frustration oder 2. K\"orperlicher Anspruch. Dr\"ucken Sie die Zahl des Aspekts, der Sie Ihrer Meinung nach mehr beeinflusst hat.'
 
-    rel_survey[
-    3] = '1. Anstrengung oder 2. Frustration. Dr\"ucken Sie die Zahl des Aspekts, der Sie Ihrer Meinung nach mehr beeinflusst hat.'
+rel_survey[
+  3] = '1. Anstrengung oder 2. Frustration. Dr\"ucken Sie die Zahl des Aspekts, der Sie Ihrer Meinung nach mehr beeinflusst hat.'
 
 rel_survey[
     4] = '1. Mentaler Anspruch oder 2. Zeitlicher Anspruch. Dr\"ucken Sie die Zahl des Aspekts, der Sie Ihrer Meinung nach mehr beeinflusst hat.'
@@ -307,7 +296,7 @@ rel_survey[
 rel_survey[
     10] = '1. Anstrengung oder 2. Zeitlicher Anspruch. Dr\"ucken Sie die Zahl des Aspekts, der Sie Ihrer Meinung nach mehr beeinflusst hat.'
 rel_survey[
-    11] = '1. Frustration oder 2. Leistung. Dr\"ucken Sie die Zahl des Aspekts, der Sie Ihrer Meinung nach mehr beeinflusst hat.'
+  11] = '1. Frustration oder 2. Leistung. Dr\"ucken Sie die Zahl des Aspekts, der Sie Ihrer Meinung nach mehr beeinflusst hat.'
 rel_survey[
     12] = '1. Leistung oder 2. K\"orperlicher Anspruch. Dr\"ucken Sie die Zahl des Aspekts, der Sie Ihrer Meinung nach mehr beeinflusst hat.'
 rel_survey[

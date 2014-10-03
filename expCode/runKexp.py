@@ -23,7 +23,6 @@ from expyfun.io import read_wav
 from expyfun import (EyelinkController, visual,
                      get_keyboard_input, assert_version, decimals_to_binary)
 from CircularLayout import CircularLayout
-from text_kexp import *
 
 #assert ef.__version__ == '2.0.0.DASCogLoad'
 
@@ -147,7 +146,6 @@ def controlProceedsFollows(block, num_enforced_wraps):
                 follows_condition[trial[ind + 1] - 1] += 1
     control_wraps = False
     # check that all conditions proceeded and followed by control by at least enforced wraps
-    # import ipdb; ipdb.set_trace()
     if (len(np.where(proceeds_condition >= num_enforced_wraps)[0]) == (condition_nums - 1)):
         if (len(np.where(follows_condition >= num_enforced_wraps)[0]) == (condition_nums - 1)):
             control_wraps = True
@@ -181,7 +179,6 @@ def recordTrial(wheel_matrix_info, preblock, id_, wav_indices, instr, ec, el, st
     drawPrimer(wheel_matrix_info, target_letter, possible_letters)
     # load WAVs for this block
     id_list = map(int, list(id_))
-    # ec.identify_trial(ec_id=id_list, ttl_id=id_list)
     ec.identify_trial(ec_id=id_list, el_id=id_list, ttl_id=id_list)
     stims = []
     stims.append(read_wav(trial_stim_path)[0])  # ignore fs
@@ -321,6 +318,11 @@ with ef.ExperimentController(*std_args, **std_kwargs) as ec:
     wav_indices = dict(
         zip(condition_asc, np.zeros(len(condition_asc), dtype=int)))
     preblock = global_vars['preblock_prime_sec'][0]
+    # adjust instruction languages according subject in runcreatestims
+    if global_vars['English']:
+        from text_kexp import *
+    else:
+        from text_kexp_GER import *
 
     # MAKE CONDITION ORDERING
     section = ExperimentOrdering(
