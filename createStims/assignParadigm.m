@@ -5,7 +5,7 @@ function [possibleLetters, target_letter, rearrangeCycles, tone_constant, ener_m
 
     ener_mask = 0;% assigns all non target letters to letter O 
 
-	% ASSIGN LETTERS PER WHEEL
+    % ASSIGN LETTERS PER WHEEL
     if paradigm(1)
         token_rate_modulation = 1;  % bool to change token rate
     else 
@@ -62,7 +62,7 @@ function [possibleLetters, target_letter, rearrangeCycles, tone_constant, ener_m
     shiftedLetters = 0; % bool letters are monotonized and shifted within one octave above and below A3
     assert(~shiftedLetters, 'kdm recordings of pause, read, etc must also be shifted before creating a shifted letter stimuli')
     instrNote_shifted = 1; % instrument tones go above and below A4 then are later combined with raw letter recordings
-    instrNote = 1; % bool to include instrument notes
+    instrNote = 0; % bool to include instrument notes
     letter_fine_structure = 1;
     sync_cycles = 0;
     if env_instrNotes

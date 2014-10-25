@@ -55,7 +55,7 @@ ILImsBase = 3 * 150;
 ILIms = repmat(ILImsBase, 3, 1);
 token_rates = [3 5 7];
 English = 1; % English, or German
-wheel_matrix_info = [9 10 11]
+wheel_matrix_info = [9 10 11];
 
 % SET LETTERS
 if English
@@ -85,17 +85,17 @@ pitches.notes = {'C3' 'Db3' 'D3' 'Eb3' 'E3' 'F3' 'Gb3' 'G3' 'Ab3' 'A3' 'Bb3' 'B3
 pitches.notesWhole = {'C3', 'D3', 'E3', 'Gb3', 'Ab3', 'Bb3', 'C4', 'D4', 'E4', 'Gb4', 'Ab4', 'Bb4', 'C5'};
 assert((length(pitches.notes) == length(pitches.all)), 'Error: note names do not cover range of possible pitches')
 
-condition_type = eye(7);
-condition_type = [zeros(1, 7); condition_type];
-condition_type(5, 2) = 1;
+% condition_type = eye(7);
+% condition_type = [zeros(1, 7); condition_type];
+% condition_type(5, 2) = 1;
+condition_type = [0, 0, 0, 0, 0, 0, 0; 0, 1, 0, 0, 0, 0, 0; 0, 1, 0, 1, 0, 0, 0];
 % remove conditions where the letters are displaced for German
 if ~English
 	condition_type = condition_type([1:2, 4, 6:end], :)
 end
 [condition_no, bar] = size(condition_type);
-trials_per_condition = 7;
+trials_per_condition = 3;
 condition_trials = repmat(trials_per_condition, length(condition_type), 1);
-condition_trials(1) = 17;
 
 if makeTraining
 	trials_per_training = 1;
@@ -135,8 +135,10 @@ for x = 1:reps
 		[pitch_wheel, angle_wheel, total_pitches, list_of_pitches, start_semitone_index ] = assignPitch(wheel_matrix_info, tot_cyc, scale_type, pitches, descend_pitch );
 		
 		% PREPARE LETTERS
-		[fs, trim_letter_path, letterEnvelope, mean_speaker_sample] = trimLetters(letter_samples, letter_path, letterArray, pitches, force_recreate, speaker_list, version_num, speaker_amp_weights, shiftedLetters, env_instrNotes, English, wheel_matrix_info, default_fs);
-		[nul] = trimInstrNotes(fs, instrNote_dir, letter_samples, pitches, instrument_dynamics, env_instrNotes, instr_list, speaker_list, letterEnvelope, list_of_pitches, force_recreate, letterArray, envelope_type, mean_speaker_sample, start_sample_one, start_semitone_index, wheel_matrix_info);
+		[fs, trim_letter_path, letterEnvelope, mean_speaker_sample] = trimLetters(total_letters, letter_samples, letter_path, letterArray, pitches, force_recreate, speaker_list, version_num, speaker_amp_weights, shiftedLetters, env_instrNotes, English, wheel_matrix_info, default_fs);
+		if instrNote
+			[nul] = trimInstrNotes(fs, instrNote_dir, letter_samples, pitches, instrument_dynamics, env_instrNotes, instr_list, speaker_list, letterEnvelope, list_of_pitches, force_recreate, letterArray, envelope_type, mean_speaker_sample, start_sample_one, start_semitone_index, wheel_matrix_info);
+		end
 		
 		% COMPUTE MISC. BASIC PARAMS OF BLOCK
 		[ IWI, tot_trial, tot_wheel, letter_difference, min_wheel, preblock, ILI, tot_wav_time, min_wheel_time, min_wheel_time_ind ] = assignTimeVars( wheel_matrix_info, fs, tot_cyc, letter_samples, token_rate_modulation, preblock_prime_sec, postblock_sec, ILIms, token_rates );

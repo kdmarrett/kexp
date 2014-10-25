@@ -1,4 +1,4 @@
-function [ fs, trim_letter_path, letterEnvelope, mean_speaker_sample ] = trimLetters(letter_samples, letter_path, letterArray, pitches, force_recreate, speaker_list, version_num, speaker_amp_weights, shiftedLetters, env_instrNotes, English, wheel_matrix_info,	 default_fs);
+function [ fs, trim_letter_path, letterEnvelope, mean_speaker_sample ] = trimLetters(total_letters, letter_samples, letter_path, letterArray, pitches, force_recreate, speaker_list, version_num, speaker_amp_weights, shiftedLetters, env_instrNotes, English, wheel_matrix_info,	 default_fs);
 % Writes all new letters with the specified sample length of letter_samples and saves into 
 % folder trim_letter_path a subdirectory of letter_path
 
@@ -7,7 +7,7 @@ letterEnvelope = {};
 summed_letter_speaker = zeros(letter_samples, length(speaker_list));
 mean_speaker_sample = zeros(3, 1);
 index = 1;
-index2 = 1
+index2 = 1;
 for x = 1:length(speaker_list)
 	fs_speaker = default_fs; % default letter sample rate
 	% if letters are shifted update the path
@@ -32,53 +32,54 @@ for x = 1:length(speaker_list)
 		end
 		for i = 1:iterations 
 			%loop through all letter in wheel in each semitone dir
-			for j = 1:wheel_matrix_info(x) 
+			for j = 1:total_letters
+			% for j = 1:wheel_matrix_info(x) %implement for tones and efficiency
 				if shiftedLetters
 					fp = fullfile(input_letter_path, pitches.all{i});
 				else
 					fp = input_letter_path;
 				end
 				if English
-					temp_fn = strcat(speaker_list{x}, '-', letterArray.alphabetic{index}, int2str(version_num), '-t', '.wav');
+					temp_fn = strcat(speaker_list{x}, '-', letterArray.alphabetic{j}, int2str(version_num), '-t', '.wav');
 					if (strcmpi(speaker_list{x}, 'Original') || strcmpi(speaker_list{x}, 'male_trimmed') || strcmpi(speaker_list{x}, 'female'))
-						fn = strcat(letterArray.alphabetic{index});
+						fn = strcat(letterArray.alphabetic{j});
 					elseif exist(fullfile(fp, temp_fn), 'file')
 						fn = temp_fn;
 					else
-						fn = strcat(speaker_list{x}, '_', letterArray.alphabetic{index}, int2str(version_num), '.wav');
+						fn = strcat(speaker_list{x}, '_', letterArray.alphabetic{j}, int2str(version_num), '.wav');
 					end
-					if (strcmpi(letterArray.alphabetic(index), 'Read') || strcmpi(letterArray.alphabetic(index), 'Space') || strcmpi(letterArray.alphabetic(index), 'Delete') || strcmpi(letterArray.alphabetic(index), 'Pause'))
-						ff = fullfile(letter_path, 'rawLetters', 'kdm_manuallyTrim', strcat(letterArray.alphabetic{index}, '.wav'));
+					if (strcmpi(letterArray.alphabetic(j), 'Read') || strcmpi(letterArray.alphabetic(j), 'Space') || strcmpi(letterArray.alphabetic(j), 'Delete') || strcmpi(letterArray.alphabetic(j), 'Pause'))
+						ff = fullfile(letter_path, 'rawLetters', 'kdm_manuallyTrim', strcat(letterArray.alphabetic{j}, '.wav'));
 					else
 						ff = fullfile(fp, fn); 
 					end
 				else	
-					ff = fullfile(fp, strcat(letterArray.alphabetic{index}, '.wav'));
+					ff = fullfile(fp, strcat(letterArray.alphabetic{j}, '.wav'));
 				end
 				try
-					[letterSound{index}, fs_speaker, letterBits] = wavread(ff);  % letter wavs for each semitone
+					[letterSound{j}, fs_speaker, letterBits] = wavread(ff);  % letter wavs for each semitone
 				catch	% this hack gets around wav file types saved in compressed formats	
 					f=fopen(ff,'r+'); fseek(f,20,0); fwrite(f,[3 0]); fclose(f);  
-					[letterSound{index}, fs_speaker, letterBits] = wavread(ff);
+					[letterSound{j}, fs_speaker, letterBits] = wavread(ff);
 				end
 				if env_instrNotes
-					letterEnvelope{index} = envelopeByLetter(letterSound{index}, letter_samples, fs_speaker); 
+					letterEnvelope{j} = envelopeByLetter(letterSound{j}, letter_samples, fs_speaker); 
 					% VISUALIZE:
-					% plot(letterEnvelope{index})
+					% plot(letterEnvelope{j})
 					% hold on
-					% plot(letterEnvelope{index}, 'r')
-					% title(letterArray.alphabetic{index})
+					% plot(letterEnvelope{j}, 'r')
+					% title(letterArray.alphabetic{j})
 					% waitforbuttonpress
 					% hold off
 				end
 
 				% CHANGE OVERALL AMPLITUDE OF INDIVIDUAL SPEAKERS
-				letterSound{index} = speaker_amp_weights(x) .* letterSound{index};
-				index = index + 1;
+				letterSound{j} = speaker_amp_weights(x) .* letterSound{j};
 			end
 
 			% TRIM EACH LETTER 
-			for j = 1:wheel_matrix_info(x)
+			% for j = 1:wheel_matrix_info(x)  implement this later for efficiency
+			for j = 1:total_letters
 				% adjust output path by pitch 
 				if shiftedLetters
 					final_output_path = fullfile(output_path, pitches.all{i});
@@ -87,14 +88,15 @@ for x = 1:length(speaker_list)
 				end
 				createStruct(final_output_path);
 				% clean final sound
-				trimmedLetters{index2} = trimSoundVector(letterSound{index2}, fs_speaker, letter_samples, 1, 1);
-				normalLetters{index2} = normalizeSoundVector(trimmedLetters{index2});
-				final_trimmedLetters{index2} = createGate(normalLetters{index2}, fs_speaker, 1, 1);
+				trimmedLetters{j} = trimSoundVector(letterSound{j}, fs_speaker, letter_samples, 1, 1);
+				normalLetters{j} = normalizeSoundVector(trimmedLetters{j});
+				final_trimmedLetters{j} = createGate(normalLetters{j}, fs_speaker, 1, 1);
 				% estimate mean power of all letters for deciding instrument note timings
-				pwr_est = final_trimmedLetters{index2}.^2;
+				pwr_est = final_trimmedLetters{j}.^2;
 				summed_letter_speaker(:, x) = summed_letter_speaker(:, x) + pwr_est;
-				wavwrite(final_trimmedLetters{index2}, fs_speaker, fullfile(final_output_path, strcat(letterArray.alphabetic{index2}, '.wav')));
-				index2 = index2 + 1;
+				fprintf('inside trim letters');
+				fname = fullfile(final_output_path, strcat(letterArray.alphabetic{j}, '.wav'))
+				wavwrite(final_trimmedLetters{j}, fs_speaker, fullfile(final_output_path, strcat(letterArray.alphabetic{j}, '.wav')));
 			end    
 		end
 	end
