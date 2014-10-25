@@ -54,7 +54,7 @@ descend_pitch = [0 0 1];
 ILImsBase = 3 * 150;
 ILIms = repmat(ILImsBase, 3, 1);
 token_rates = [3 5 7];
-English = 0; % English, or German
+English = 1; % English, or German
 wheel_matrix_info = [9 10 11]
 
 % SET LETTERS
@@ -171,7 +171,7 @@ for x = 1:reps
 					final_letter_path = fullfile(trim_letter_path, current_speaker);
 					wheel_track = zeros(tot_wheel(j), 2); %(re)initialize background track for each wheel
 					for k = 1:tot_cyc %for each cycle of the individual wheel
-						for l = 1:wheel_matrix_info(j) %for each letter
+						for l = 1:wheel_matrix_info(j) % for each letter
 							letter = wheel_matrix{j}{k, l}; %find letter in wheel_matrix cell
 							
 							% FIND CONSTANT PITCH
@@ -207,6 +207,7 @@ for x = 1:reps
 							else
 								instrNote_sound = zeros(letter_samples, 1);
 							end
+							path
 							[letter_sound, fs] = wavread(path);
 							
 							% VIEW

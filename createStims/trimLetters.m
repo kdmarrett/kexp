@@ -89,7 +89,7 @@ for x = 1:length(speaker_list)
 				% clean final sound
 				trimmedLetters{index2} = trimSoundVector(letterSound{index2}, fs_speaker, letter_samples, 1, 1);
 				normalLetters{index2} = normalizeSoundVector(trimmedLetters{index2});
-				final_trimmedLetters{index2} = createGate(normalLetters{index2}, fs_speaker, 1, 1)
+				final_trimmedLetters{index2} = createGate(normalLetters{index2}, fs_speaker, 1, 1);
 				% estimate mean power of all letters for deciding instrument note timings
 				pwr_est = final_trimmedLetters{index2}.^2;
 				summed_letter_speaker(:, x) = summed_letter_speaker(:, x) + pwr_est;

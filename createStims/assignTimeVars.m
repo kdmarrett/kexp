@@ -37,27 +37,28 @@ function [  IWI, tot_trial, tot_wheel, letter_difference, min_wheel, preblock, I
     	end
 	end
 	
-	[max_wheel_time, max_wheel_time_ind] = max(adjusted_wheel)
-	[min_wheel_time, min_wheel_time_ind] = min(adjusted_wheel)
-	letters_in_trial = zeros((length(wheel_matrix_info) - 1), 1)
-	index = 1
-	for i = 1:length(wheel_matrix_info)
-		if i ~= max_wheel_time_ind
-			floor(max_wheel_time / ILI(i))
-			index = index + 1;
-
+	% [max_wheel_time, max_wheel_time_ind] = max(adjusted_wheel)
+	% [min_wheel_time, min_wheel_time_ind] = min(adjusted_wheel)
+	% letters_in_trial = zeros((length(wheel_matrix_info) - 1), 1)
+	% index = 1
+	% for i = 1:length(wheel_matrix_info)
+	% 	if i ~= max_wheel_time_ind
+	% 		floor(max_wheel_time / ILI(i))
+	% 		index = index + 1;
+	% end
 
 	% FIND SPECIFIC END TIMES FOR ENTIRE RESPONSE SECTION OF TRIAL
 	if token_rate_modulation
 		% trial_spill_over = max(adjusted_spill_over); % finds the spillover relative to the trial ambivalent to wheel spillover
 		% tot_response_section = rough_tot_wheel + trial_spill_over;
 		tot_response_section = max(adjusted_wheel);
-		[min_wheel_time, min_wheel_time_ind] = min(adjusted_wheel)
+		[min_wheel_time, min_wheel_time_ind] = min(adjusted_wheel);
 	else 
     	tot_response_section = tot_wheel(length(wheel_matrix_info)) + IWI * 2; % This should equal max(adjusted_wheel)
 		min_wheel_time = [];
 		min_wheel_time_ind = [];
 	end
+
 	%TOTAL SAMPLES IN EACH TRIAL OF CYCLES
 	tot_trial = ceil(preblock + tot_response_section + postblock);
 	tot_wav_time = tot_trial / fs;
