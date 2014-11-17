@@ -1,4 +1,8 @@
-function [ fs, trim_letter_path, letterEnvelope, mean_speaker_sample ] = trimLetters(total_letters, letter_samples, letter_path, letterArray, pitches, force_recreate, speaker_list, version_num, speaker_amp_weights, shiftedLetters, env_instrNotes, English, wheel_matrix_info,	 default_fs);
+function [ fs, trim_letter_path, letterEnvelope, mean_speaker_sample ] = ...
+	trimLetters(total_letters, letter_samples, letter_path, letterArray, ...
+		pitches, force_recreate, speaker_list, version_num, ...
+		speaker_amp_weights, shiftedLetters, env_instrNotes, English, ...
+		wheel_matrix_info, default_fs);
 % Writes all new letters with the specified sample length of letter_samples and saves into 
 % folder trim_letter_path a subdirectory of letter_path
 
@@ -48,8 +52,12 @@ for x = 1:length(speaker_list)
 					else
 						fn = strcat(speaker_list{x}, '_', letterArray.alphabetic{j}, int2str(version_num), '.wav');
 					end
-					if (strcmpi(letterArray.alphabetic(j), 'Read') || strcmpi(letterArray.alphabetic(j), 'Space') || strcmpi(letterArray.alphabetic(j), 'Delete') || strcmpi(letterArray.alphabetic(j), 'Pause'))
-						ff = fullfile(letter_path, 'rawLetters', 'kdm_manuallyTrim', strcat(letterArray.alphabetic{j}, '.wav'));
+					if (strcmpi(letterArray.alphabetic(j), 'Read') || ... 
+						strcmpi(letterArray.alphabetic(j), 'Space') || ...
+						strcmpi(letterArray.alphabetic(j), 'Delete') || ...
+						strcmpi(letterArray.alphabetic(j), 'Pause'))
+						ff = fullfile(letter_path, 'rawLetters', ...
+							'kdm_manuallyTrim', strcat(letterArray.alphabetic{j}, '.wav'));
 					else
 						ff = fullfile(fp, fn); 
 					end
@@ -94,9 +102,8 @@ for x = 1:length(speaker_list)
 				% estimate mean power of all letters for deciding instrument note timings
 				pwr_est = final_trimmedLetters{j}.^2;
 				summed_letter_speaker(:, x) = summed_letter_speaker(:, x) + pwr_est;
-				fprintf('inside trim letters');
-				fname = fullfile(final_output_path, strcat(letterArray.alphabetic{j}, '.wav'))
-				wavwrite(final_trimmedLetters{j}, fs_speaker, fullfile(final_output_path, strcat(letterArray.alphabetic{j}, '.wav')));
+				fname = fullfile(final_output_path, strcat(letterArray.alphabetic{j}, '.wav'));
+				wavwrite(final_trimmedLetters{j}, fs_speaker, fname);
 			end    
 		end
 	end

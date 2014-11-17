@@ -45,24 +45,26 @@ std_kwargs = dict(screen_num=0, window_size=[800, 600], full_screen=True,
 # RANDOM NUMBER GENERATOR
 rng = np.random.RandomState(0)
 # GLOBAL VARIABLES
-block_in_sections = [1, 5, 1]
-trial_in_block = [8, 8, 8]
 controls_in_block = 3  # only applies to section 2
 num_enforced_wraps = 1  # takes too long if above 1
 wait_brief = .2
 wait_long = 2
 msg_dur = 3.0
 postblock = 5  # time after each trial to record pupil
+# these should be hardcoded and read in from the matlab stimuli script
+block_in_sections = [1, 5, 1]
+trial_in_block = [8, 8, 8]
 
 
-def ExperimentOrdering(block_in_sections, trial_in_block, condition_nums, controls_in_block, num_enforced_wraps):
+def ExperimentOrdering(block_in_sections, trial_in_block, condition_nums, 
+    controls_in_block, num_enforced_wraps):
     """Creates the random ordering of the conditions for each trial
     by section, block, and trial.  Refer to block_in_sections and
     trial_in_block for final shape of section.
 
     Returns:
-    section -- which gives the unique condition number for each trial
-    indexed by section[section_num][block_num][trial_num]
+    section -- which gives the mapping of condition type (i.e. condition '1',
+     '2', etc.) for each trial indexed by section[section_num][block_num][trial_num]
     """
 
     section = []
@@ -70,40 +72,41 @@ def ExperimentOrdering(block_in_sections, trial_in_block, condition_nums, contro
     section.append([random.sample(range(0, condition_nums), condition_nums)])
 
     # Make section 2
-    control_wraps = False
-    while not control_wraps:
-        block = []
-        for i in range(block_in_sections[1]):
-            repeats = True
-            bicontrol = False
-            while repeats:
-                trial = random.sample(range(0, condition_nums),
-                                      condition_nums)  # creates a shuffled range(8)
-                # add an extra controls to every trial for more comparisons
-                for j in range(controls_in_block - 1):
-                    control_ind = np.where(np.array(trial) == 0)[0].tolist()
-                    # range of acceptable indices
-                    replacement_range = range(condition_nums)
-                    other_ind = []
-                    for k in range(len(control_ind)):
-                        other_ind.append(control_ind[k] + 1)
-                        other_ind.append(control_ind[k] - 1)
-                    control_ind.extend(other_ind)
-                    for k in range(len(control_ind)):
-                        try:
-                            # delete by value
-                            replacement_range.remove(control_ind[k])
-                        except:
-                            # ignore all exceptions for out of range
-                            pass
-                    next_control_ind = random.sample(replacement_range, 1)[0]
-                    trial[next_control_ind] = 0
-                # check no condition has consecutive trials
-                repeats = checkRepeats(trial)
-            block.append(trial)
-        # import ipdb; ipdb.set_trace()
-        control_wraps = controlProceedsFollows(block, num_enforced_wraps)
-    section.append(block)
+    section.append([random.sample(range(0, condition_nums), condition_nums)])
+    # decide Section 2 structure after piloting
+    # control_wraps = False
+    # while not control_wraps:
+    #     block = []
+    #     for i in range(block_in_sections[1]):
+    #         repeats = True
+    #         bicontrol = False
+    #         while repeats:
+    #             trial = random.sample(range(0, condition_nums),
+    #                         condition_nums)  # creates a shuffled range(8)
+    #             # add an extra controls to every trial for more comparisons
+    #             for j in range(controls_in_block - 1):
+    #                 control_ind = np.where(np.array(trial) == 0)[0].tolist()
+    #                 # range of acceptable indices
+    #                 replacement_range = range(condition_nums)
+    #                 other_ind = []
+    #                 for k in range(len(control_ind)):
+    #                     other_ind.append(control_ind[k] + 1)
+    #                     other_ind.append(control_ind[k] - 1)
+    #                 control_ind.extend(other_ind)
+    #                 for k in range(len(control_ind)):
+    #                     try:
+    #                         # delete by value
+    #                         replacement_range.remove(control_ind[k])
+    #                     except:
+    #                         # ignore all exceptions for out of range
+    #                         pass
+    #                 next_control_ind = random.sample(replacement_range, 1)[0]
+    #                 trial[next_control_ind] = 0
+    #             # check no condition has consecutive trials
+    #             repeats = checkRepeats(trial)
+    #         block.append(trial)
+    #     control_wraps = controlProceedsFollows(block, num_enforced_wraps)
+    # section.append(block)
 
     # Make section 3
     section.append([random.sample(range(0, condition_nums), condition_nums)])
@@ -145,14 +148,16 @@ def controlProceedsFollows(block, num_enforced_wraps):
             if ind != (condition_nums - 1):
                 follows_condition[trial[ind + 1] - 1] += 1
     control_wraps = False
-    # check that all conditions proceeded and followed by control by at least enforced wraps
+    # check that all conditions proceeded and followed by control by at least
+    # enforced wraps
     if (len(np.where(proceeds_condition >= num_enforced_wraps)[0]) == (condition_nums - 1)):
         if (len(np.where(follows_condition >= num_enforced_wraps)[0]) == (condition_nums - 1)):
             control_wraps = True
     return control_wraps
 
 
-def recordTrial(wheel_matrix_info, preblock, id_, wav_indices, instr, ec, el, stimdir, final_datadir, record_pupil=True):
+def recordTrial(wheel_matrix_info, preblock, id_, wav_indices, instr, ec, el, 
+ stimdir, final_datadir, record_pupil=True):
     """ Takes the indice of all current condition types and the binary name
     of the condition to find the trial wav.  Displays instructions according
     to instr() and plays stimuli while recording and logging
@@ -175,8 +180,6 @@ def recordTrial(wheel_matrix_info, preblock, id_, wav_indices, instr, ec, el, st
     # check loading of correct mat file
     assert (trial_vars['paradigm'][0].encode('ascii')
             == id_), "Error: id_ and paradigm from mat file do not match"
-    # draw visual primer
-    drawPrimer(wheel_matrix_info, target_letter, possible_letters)
     # load WAVs for this block
     id_list = map(int, list(id_))
     ec.identify_trial(ec_id=id_list, el_id=id_list, ttl_id=id_list)
@@ -184,16 +187,21 @@ def recordTrial(wheel_matrix_info, preblock, id_, wav_indices, instr, ec, el, st
     stims.append(read_wav(trial_stim_path)[0])  # ignore fs
     stim_dur = stims[0].shape[-1] / ec.stim_fs
     ec.load_buffer(stims[0])
+    # draw visual primer
+    el.calibrate(prompt=False)
+    drawPrimer(wheel_matrix_info, target_letter, possible_letters)
     # play stim
+    # import ipdb; ipdb.set_trace()
     ec.start_stimulus(flip=True)  # the visual primer is displayed
     ec.wait_secs(preblock)
     # Draw fixation dot to visual buffer
     fix = visual.FixationDot(ec, colors=['whitesmoke', 'whitesmoke'])
     fix.draw()
     ec.flip()  # the fixation dot is displayed
-    # ec.wait_secs(stim_dur - preblock)  # wait until stim has finished
-    ec.wait_secs(2)  # +++ speeds debugging
+    ec.wait_secs(stim_dur - preblock)  # wait until stim has finished
+    # ec.wait_secs(2)  # +++ speeds debugging
     ec.stop()
+    el.stop()
     ec.clear_buffer()
     ec.wait_secs(postblock)
     # clear screen
@@ -255,10 +263,11 @@ def cogLoadSurvey(gen_survey, mid_survey, rel_survey, id_, ec):
 
 
 def surveyInput(text, response_btns, ec):
-    """Handles and directs user input for survey section.  +++ Need to separate TDT continue button input from the keyboard input for subjects"""
+    """Handles and directs user input for survey section.  
+        +++ Need to separate TDT continue button input from the keyboard 
+        input for subjects"""
 
     response = ''
-    # import ipdb; ipdb.set_trace()
     while not response:
         response = ec.screen_prompt(text, timestamp=False)
         # check input
@@ -281,7 +290,9 @@ def surveyInput(text, response_btns, ec):
             response = ''
             continue
         check_response = ec.screen_prompt('You pressed ' + str(
-            response) + ', if this is the number you want press "{}" to continue otherwise press any other key to redo'.format(cont_btn_label), timestamp=False)
+            response) + ', if this is the number you want press "{}" to \
+            continue otherwise press any other key to \
+            redo'.format(cont_btn_label), timestamp=False)
         if check_response == str(cont_btn):
             break
         else:
@@ -300,8 +311,10 @@ with ef.ExperimentController(*std_args, **std_kwargs) as ec:
     ec.start_noise()
 
     # Assert the subject id and session number exist
-    # assert(os.path.isdir(stimdir), 'Can not find Stim directory.  Have you runCreateStims.m yet?')
-    # assert(os.path.isdir(op.join(stimdir, participant, session)), 'Can not find Stim directory.  Have you runCreateStims.m yet?')
+    # assert(os.path.isdir(stimdir), 'Can not find Stim directory. \
+      # Have you runCreateStims.m yet?')
+    # assert(os.path.isdir(op.join(stimdir, participant, session)), \
+        # 'Can not find Stim directory.  Have you runCreateStims.m yet?')
 
     # READ IN PARTICPANT SESSION VARIABLES FROM MAT FILE
     # Reads in 'condition_bin', 'wheel_matrix_info', 'preblock_prime_sec'
@@ -326,17 +339,19 @@ with ef.ExperimentController(*std_args, **std_kwargs) as ec:
 
     # MAKE CONDITION ORDERING
     section = ExperimentOrdering(
-        block_in_sections, trial_in_block, condition_nums, controls_in_block, num_enforced_wraps)
+        block_in_sections, trial_in_block, condition_nums, controls_in_block,
+         num_enforced_wraps)
 
-    for snum in range(len(block_in_sections)):
+    for snum in range(len(section)):
         ec.write_data_line('Section: ', snum)
         # Initialize section vars
         section_key = 's' + str(snum) + '_' + 'start_sect'
         ec.screen_prompt(
-            instr[(section_key)], live_keys=button_keys[(section_key)], max_wait=wait_keys[section_key])
+            instr[(section_key)], live_keys=button_keys[(section_key)], 
+            max_wait=wait_keys[section_key])
 
         # run block
-        for bnum in range(block_in_sections[snum]):
+        for bnum in range(len(section[snum])):
             ec.write_data_line('Block: ', bnum)
             # show instructions
             block_key = 's' + str(snum) + '_' + 'start_block_' + str(bnum)
@@ -346,10 +361,13 @@ with ef.ExperimentController(*std_args, **std_kwargs) as ec:
             # log block name
             ec.write_data_line('block', str(bnum))
 
-            for tnum in range(trial_in_block[snum]):
+            for tnum in range(len(section[snum][bnum])):
                 ec.write_data_line('Trial: ', tnum)
 
                 # LOAD IN TRIAL DATA/STIMS
+                # print "snum" + str(snum)
+                # print "bnum" + str(bnum)
+                # print "tnum" + str(tnum)
                 condition_no = section[snum][bnum][tnum]
                 id_ = condition_asc[condition_no]
                 # id_ = decimals_to_binary(id_, np.ones(1, len(id_)))
