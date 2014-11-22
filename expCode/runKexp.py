@@ -56,8 +56,8 @@ block_in_sections = [1, 5, 1]
 trial_in_block = [8, 8, 8]
 
 
-def ExperimentOrdering(block_in_sections, trial_in_block, condition_nums, 
-    controls_in_block, num_enforced_wraps):
+def ExperimentOrdering(block_in_sections, trial_in_block, condition_nums,
+                       controls_in_block, num_enforced_wraps):
     """Creates the random ordering of the conditions for each trial
     by section, block, and trial.  Refer to block_in_sections and
     trial_in_block for final shape of section.
@@ -82,11 +82,11 @@ def ExperimentOrdering(block_in_sections, trial_in_block, condition_nums,
     #         bicontrol = False
     #         while repeats:
     #             trial = random.sample(range(0, condition_nums),
-    #                         condition_nums)  # creates a shuffled range(8)
-    #             # add an extra controls to every trial for more comparisons
+    # condition_nums)  # creates a shuffled range(8)
+    # add an extra controls to every trial for more comparisons
     #             for j in range(controls_in_block - 1):
     #                 control_ind = np.where(np.array(trial) == 0)[0].tolist()
-    #                 # range of acceptable indices
+    # range of acceptable indices
     #                 replacement_range = range(condition_nums)
     #                 other_ind = []
     #                 for k in range(len(control_ind)):
@@ -95,14 +95,14 @@ def ExperimentOrdering(block_in_sections, trial_in_block, condition_nums,
     #                 control_ind.extend(other_ind)
     #                 for k in range(len(control_ind)):
     #                     try:
-    #                         # delete by value
+    # delete by value
     #                         replacement_range.remove(control_ind[k])
     #                     except:
-    #                         # ignore all exceptions for out of range
+    # ignore all exceptions for out of range
     #                         pass
     #                 next_control_ind = random.sample(replacement_range, 1)[0]
     #                 trial[next_control_ind] = 0
-    #             # check no condition has consecutive trials
+    # check no condition has consecutive trials
     #             repeats = checkRepeats(trial)
     #         block.append(trial)
     #     control_wraps = controlProceedsFollows(block, num_enforced_wraps)
@@ -156,8 +156,8 @@ def controlProceedsFollows(block, num_enforced_wraps):
     return control_wraps
 
 
-def recordTrial(wheel_matrix_info, preblock, id_, wav_indices, instr, ec, el, 
- stimdir, final_datadir, record_pupil=True):
+def recordTrial(wheel_matrix_info, preblock, id_, wav_indices, instr, ec, el,
+                stimdir, final_datadir, record_pupil=True):
     """ Takes the indice of all current condition types and the binary name
     of the condition to find the trial wav.  Displays instructions according
     to instr() and plays stimuli while recording and logging
@@ -182,16 +182,14 @@ def recordTrial(wheel_matrix_info, preblock, id_, wav_indices, instr, ec, el,
             == id_), "Error: id_ and paradigm from mat file do not match"
     # load WAVs for this block
     id_list = map(int, list(id_))
-    ec.identify_trial(ec_id=id_list, el_id=id_list, ttl_id=id_list)
     stims = []
     stims.append(read_wav(trial_stim_path)[0])  # ignore fs
     stim_dur = stims[0].shape[-1] / ec.stim_fs
+    ec.clear_buffer()
     ec.load_buffer(stims[0])
+    ec.identify_trial(ec_id=id_list, el_id=id_list, ttl_id=id_list)
     # draw visual primer
-    el.calibrate(prompt=False)
     drawPrimer(wheel_matrix_info, target_letter, possible_letters)
-    # play stim
-    # import ipdb; ipdb.set_trace()
     ec.start_stimulus(flip=True)  # the visual primer is displayed
     ec.wait_secs(preblock)
     # Draw fixation dot to visual buffer
@@ -200,18 +198,15 @@ def recordTrial(wheel_matrix_info, preblock, id_, wav_indices, instr, ec, el,
     ec.flip()  # the fixation dot is displayed
     ec.wait_secs(stim_dur - preblock)  # wait until stim has finished
     # ec.wait_secs(2)  # +++ speeds debugging
-    ec.stop()
-    el.stop()
-    ec.clear_buffer()
     ec.wait_secs(postblock)
     # clear screen
     ec.flip()
     # write out data
     ec.write_data_line('target_time', target_time)
     ec.write_data_line('target_letter', target_letter)
-    ec.write_data_line('target_time', target_time)
-    # update
+    ec.stop()
     ec.trial_ok()
+    # update
     wav_indices[id_] += 1
     return wav_indices
 
@@ -312,9 +307,9 @@ with ef.ExperimentController(*std_args, **std_kwargs) as ec:
 
     # Assert the subject id and session number exist
     # assert(os.path.isdir(stimdir), 'Can not find Stim directory. \
-      # Have you runCreateStims.m yet?')
+    # Have you runCreateStims.m yet?')
     # assert(os.path.isdir(op.join(stimdir, participant, session)), \
-        # 'Can not find Stim directory.  Have you runCreateStims.m yet?')
+    # 'Can not find Stim directory.  Have you runCreateStims.m yet?')
 
     # READ IN PARTICPANT SESSION VARIABLES FROM MAT FILE
     # Reads in 'condition_bin', 'wheel_matrix_info', 'preblock_prime_sec'
@@ -340,17 +335,17 @@ with ef.ExperimentController(*std_args, **std_kwargs) as ec:
     # MAKE CONDITION ORDERING
     section = ExperimentOrdering(
         block_in_sections, trial_in_block, condition_nums, controls_in_block,
-         num_enforced_wraps)
+        num_enforced_wraps)
 
     for snum in range(len(section)):
         ec.write_data_line('Section: ', snum)
         # Initialize section vars
         section_key = 's' + str(snum) + '_' + 'start_sect'
         ec.screen_prompt(
-            instr[(section_key)], live_keys=button_keys[(section_key)], 
+            instr[(section_key)], live_keys=button_keys[(section_key)],
             max_wait=wait_keys[section_key])
 
-        # run block
+           # run block
         for bnum in range(len(section[snum])):
             ec.write_data_line('Block: ', bnum)
             # show instructions
@@ -360,6 +355,7 @@ with ef.ExperimentController(*std_args, **std_kwargs) as ec:
 
             # log block name
             ec.write_data_line('block', str(bnum))
+            el.calibrate(prompt=True)
 
             for tnum in range(len(section[snum][bnum])):
                 ec.write_data_line('Trial: ', tnum)
@@ -393,6 +389,7 @@ with ef.ExperimentController(*std_args, **std_kwargs) as ec:
                     instr[(trial_end_key)], live_keys=button_keys[(trial_end_key)], max_wait=wait_keys[trial_end_key])
             # End block
             block_end_key = 's' + str(snum) + '_' + 'end_block'
+            el.stop()
             ec.screen_prompt(
                 instr[(block_end_key)], live_keys=button_keys[(block_end_key)], max_wait=wait_keys[block_end_key])
         # End section

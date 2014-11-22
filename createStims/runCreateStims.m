@@ -17,7 +17,9 @@ for overall = 1: m
 	instr_amp_weights = instr_amp(overall, :);
 	
 % DEFINE PATHS
-PATH = '~/git/kexp';%local letter and output directory
+cd ..
+% PATH = '~/git/kexp';%local letter and output directory
+PATH = cd ; %letter and output directory
 stimuli_path = fullfile(PATH, 'Stims/');%dir for all subject stimulus
 letter_path = fullfile(PATH, 'Letters', 'Files'); %dir to untrimmed letters
 K70_dir = fullfile(PATH, 'K70'); % computed HRTF
