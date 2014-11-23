@@ -23,11 +23,17 @@ from expyfun.io import read_wav
 from expyfun import (EyelinkController, visual,
                      get_keyboard_input, assert_version, decimals_to_binary)
 from CircularLayout import CircularLayout
+import os
 
 #assert ef.__version__ == '2.0.0.DASCogLoad'
 
-PATH = '/home/kdmarrett/git/kexp'
-# datadir = op.join(PATH, 'Data', participant, session)
+# PATH = '/home/kdmarrett/git/kexp'
+localPath = os.path.abspath(os.curdir)
+print localPath
+os.chdir("..")
+PATH = os.path.abspath(os.curdir)
+os.chdir(localPath)
+print PATH
 datadir = op.join(PATH, 'Data')
 
 # EC PARAMETERS
