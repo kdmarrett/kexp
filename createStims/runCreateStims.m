@@ -43,9 +43,9 @@ white_noise_decibel = 0;  %amplitude
 noise = 0;  % bool adds noise
 distance_sound = 5; %distance for stimuli to be played in HRTF
 scale_type = 'whole'; %string 'whole' or 'diatonic'
-tot_cyc = 3;
+tot_cyc = 9;
 postblock_sec = 1.5; %secs after letterblocks
-preblock_prime_sec = 4.5; %seconds until letters start playing
+preblock_prime_sec = 	15.5; %seconds until letters start playing
 primer_start = 3000;  %sample # that primer letter will play in preblock (less than preblock)
 makeTraining = 0;
 force_recreate = 1; %bool to force recreation of letters or pitches even if dir exists from previous run
@@ -261,7 +261,7 @@ for x = 1:reps
 							% VIEW
 							% plot(letter_sound)
 							% hold on
-							% plot(instrNote_sound, 'r')
+							% % plot(instrNote_sound, 'r')
 							% title(letter)
 							% waitforbuttonpress
 							% hold off
@@ -378,5 +378,5 @@ for x = 1:reps
 end
 end  
 save( fullfile( data_dir, 'global_vars'), 'condition_bin', 'wheel_matrix_info',...
- 'preblock_prime_sec', 'English') % global variables for each subject and session
+ 'preblock_prime_sec', 'English', 'tot_cyc') % global variables for each subject and session
 toc %print elapsed time

@@ -60,7 +60,7 @@ postblock = 5  # time after each trial to record pupil
 # these should be hardcoded and read in from the matlab stimuli script
 block_in_sections = [1, 5, 1]
 trial_in_block = [8, 8, 8]
-
+extra_wait = 10
 
 def ExperimentOrdering(block_in_sections, trial_in_block, condition_nums,
                        controls_in_block, num_enforced_wraps):
@@ -178,7 +178,7 @@ def recordTrial(wheel_matrix_info, preblock, id_, wav_indices, instr, ec, el,
 
     # UNLOAD TRIAL VARS (AVOIDS AWKWARD INDEXING)
     # Creates dict of vars: 'target_letter', 'target_time', 'tot_wav_time',
-    # 'paradigm', 'possible_letters'
+    # 'paradigm', 'possible_letters' 'tot_cyc'
     trial_vars = scipy.io.loadmat(trial_data_path)
     target_time = trial_vars['target_time']
     target_letter = trial_vars['target_letter'][0][0][0].encode('ascii')
@@ -197,12 +197,13 @@ def recordTrial(wheel_matrix_info, preblock, id_, wav_indices, instr, ec, el,
     # draw visual primer
     drawPrimer(wheel_matrix_info, target_letter, possible_letters)
     ec.start_stimulus(flip=True)  # the visual primer is displayed
-    ec.wait_secs(preblock)
+    ec.wait_secs(preblock / 3)
     # Draw fixation dot to visual buffer
     fix = visual.FixationDot(ec, colors=['whitesmoke', 'whitesmoke'])
     fix.draw()
+    # ec.wait_secs(extra_wait) #extra wait to adjust eyes
     ec.flip()  # the fixation dot is displayed
-    ec.wait_secs(stim_dur - preblock)  # wait until stim has finished
+    ec.wait_secs(stim_dur - preblock / 3)  # wait until stim has finished
     # ec.wait_secs(2)  # +++ speeds debugging
     ec.wait_secs(postblock)
     # clear screen
