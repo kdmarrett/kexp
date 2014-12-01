@@ -372,6 +372,7 @@ for x = 1:reps
 				delete(wav_name)
 			end
 			final_sample = rms_amp * (final_sample / sqrt(mean(mean(final_sample.^2))));
+			final_sample = normalizeSoundVector(final_sample);
 			wavwrite(final_sample, fs, wav_name);   %  Stimuli saved by trial 
 		end
 	end

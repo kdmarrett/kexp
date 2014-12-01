@@ -44,7 +44,7 @@ cont_btn_label = 'Next'
 pretrial_wait = 2.5
 std_args = ['kexp']
 std_kwargs = dict(screen_num=0, window_size=[800, 600], full_screen=True,
-                  stim_db=65, noise_db=40, session='1', participant='foo',
+                  stim_db=65, noise_db=40, #session='1', participant='foo',
                   stim_rms=0.01, check_rms=None, suppress_resamp=False,
                   output_dir=datadir, stim_fs=16000)  # 44100.0
 

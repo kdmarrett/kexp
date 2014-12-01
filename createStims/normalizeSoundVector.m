@@ -6,5 +6,5 @@ maxval = max(abs(input));
 output = .99 * (input ./ repmat(maxval, rows, 1));
 maxval = max(output);
 minval = min(output);
-assert(((abs(maxval) <= 1) & (abs(minval) <= 1)), 'Error: out of range')
+%assert(((abs(maxval) <= 1) && (abs(minval) <= 1)), 'Error: out of range')
 end
