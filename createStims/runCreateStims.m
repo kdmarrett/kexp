@@ -259,12 +259,12 @@ for x = 1:reps
 							[letter_sound, fs] = wavread(path);
 							
 							% VIEW
-							plot(letter_sound)
-							hold on
-							% plot(instrNote_sound, 'r')
-							title(letter)
-							waitforbuttonpress
-							hold off
+							% plot(letter_sound)
+							% hold on
+							% % plot(instrNote_sound, 'r')
+							% title(letter)
+							% waitforbuttonpress
+							% hold off
 							
 							if letter_fine_structure
 								combined_sound = letter_sound + instrNote_sound;
