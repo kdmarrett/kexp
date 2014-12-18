@@ -38,7 +38,8 @@ datadir = op.join(PATH, 'Data')
 
 # EC PARAMETERS
 cont_btn = 8
-gen_survey_btn = range(10)
+TDT_total_btns = 8
+gen_survey_btn = range(TDT_total_btns)
 rel_survey_btn = [1, 2]
 cont_btn_label = 'Next'
 pretrial_wait = 2.5
