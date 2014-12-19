@@ -18,17 +18,21 @@ instr = dict()
 button_keys = dict()
 
 # SECTION 1 (INTRODUCTION) INSTRUCTIONS
-instr['s0_start_sect'] = ('In this experiment you will be listening to letters grouped into '
+instr['start_exp'] =      ('In this experiment you will be listening to letters grouped into '
                           'three different spatial locations (left, middle, and right). '
                           'Each letter group has a distinct speaker for the letters. To orient you to the layout,'
                           ' and ordering, each trial will begin with a visual primer of the spatial location of the letters. '
                           'In these primers, you will notice that one of the letters is colored green and spoken, this is the target letter for the trial. '
                           'Together, the groups will span the full alphabet along with the extra voiced commands \'Read\' , \'Pause\', \'Space\', and \'Delete\'. '
                           ' Your task for each trial in this experiment is to listen for every occurrence of your target letter for the duration of'
-                          ' the trial. This experiment will assess pupil responses, so after the primer for each trial a small fixation dot'
+                          ' the trial. Push "{}" to continue.'.format(cont_btn_label))
+
+button_keys['start_exp'] = [cont_btn]
+
+instr['s0_start_sect'] = ('This experiment will assess pupil responses, so after the primer for each trial a small fixation dot'
                           ' will appear in the center of screen. Keep your eyes fixated on this dot for as long as it remains visible. '
                           'This experiment is split into 3 sections, each with a varying number of blocks which contain grouped trials.  Between each section, there will'
-                          'be an opportunity to take a break and leave the booth.'
+                          ' be an opportunity to take a break and leave the booth.'
                           ' Push "{}" to continue.'.format(cont_btn_label))
 
 button_keys['s0_start_sect'] = [cont_btn]
@@ -42,31 +46,34 @@ instr['s0_start_block_0'] = ('In this first section, you will be introduced to t
 
 button_keys['s0_start_block_0'] = [cont_btn]
 
-instr['s0_start_trial_0'] = ('In this condition, letters are assigned a spatial location and unique tone in alphabetic order.'
-                             ' You can use the unique speaker, location, and tone to help you listen for each occurrence of'
+instr['s0_start_trial_1'] = ('In this condition, letters are assigned a spatial location in alphabetic order.'
+                             ' You can use the unique speaker and location to help you listen for each occurrence of'
                              ' the target letter. Push "{}" to start.'.format(cont_btn_label))
 
 button_keys['s0_start_trial_0'] = [cont_btn]
 
-instr['s0_start_trial_1'] = ('In this condition, letters are assigned a spatial location and unique tone in alphabetic order. '
-                             'Additionally, the rate in which letters are presented differs for each of the three '
-                             'spatial locations. You can use the unique speaker, location, tone, and presentation rate to help you listen for each occurrence of'
-                             ' the target letter. Push "{}" to start.'.format(cont_btn_label))
+# instr['s0_start_trial_1'] = ('In this condition, letters are assigned a spatial location and unique tone in alphabetic order. '
+#                              'Additionally, the rate in which letters are presented differs for each of the three '
+#                              'spatial locations. You can use the unique speaker, location, tone, and presentation rate to help you listen for each occurrence of'
+#                              ' the target letter. Push "{}" to start.'.format(cont_btn_label))
 
 button_keys['s0_start_trial_1'] = [cont_btn]
 
-instr['s0_start_trial_2'] = ('In this condition, letters are assigned a spatial location and unique tone in random order. '
-                             'Despite the random ordering, each letter has the same tone throughout the '
-                             'trial and the tones are ascended in a regular ascending or descending pattern. You can'
-                             ' use the unique speaker, location, tone,  and the speed to help you listen for each occurrence of'
+instr['s0_start_trial_2'] = ('In this condition, letters are assigned a spatial location in a random order. '
+          'Throughout the trial, the ordering of the letters will remain constant.  You can use the unique speaker and location to help you listen for each occurrence of'
+                             ' the target letter in this condition. Push "{}" to start.'.format(cont_btn_label))
+
+instr['s0_start_trial_3'] = ('In this condition, letters are assigned a spatial location in a random order. '
+          'Throughout the trial, the ordering of the letters will change meaning you will not know when the target letter will occur.'
+          'You can use the unique speaker and location to help you listen for each occurrence of'
                              ' the target letter in this condition. Push "{}" to start.'.format(cont_btn_label))
 
 button_keys['s0_start_trial_2'] = [cont_btn]
 
-instr['s0_start_trial_3'] = ('In this condition, letters are assigned a spatial location and unique tone in alphabetic order. '
-                             'The targets in this condition are always one of \'B\', \'C\', \'D\', \'E\', \'G\', \'P\', \'T\','
-                             ' \'V\', or \'Z\'. You can use the unique speaker, location, and tone to help you listen for each occurrence of'
-                             ' the target letter. Push "{}" to start.'.format(cont_btn_label))
+# instr['s0_start_trial_3'] = ('In this condition, letters are assigned a spatial location and unique tone in alphabetic order. '
+#                              'The targets in this condition are always one of \'B\', \'C\', \'D\', \'E\', \'G\', \'P\', \'T\','
+#                              ' \'V\', or \'Z\'. You can use the unique speaker, location, and tone to help you listen for each occurrence of'
+#                              ' the target letter. Push "{}" to start.'.format(cont_btn_label))
 
 button_keys['s0_start_trial_3'] = [cont_btn]
 

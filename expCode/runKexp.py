@@ -223,13 +223,13 @@ def drawPrimer(wheel_matrix_info, target_letter, possible_letters):
     """ Creates the primer letters and draws to visual buffer """
 
     # get center locations of each wheel
-    wheel_loc = CircularLayout(3, radius=.6, angles=[- pi, (pi / 2), 0])
+    wheel_loc = CircularLayout(3, radius=.45, angles=[- pi, (pi / 2), 0])
     # get individual letter locations
     letter_loc = []
     for i in range(len(wheel_matrix_info)):
         letters_wheel = wheel_matrix_info[i]
         temp = CircularLayout(
-            letters_wheel, radius=.30, relative_center=wheel_loc.positions[i])
+            letters_wheel, radius=.20, relative_center=wheel_loc.positions[i])
         letter_loc.extend(temp.positions)
     # draw selections to visual buffer
     for i in range(len(possible_letters)):
@@ -239,7 +239,7 @@ def drawPrimer(wheel_matrix_info, target_letter, possible_letters):
         else:
             color = 'LightGray'
         ec.screen_text(
-            letter, pos=letter_loc[i], color=color, font_size=48, wrap=False)
+            letter, pos=letter_loc[i], color=color, font_size=30, wrap=False)
 
 
 def cogLoadSurvey(gen_survey, mid_survey, rel_survey, id_, ec):
@@ -342,6 +342,7 @@ with ef.ExperimentController(*std_args, **std_kwargs) as ec:
         block_in_sections, trial_in_block, condition_nums, controls_in_block,
         num_enforced_wraps)
 
+    ec.screen_prompt(instr['start_exp'], live_keys=button_keys['start_exp'])
     for snum in range(len(section)):
         ec.write_data_line('Section: ', snum)
         # Initialize section vars

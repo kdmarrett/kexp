@@ -46,19 +46,19 @@ descend_pitch = [0 0 1];
 ILImsBase = 3 * 150;
 ILIms = repmat(ILImsBase, 3, 1);
 token_rates = [3 5 7];
-English = 1; % English, or German
+English = 1; % English or German
 wheel_matrix_info = [10 10 10];  %how many letters in each wheel
 
 % SET LETTERS
 if English
 	% keep R letter in right wheel always
 	letterArray.alphabetic = {'Space' 'Pause' 'A' 'B' 'C' 'D' 'E' 'F' 'G' 'H' ...
-	 'Read', 'Delete', 'I' 'J' 'K' 'L' 'M' 'N' 'O' 'P' ...  % middle wheel
-	 'Q' ' R' 'S' 'T' 'U' 'V' 'W' 'X' 'Y' 'Z' };  % right wheel
+	  'I' 'J' 'K' 'L' 'M' 'N' 'O' 'P' 'Q' 'R' ...  % middle wheel
+	  'S' 'T' 'U' 'V' 'W' 'X' 'Y' 'Z' 'Read' 'Delete' };  % right wheel
 	%maximal phoneme separation
-	letterArray.displaced =  {'Space', 'Pause', 'A' 'B' 'F' 'O' 'E' 'M' 'I' 'T' ...
-	'Read' 'Delete' 'J' 'C' 'H' 'Q' 'G' 'N' 'U' 'V' ... % middle wheel
-	'K' 'D' 'L' 'U' 'P' 'S' 'Z' 'R' 'W' 'Y'}; % right wheel
+	letterArray.displaced =  {'Space' 'Pause', 'A' 'B' 'F' 'O' 'E' 'M' 'I' 'T' ...
+	'J' 'C' 'H' 'Q' 'G' 'N' 'U' 'V' 'K' 'D' ... % middle wheel
+	'L' 'U' 'P' 'S' 'Z' 'R' 'W' 'Y' 'Read' 'Delete' }; % right wheel
 	speaker_list = {'mjc1', 'female', 'mnre0'};
 	speaker_amp_weights = [1 1 1];
 else
