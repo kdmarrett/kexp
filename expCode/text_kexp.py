@@ -7,8 +7,8 @@ import numpy as np
 
 # add in how letters are ordered at the beginning
 # explaining pattern after the fact for first trial (ascending and descending)
-cont_btn = 8
-cont_btn_label = 'Next'
+cont_btn = 0
+cont_btn_label = '0'
 
 wait_brief = .2
 wait_long = 2
@@ -20,20 +20,22 @@ button_keys = dict()
 # SECTION 1 (INTRODUCTION) INSTRUCTIONS
 instr['s0_start_sect'] = ('In this experiment you will be listening to letters grouped into '
                           'three different spatial locations (left, middle, and right). '
-                          'Each letter group has a distinct speaker for the letters. Most trials will have letters grouped consecutively in alphabetic order, '
-                          'but to orient you to the layout, each trial will begin with a primer which includes a visual representation of the spatial location of the letters. '
+                          'Each letter group has a distinct speaker for the letters. To orient you to the layout,'
+                          ' and ordering, each trial will begin with a visual primer of the spatial location of the letters. '
                           'In these primers, you will notice that one of the letters is colored green and spoken, this is the target letter for the trial. '
                           'Together, the groups will span the full alphabet along with the extra voiced commands \'Read\' , \'Pause\', \'Space\', and \'Delete\'. '
                           ' Your task for each trial in this experiment is to listen for every occurrence of your target letter for the duration of'
                           ' the trial. This experiment will assess pupil responses, so after the primer for each trial a small fixation dot'
                           ' will appear in the center of screen. Keep your eyes fixated on this dot for as long as it remains visible. '
+                          'This experiment is split into 3 sections, each with a varying number of blocks which contain grouped trials.  Between each section, there will'
+                          'be an opportunity to take a break and leave the booth.'
                           ' Push "{}" to continue.'.format(cont_btn_label))
 
 button_keys['s0_start_sect'] = [cont_btn]
 
-instr['s0_start_block_0'] = ('In the first section, you will be introduced to the different condition types. This section contains'
-                             ' 1 block with a trial for every condition for a total of 8 trials. Ignore the letters that are'
-                             ' gray, and pay attention to the green highlighted letter that is spoken at the beginning of each trial. '
+instr['s0_start_block_0'] = ('In this first section, you will be introduced to the different condition types. This section contains'
+                             ' 1 block with a trial for every condition for a total of 8 trials. Again, pay attention to the occurrences of the' 
+                             'target green highlighted letter that is spoken at the beginning of each trial. '
                              ' There will also be background noise to make the task more challenging. '
                              'Don\'t worry if the letter is difficult to hear at first. Do your best to attend every occurrence of the target letter throughout the trial. '
                              'Push "{}" to start.'.format(cont_btn_label))
@@ -41,14 +43,14 @@ instr['s0_start_block_0'] = ('In the first section, you will be introduced to th
 button_keys['s0_start_block_0'] = [cont_btn]
 
 instr['s0_start_trial_0'] = ('In this condition, letters are assigned a spatial location and unique tone in alphabetic order.'
-                             ' You can use the speaker, the location, and the tone to help you listen for each occurrence of'
+                             ' You can use the unique speaker, location, and tone to help you listen for each occurrence of'
                              ' the target letter. Push "{}" to start.'.format(cont_btn_label))
 
 button_keys['s0_start_trial_0'] = [cont_btn]
 
 instr['s0_start_trial_1'] = ('In this condition, letters are assigned a spatial location and unique tone in alphabetic order. '
                              'Additionally, the rate in which letters are presented differs for each of the three '
-                             'spatial locations. You can use the speaker, the location, the tone, and the presentation rate to help you listen for each occurrence of'
+                             'spatial locations. You can use the unique speaker, location, tone, and presentation rate to help you listen for each occurrence of'
                              ' the target letter. Push "{}" to start.'.format(cont_btn_label))
 
 button_keys['s0_start_trial_1'] = [cont_btn]
@@ -56,21 +58,21 @@ button_keys['s0_start_trial_1'] = [cont_btn]
 instr['s0_start_trial_2'] = ('In this condition, letters are assigned a spatial location and unique tone in random order. '
                              'Despite the random ordering, each letter has the same tone throughout the '
                              'trial and the tones are ascended in a regular ascending or descending pattern. You can'
-                             ' use the speaker, the location, the tone,  and the speed to help you listen for each occurrence of'
+                             ' use the unique speaker, location, tone,  and the speed to help you listen for each occurrence of'
                              ' the target letter in this condition. Push "{}" to start.'.format(cont_btn_label))
 
 button_keys['s0_start_trial_2'] = [cont_btn]
 
 instr['s0_start_trial_3'] = ('In this condition, letters are assigned a spatial location and unique tone in alphabetic order. '
                              'The targets in this condition are always one of \'B\', \'C\', \'D\', \'E\', \'G\', \'P\', \'T\','
-                             ' \'V\', or \'Z\'. You can use the speaker, the location, and the tone to help you listen for each occurrence of'
+                             ' \'V\', or \'Z\'. You can use the unique speaker, location, and tone to help you listen for each occurrence of'
                              ' the target letter. Push "{}" to start.'.format(cont_btn_label))
 
 button_keys['s0_start_trial_3'] = [cont_btn]
 
 instr['s0_start_trial_4'] = ('In this condition, letters are assigned a spatial location in alphabetic order but not their own'
-                             ' unique tone. In other words, after each cycle of letters the ordering will change. Therefore,'
-                             ' you can use the speaker, the location, but not the tone to help you listen for each occurrence of'
+                             ' unique tone. In other words, after each cycle of letters, the ordering will change. Therefore,'
+                             ' you can use the unique speaker and location but not the tone to help you listen for each occurrence of'
                              ' the target letter. Push "{}" to start.'.format(cont_btn_label))
 
 button_keys['s0_start_trial_4'] = [cont_btn]
@@ -78,14 +80,14 @@ button_keys['s0_start_trial_4'] = [cont_btn]
 instr['s0_start_trial_5'] = ('In this condition, letters are assigned a spatial location and unique tone in alphabetic order.'
                              ' Each letter is assigned a unique tone but these tones are assigned randomly, '
                              'so you can get not rely on the any particular pattern of tones to help guide you. '
-                             'You can use the speaker, the location, and the unique tone to help you listen for each occurrence of'
+                             'You can use the unique speaker, location, and the unique tone to help you listen for each occurrence of'
                              ' the target letter. Push "{}" to start.'.format(cont_btn_label))
 
 button_keys['s0_start_trial_5'] = [cont_btn]
 
 instr['s0_start_trial_6'] = ('In this condition, letters are assigned a spatial location and unique tone in alphabetic order. '
                              'In this condition the loudness of each speaker is oscillating at the different rates'
-                             ' This means you can use the speaker, the location, the tone,  and the differences in oscillation'
+                             ' This means you can use the unique speaker, location, tone,  and the differences in oscillation'
                              ' rate to help you listen for each occurrence of the target letter. '
                              'Push "{}" to start.'.format(cont_btn_label))
 
@@ -93,8 +95,8 @@ button_keys['s0_start_trial_6'] = [cont_btn]
 
 instr['s0_start_trial_7'] = ('In this condition, letters are assigned a spatial location and unique tone in alphabetic order. '
                              'The loudness of each speaker will oscillate at the same rate'
-                             ' although the phase of each speaker will be unique. This means you can use the speaker, the'
-                             ' location, the tone,  and the differences in loudness to help you listen for each occurrence of'
+                             ' although the phase of each speaker will be unique. This means you can use the unique speaker, '
+                             ' location, tone,  and the differences in loudness to help you listen for each occurrence of'
                              ' the target letter. Push "{}" to start.'.format(cont_btn_label))
 
 button_keys['s0_start_trial_7'] = [cont_btn]
@@ -118,7 +120,7 @@ button_keys['s0_end_sect'] = [cont_btn]
 instr['s1_start_sect'] = ('You\'re about to begin the second section of the experiment. There are about 9 trials in each'
                           ' block and 5 blocks in this section, with breaks in between blocks. Just as'
                           ' in the introduction, there is no feedback. In this section, a new trial of a different condition'
-                          ' will start automatically shortly after the previous trial ends. Note that in this section the different condition'
+                          ' will start automatically shortly after the previous trial ends. Note that in this section the different conditions'
                           ' are interspersed and there is no longer a description before each trial. This means that you must orient yourself to the particular condition by either the primer or'
                           ' by listening to the unique cues of the particular trial. When you\'re ready to begin, press "{}"'.format(cont_btn_label))
 
@@ -198,7 +200,7 @@ instr['s2_start_sect'] = ('You\'re about to begin the last section of the experi
                           ' the trial. In this section you will be presented with 1'
                           ' trial of the same condition then asked to answer several questions about the relative'
                           ' difficulty of each condition.  In this section there are eight blocks, one for each condition type. '
-                          ' We are interested in your experience with the experiment. In the most general sense we'
+                          ' We are interested in your experience with the experiment. In the most general sense, we'
                           ' are examining the \'workload\' you experienced. The factors that influence you experience of'
                           ' workload may come from the task itself, your feelings about your own performance, how much effort'
                           ' you put in, or any frustration you felt. Because workload may be caused by any of these'

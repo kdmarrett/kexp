@@ -2,14 +2,13 @@
 ================================
 Script ' Karl's Experiment (Kexp)'
 ================================
-
+    
 This script runs an experiment with spatially distributed letter streams.
 """
 # Author: Karl Marrett <kdmarret@uw.edu>, <kdmarrett@gmail.com>
 
 # TO DO
 # set luminosity via calibration
-# what is np.random.RandomState(0)
 
 import scipy
 import pyglet
@@ -24,10 +23,12 @@ from expyfun import (EyelinkController, visual,
                      get_keyboard_input, assert_version, decimals_to_binary)
 from CircularLayout import CircularLayout
 import os
+# from processPupil import *
+import processPupil
+processPupil._check_pyeparse()
 
 #assert ef.__version__ == '2.0.0.DASCogLoad'
 
-# PATH = '/home/kdmarrett/git/kexp'
 localPath = os.path.abspath(os.curdir)
 print localPath
 os.chdir("..")
@@ -37,16 +38,14 @@ print PATH
 datadir = op.join(PATH, 'Data')
 
 # EC PARAMETERS
-cont_btn = 8
-TDT_total_btns = 8
-gen_survey_btn = range(TDT_total_btns)
+total_btns = 10
+gen_survey_btn = range(total_btns)
 rel_survey_btn = [1, 2]
-cont_btn_label = 'Next'
 pretrial_wait = 2.5
 std_args = ['kexp']
 std_kwargs = dict(screen_num=0, window_size=[800, 600], full_screen=True,
                   stim_db=65, noise_db=40, #session='1', participant='foo',
-                  stim_rms=0.01, check_rms=None, suppress_resamp=False,
+                  stim_rms=0.01, check_rms=None, suppress_resamp=False, response_device='keyboard',
                   output_dir=datadir, stim_fs=16000)  # 44100.0
 
 # RANDOM NUMBER GENERATOR
@@ -184,6 +183,7 @@ def recordTrial(wheel_matrix_info, preblock, id_, wav_indices, instr, ec, el,
     target_time = trial_vars['target_time']
     target_letter = trial_vars['target_letter'][0][0][0].encode('ascii')
     possible_letters = trial_vars['possible_letters'][0]
+    print possible_letters
     # check loading of correct mat file
     assert (trial_vars['paradigm'][0].encode('ascii')
             == id_), "Error: id_ and paradigm from mat file do not match"
@@ -230,7 +230,6 @@ def drawPrimer(wheel_matrix_info, target_letter, possible_letters):
         letters_wheel = wheel_matrix_info[i]
         temp = CircularLayout(
             letters_wheel, radius=.30, relative_center=wheel_loc.positions[i])
-        # letter_loc.append(temp.positions)
         letter_loc.extend(temp.positions)
     # draw selections to visual buffer
     for i in range(len(possible_letters)):
@@ -296,9 +295,7 @@ def surveyInput(text, response_btns, ec):
             response) + ', if this is the number you want press "{}" to \
             continue otherwise press any other key to \
             redo'.format(cont_btn_label), timestamp=False)
-        if check_response == str(cont_btn):
-            break
-        else:
+        if check_response != str(cont_btn):
             response = ''  # clear past response and loop again
     return response
 
@@ -369,9 +366,6 @@ with ef.ExperimentController(*std_args, **std_kwargs) as ec:
                 ec.write_data_line('Trial: ', tnum)
 
                 # LOAD IN TRIAL DATA/STIMS
-                # print "snum" + str(snum)
-                # print "bnum" + str(bnum)
-                # print "tnum" + str(tnum)
                 condition_no = section[snum][bnum][tnum]
                 id_ = condition_asc[condition_no]
                 # id_ = decimals_to_binary(id_, np.ones(1, len(id_)))

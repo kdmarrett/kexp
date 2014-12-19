@@ -1,4 +1,6 @@
-function [possibleLetters, target_letter, rearrangeCycles, tone_constant, ener_mask, letters_used, token_rate_modulation, AM_freq, AM_pow, shiftedLetters, instrNote_shifted, instrNote, envelope_type, letter_fine_structure, sync_cycles  ] = assignParadigm(paradigm, letterArray, env_instrNotes, total_letters, wheel_matrix_info )
+function [possibleLetters, target_letter, rearrangeCycles, tone_constant, ener_mask, letters_used, ...
+    token_rate_modulation, AM_freq, AM_pow, shiftedLetters, instrNote_shifted, instrNote, envelope_type,...
+     letter_fine_structure, sync_cycles  ] = assignParadigm(paradigm, letterArray, env_instrNotes, total_letters, wheel_matrix_info )
     % Assign basic design parameters of each paradigm type
     % BOOLEANS FOR DESIGN FEATURES, ORDERED: CONTROL, EACH WHEEL GROUP AT AN ORTHOGONAL FREQUENCY OF TOKEN RATE, MAXIMALLY DISPLACED ORDERING, TARGET LETTER 'R' AS OPPOSED TO X[i],
     % LETTER ORDERS ARE RETAINED ACROSS CYCLES, TONE IS ASSIGNED RANDOMLY AS OPPOSED TO CONTIGUOSLY, EACH WHEEL GROUP GIVEN A UNIQUE FREQUENCY AM, EACH GROUP GIVEN THE SAME AM FREQUENCY 
@@ -11,8 +13,9 @@ function [possibleLetters, target_letter, rearrangeCycles, tone_constant, ener_m
     else 
         token_rate_modulation = 0;
     end
-    letters_used = sum(wheel_matrix_info); 
+
     % TEST
+    letters_used = sum(wheel_matrix_info); 
     if ~(letters_used == total_letters)
         fprintf('Error: not all letters used')
     end

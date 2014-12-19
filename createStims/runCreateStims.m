@@ -1,24 +1,12 @@
 % createStim.m
 %   Author: Karl Marrett
 
-% when different speeds of letters wheels still need to end at the same time
-
 close all
 clear all
 tic
-
-% condition_trials = repmat(trials_per_condition, length(condition_type));
-% needs to fix differing letters in wheels
-% create gate input * envelope
-
-instr_amp = [2 1 4];
-[m,n]= size( instr_amp);
-for overall = 1: m
-	instr_amp_weights = instr_amp(overall, :);
 	
 % DEFINE PATHS
 cd ..
-% PATH = '~/git/kexp';%local letter and output directory
 PATH = cd ; %letter and output directory
 cd createStims
 stimuli_path = fullfile(PATH, 'Stims/');%dir for all subject stimulus
@@ -37,6 +25,7 @@ createStruct(stimuli_path);
 %GLOBAL INPUT PARAMETERS OF BLOCK DESIGN
 % Includes a preblock primer where target letters are played in their respective 
 % location and pitch, and a post_block to provide time between trials.
+instr_amp_weights = [2 1 4];
 rms_amp = .05; %final normalization (loudness)
 letter_decibel = 10; %amplitude of letters in wheel; final stim normalized
 white_noise_decibel = 0;  %amplitude
@@ -58,16 +47,18 @@ ILImsBase = 3 * 150;
 ILIms = repmat(ILImsBase, 3, 1);
 token_rates = [3 5 7];
 English = 1; % English, or German
-wheel_matrix_info = [10 10 10];
+wheel_matrix_info = [10 10 10];  %how many letters in each wheel
 
 % SET LETTERS
 if English
+	% keep R letter in right wheel always
 	letterArray.alphabetic = {'Space', 'Pause', 'A' 'B' 'C' 'D' 'E' 'F' 'G' 'H' ...
-	 'I' 'J' 'K' 'L' 'M' 'N' 'O' 'P' 'Q' 'R' 'S' 'T' 'U' 'V' 'W' 'X' 'Y' 'Z', ...
-	 'Read', 'Delete'};
+	 'Read', 'I' 'J' 'K' 'L' 'M' 'N' 'O' 'P' 'Q' ...  % middle wheel
+	 'R', 'S' 'T' 'U' 'V' 'W' 'X' 'Y' 'Z', 'Delete'};  % right wheel
+	%maximal phoneme separation
 	letterArray.displaced =  {'Space', 'Pause', 'A' 'B' 'F' 'O' 'E' 'M' 'I' 'T' ...
-	'J' 'C' 'H' 'Q' 'G' 'N' 'U' 'V' 'K' 'D' 'L' 'U' 'P' 'S' 'Z' 'R' 'W' 'Y'...
-	 'Read' 'Delete'}; %maximal phoneme separation
+	'Read' 'J' 'C' 'H' 'Q' 'G' 'N' 'U' 'V' 'K' ... % middle wheel
+	'D' 'L' 'U' 'P' 'S' 'Z' 'R' 'W' 'Y' 'Delete'}; % right wheel
 	speaker_list = {'mjc1', 'female', 'mnre0'};
 	speaker_amp_weights = [1 1 1];
 else
@@ -109,6 +100,7 @@ assert((length(pitches.notes) == length(pitches.all)),...
 % condition_type = eye(7);
 % condition_type = [zeros(1, 7); condition_type];
 % condition_type(5, 2) = 1;
+% smaller set of conditions for final testing
 condition_type = [0, 0, 0, 0, 0, 0, 0; 0, 1, 0, 0, 0, 0, 0; 0, 1, 0, 1, 0, 0, 0];
 % remove conditions where the letters are displaced for German
 if ~English
@@ -377,7 +369,6 @@ for x = 1:reps
 		end
 	end
 end
-end  
 save( fullfile( data_dir, 'global_vars'), 'condition_bin', 'wheel_matrix_info',...
  'preblock_prime_sec', 'English', 'tot_cyc') % global variables for each subject and session
 toc %print elapsed time
