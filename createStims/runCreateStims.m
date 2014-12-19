@@ -52,13 +52,13 @@ wheel_matrix_info = [10 10 10];  %how many letters in each wheel
 % SET LETTERS
 if English
 	% keep R letter in right wheel always
-	letterArray.alphabetic = {'Space', 'Pause', 'A' 'B' 'C' 'D' 'E' 'F' 'G' 'H' ...
-	 'Read', 'I' 'J' 'K' 'L' 'M' 'N' 'O' 'P' 'Q' ...  % middle wheel
-	 'R', 'S' 'T' 'U' 'V' 'W' 'X' 'Y' 'Z', 'Delete'};  % right wheel
+	letterArray.alphabetic = {'Space' 'Pause' 'A' 'B' 'C' 'D' 'E' 'F' 'G' 'H' ...
+	 'Read', 'Delete', 'I' 'J' 'K' 'L' 'M' 'N' 'O' 'P' ...  % middle wheel
+	 'Q' ' R' 'S' 'T' 'U' 'V' 'W' 'X' 'Y' 'Z' };  % right wheel
 	%maximal phoneme separation
 	letterArray.displaced =  {'Space', 'Pause', 'A' 'B' 'F' 'O' 'E' 'M' 'I' 'T' ...
-	'Read' 'J' 'C' 'H' 'Q' 'G' 'N' 'U' 'V' 'K' ... % middle wheel
-	'D' 'L' 'U' 'P' 'S' 'Z' 'R' 'W' 'Y' 'Delete'}; % right wheel
+	'Read' 'Delete' 'J' 'C' 'H' 'Q' 'G' 'N' 'U' 'V' ... % middle wheel
+	'K' 'D' 'L' 'U' 'P' 'S' 'Z' 'R' 'W' 'Y'}; % right wheel
 	speaker_list = {'mjc1', 'female', 'mnre0'};
 	speaker_amp_weights = [1 1 1];
 else

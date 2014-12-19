@@ -292,9 +292,9 @@ def surveyInput(text, response_btns, ec):
             response = ''
             continue
         check_response = ec.screen_prompt('You pressed ' + str(
-            response) + ', if this is the number you want press "{}" to \
-            continue otherwise press any other key to \
-            redo'.format(cont_btn_label), timestamp=False)
+            response) + ', if this is the number you want press "{}" to' +
+            ' continue otherwise press any other key to' +
+            ' redo'.format(cont_btn_label), timestamp=False)
         if check_response != str(cont_btn):
             response = ''  # clear past response and loop again
     return response
