@@ -17,7 +17,7 @@ lester_dir = '/Volumes/labdocs/kdmarrett/kexp';
 
 session = input('Enter session number: ');
 participant = input('Enter subject id: ', 's');
-data_dir = fullfile(PATH, 'Data', participant , int2str(session ));
+data_dir = fullfile(PATH, 'Data', 'Params', participant , int2str(session ));
 stimuli_path = fullfile(stimuli_path, participant , int2str(session ));
 createStruct(data_dir);
 createStruct(stimuli_path);

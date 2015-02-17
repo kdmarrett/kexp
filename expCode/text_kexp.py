@@ -46,7 +46,7 @@ instr['s0_start_block_0'] = ('In this first section, you will be introduced to t
 
 button_keys['s0_start_block_0'] = [cont_btn]
 
-instr['s0_start_trial_1'] = ('In this condition, letters are assigned a spatial location in alphabetic order.'
+instr['s0_start_trial_0'] = ('In this condition, letters are assigned a spatial location in alphabetic order.'
                              ' You can use the unique speaker and location to help you listen for each occurrence of'
                              ' the target letter. Push "{}" to start.'.format(cont_btn_label))
 
@@ -57,13 +57,13 @@ button_keys['s0_start_trial_0'] = [cont_btn]
 #                              'spatial locations. You can use the unique speaker, location, tone, and presentation rate to help you listen for each occurrence of'
 #                              ' the target letter. Push "{}" to start.'.format(cont_btn_label))
 
-button_keys['s0_start_trial_1'] = [cont_btn]
-
-instr['s0_start_trial_2'] = ('In this condition, letters are assigned a spatial location in a random order. '
+instr['s0_start_trial_1'] = ('In this condition, letters are assigned a spatial location in a random order. '
           'Throughout the trial, the ordering of the letters will remain constant.  You can use the unique speaker and location to help you listen for each occurrence of'
                              ' the target letter in this condition. Push "{}" to start.'.format(cont_btn_label))
 
-instr['s0_start_trial_3'] = ('In this condition, letters are assigned a spatial location in a random order. '
+button_keys['s0_start_trial_1'] = [cont_btn]
+
+instr['s0_start_trial_2'] = ('In this condition, letters are assigned a spatial location in a random order. '
           'Throughout the trial, the ordering of the letters will change meaning you will not know when the target letter will occur.'
           'You can use the unique speaker and location to help you listen for each occurrence of'
                              ' the target letter in this condition. Push "{}" to start.'.format(cont_btn_label))
