@@ -1,7 +1,6 @@
 # author: Karl Marrett
 # processes pupillometry data
 # modified from pupil_deconv.py on voc_meg experiment by Eric Larson
-
 # To do remove all references to MEG data (esp. in plotting examples)
 
 import os
@@ -9,6 +8,7 @@ import glob
 from os import path as op
 import numpy as np
 import time
+import scipy
 
 # from score import trans as event_dict
 # assumed to be part of meg analysis
@@ -19,7 +19,7 @@ from expyfun.io import read_hdf5, write_hdf5  # , read_tab
 from expyfun import binary_to_decimals  # ,decimals_to_binary
 
 subjects = ['Karl']
-data_dir = op.join(os.pardir(), 'Data')
+data_dir = op.join(os.pardir, 'Data')
 tmin = -.5
 tmax = 50  # needs to be assigned from trial length
 peak = .512  # ??
@@ -27,7 +27,7 @@ sdec_dur = 2.0
 n_jobs = 6
 ainds = [0, 1, 2, 3, 4, 5, 8, 9, 10, 11, 12]
 fs = 1000.0  # ?
-session = 1
+session = 3
 times = None
 ev_nums = None
 fits = list()
@@ -36,8 +36,8 @@ zscores = list()
 # READ IN PARTICPANT SESSION VARIABLES FROM MAT FILE
 # Reads in 'condition_bin', 'wheel_matrix_info', 'preblock_prime_sec'
 for subj in subjects:
-	final_datadir = op.join(datadir, 'Params', subj, session)
-	global_vars = scipy.io.loadmat(op.join(final_datadir, 'global_vars.mat'))
+	final_data_dir = op.join(data_dir, 'Params', subj, str(session))
+	global_vars = scipy.io.loadmat(op.join(final_data_dir, 'global_vars.mat'))
 	condition_uni = global_vars['condition_bin']  # Unicode by default
 	condition_asc = []  # ASCII
 	for i in range(len(condition_uni)):
@@ -51,7 +51,6 @@ for subj in subjects:
 	t0 = time.time()
 	print('  Subject %s...' % subj)
 
-	# needs to be replaced by a general method
 	fnames = sorted(glob.glob(op.join(data_dir, '%s_*' % subj, '*.edf')))
 	# assert len(fnames) == len(params['block_trials'])
 
@@ -67,14 +66,16 @@ for subj in subjects:
 		assert raw.info['sfreq'] == fs
 		raw.remove_blink_artifacts()
 		raws.append(raw)
-		cond_mat = params['cond_mat'][params['block_trials'][ri]]
+		# cond_mat = params['cond_mat'][params['block_trials'][ri]]
 		event = raw.find_events('SYNCTIME', 1)
 		ttls = [np.array([int(mm) for mm in m[1].decode().split(' ')[1:]])
 				for m in raw.discrete['messages']
 				if m[1].decode().startswith('TRIALID')]
-		assert len(ttls) == len(event) == len(cond_mat)
-		conds = [binary_to_decimals(t, [1, 1, 1, 3]) - adj for t in ttls]
-		assert np.array_equal(cond_mat, conds)
+		# Add similar assertions to check MATLAB trial parameters with
+		#	 parameters in this script
+		# assert len(ttls) == len(event) == len(cond_mat)
+		# conds = [binary_to_decimals(t, [1, 1, 1, 3]) - adj for t in ttls]
+		# assert np.array_equal(cond_mat, conds)
 		# convert event numbers
 		# ev_num = read_events(op.join(meg_dir, 'lists',
 									 # 'ALL_eric_voc_%s_%02g-eve.lst'
