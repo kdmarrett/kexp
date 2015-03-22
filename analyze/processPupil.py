@@ -9,8 +9,9 @@ from os import path as op
 import numpy as np
 import time
 import scipy
+import pdb
 
-# from score import trans as event_dict
+from score import trans as event_dict
 # assumed to be part of meg analysis
 # from mne import read_events
 from pyeparse import Raw, Epochs
@@ -61,7 +62,10 @@ for subj in subjects:
 
 	raws = list()
 	events = list()
+        pdb.set_trace()
 	for ri, fname in enumerate(fnames):
+		print "fname:"
+		print fname
 		raw = Raw(fname)
 		assert raw.info['sfreq'] == fs
 		raw.remove_blink_artifacts()
@@ -84,9 +88,11 @@ for subj in subjects:
 		events.append(event)
 
 	# if ev_nums is None:
-	 #   ev_nums = np.concatenate(events, axis=0)[:, 1]
+	#   ev_nums = np.concatenate(events, axis=0)[:, 1]
 	# assert np.array_equal(ev_nums, np.concatenate(events, axis=0)[:, 1])
+	pdb.set_trace()
 	print('    Epoching...')
+# where is event_dict defined?
 	epochs=Epochs(raws, events, event_dict, tmin, tmax)
 	print('    Deconvolving...')
 	kernel=pupil_kernel(epochs.info['sfreq'], t_max=peak, dur=dec_dur)
