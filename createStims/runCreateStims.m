@@ -357,7 +357,7 @@ for x = 1:reps
 			final_data_dir = fullfile(data_dir, file_name);
 			save(final_data_dir, 'target_letter', 'target_time',...
 			 'tot_wav_time', 'preblock_prime_sec', 'paradigm', ...
-			 'possible_letters', 'preblock_prime_sec');
+			 'possible_letters');
 			wav_name = fullfile(final_output_path, strcat(file_name,'.wav'));
 			% accounts for bug: matlab does not overwrite on all systems
 			if exist(wav_name, 'file') 
@@ -370,5 +370,5 @@ for x = 1:reps
 	end
 end
 save( fullfile( data_dir, 'global_vars'), 'condition_bin', 'wheel_matrix_info',...
- 'preblock_prime_sec', 'English', 'tot_cyc') % global variables for each subject and session
+ 'preblock_prime_sec', 'English', 'tot_cyc', 'trials_per_condition') % global variables for each subject and session
 toc %print elapsed time

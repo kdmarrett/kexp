@@ -183,7 +183,6 @@ def recordTrial(wheel_matrix_info, preblock, id_, wav_indices, instr, ec, el,
     target_time = trial_vars['target_time']
     target_letter = trial_vars['target_letter'][0][0][0].encode('ascii')
     possible_letters = trial_vars['possible_letters'][0]
-    print possible_letters
     # check loading of correct mat file
     assert (trial_vars['paradigm'][0].encode('ascii')
             == id_), "Error: id_ and paradigm from mat file do not match"
@@ -194,9 +193,9 @@ def recordTrial(wheel_matrix_info, preblock, id_, wav_indices, instr, ec, el,
     stim_dur = stims[0].shape[-1] / ec.stim_fs
     ec.clear_buffer()
     ec.load_buffer(stims[0])
-    ec.identify_trial(ec_id=id_list, el_id=id_list, ttl_id=id_list)
     # draw visual primer
     drawPrimer(wheel_matrix_info, target_letter, possible_letters)
+    ec.identify_trial(ec_id=id_list, el_id=id_list, ttl_id=id_list)
     ec.start_stimulus(flip=True)  # the visual primer is displayed
     ec.wait_secs(preblock / 3)
     # Draw fixation dot to visual buffer
@@ -392,7 +391,7 @@ with ef.ExperimentController(*std_args, **std_kwargs) as ec:
                     instr[(trial_end_key)], live_keys=button_keys[(trial_end_key)], max_wait=wait_keys[trial_end_key])
             # End block
             block_end_key = 's' + str(snum) + '_' + 'end_block'
-            el.stop()
+            el.stop() # close edf file
             ec.screen_prompt(
                 instr[(block_end_key)], live_keys=button_keys[(block_end_key)], max_wait=wait_keys[block_end_key])
         # End section
