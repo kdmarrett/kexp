@@ -110,9 +110,32 @@ for subj in subjects:
             epochs.append(trial_epoch)
             ps.append(trial_epoch.get_data('ps')[0])
 
-
-#fig = plt.figure()
-#plt.plot(ps[0])
+# arrange it into a 2 dimensional array
+# get mean and variance for array
+# keep in mind that the pupil data goes longer than the trial length
+# draw the arrow object for the start of primer, end of primer, start of
+# stimulus end of stimulus
+# create a way to distinguish sessions and subjects for batch processing
+# make N trials as long as possible by checking for all files with 
+# 4 edfs
+min_len = 9999999;
+for i in range(len(ps)):
+    temp = len(ps[i])
+    if temp < min_len:
+        min_len = temp
+    
+#min_len = len(ps[0])
+fig = plt.figure()
+x = np.linspace(0, min_len / fs, min_len)
+for i in range(len(ps)):
+    plt.plot(x, ps[i], 'k')
+    
+plt.ylabel('Pupil Size')
+plt.xlabel('Trial Time (s)')
+plt.title('Trial Pupil Size')
+plt.show()
+#plt.xticks([tmin / fs, min_len / fs])
+#plt.savefig('trialPS.pdf')
 
 #for i in range(len(epochs)):
-    #tri[i] = epochs.get_data('ps')
+    #tri[i] = epochs.get_data('p')
