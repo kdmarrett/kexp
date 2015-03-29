@@ -9,6 +9,7 @@ This script runs an experiment with spatially distributed letter streams.
 
 # TO DO
 # set luminosity via calibration
+# extra initial edf being saved
 
 import scipy
 import pyglet
@@ -195,6 +196,7 @@ def recordTrial(wheel_matrix_info, preblock, id_, wav_indices, instr, ec, el,
     ec.load_buffer(stims[0])
     # draw visual primer
     drawPrimer(wheel_matrix_info, target_letter, possible_letters)
+	# edf stamped for epoch starts
     ec.identify_trial(ec_id=id_list, el_id=id_list, ttl_id=id_list)
     ec.start_stimulus(flip=True)  # the visual primer is displayed
     ec.wait_secs(preblock / 3)
