@@ -1,6 +1,11 @@
 % createStim.m
 %   Author: Karl Marrett
 
+%TODO
+%make all trials have 1 or 2 targets in them
+%save this as a int 'target'
+%which wheel is the target in 
+
 close all
 clear all
 tic
@@ -15,10 +20,8 @@ K70_dir = fullfile(PATH, 'K70'); % computed HRTF
 instrNote_dir = fullfile(PATH, 'instrNotes/'); % instrument notes
 lester_dir = '/Volumes/labdocs/kdmarrett/kexp';
 
-session = input('Enter session number: ');
-participant = input('Enter subject id: ', 's');
-data_dir = fullfile(PATH, 'Data', 'Params', participant , int2str(session ));
-stimuli_path = fullfile(stimuli_path, participant , int2str(session ));
+data_dir = fullfile(PATH, 'Data', 'Params');
+stimuli_path = fullfile(stimuli_path);
 createStruct(data_dir);
 createStruct(stimuli_path);
 
@@ -32,7 +35,8 @@ white_noise_decibel = 0;  %amplitude
 noise = 0;  % bool adds noise
 distance_sound = 5; %distance for stimuli to be played in HRTF
 scale_type = 'whole'; %string 'whole' or 'diatonic'
-tot_cyc = 9;
+tot_cyc = 5;
+max_targets = 2;
 postblock_sec = 1.5; %secs after letterblocks
 preblock_prime_sec = 	15.5; %seconds until letters start playing
 primer_start = 3000;  %sample # that primer letter will play in preblock (less than preblock)
@@ -48,6 +52,14 @@ ILIms = repmat(ILImsBase, 3, 1);
 token_rates = [3 5 7];
 English = 1; % English or German
 wheel_matrix_info = [10 10 10];  %how many letters in each wheel
+blocktrial = ones(3,1);
+%randperm all blockorder
+order{1} = randperm(9) - 1;
+order{2} = randperm(27) - 1;
+order{3} = randperm(27) - 1;
+order{4} = randperm(27) - 1;
+order{5} = randperm(3) - 1;
+% index into block order to get to convert z to a trial number
 
 % SET LETTERS
 if English
@@ -145,11 +157,13 @@ for x = 1:reps
 		if x == 1
 			condition_bin(y, :)  = reshape(dec2bin(paradigm)', [], 1)';
 		end
+
 		[possible_letters, target_letter, rearrangeCycles, tone_constant,...
 		  ener_mask, letters_used, token_rate_modulation,  AM_freq, AM_pow,...
 		  shiftedLetters, instrNote_shifted, instrNote, envelope_type,...
 		   letter_fine_structure, sync_cycles  ] = assignParadigm(paradigm,...
 		    letterArray, env_instrNotes, total_letters, wheel_matrix_info);
+
 		[pitch_wheel, angle_wheel, total_pitches, list_of_pitches,...
 		 start_semitone_index ] = assignPitch(wheel_matrix_info, tot_cyc, ...
 		 	scale_type, pitches, descend_pitch );
@@ -181,10 +195,16 @@ for x = 1:reps
 		%%  GENERATE EACH TRIAL WAV
 		for z = 1:condition_trials(y);
 			paradigm = condition_type(y, :);
+			%choose 1 or 2 target cycles per block
+			target_cycles = randi(max_targets);
+			% assign target letter
+			[target_letter, location_code, block_no] = assignTarget(z, ...
+			possible_letters, wheel_matrix_info);
 			target_time = []; % also clear target time from last trial
+			% returns cell array of wheel_num elements
 			[ wheel_matrix, target_wheel_index ] = assignLetters( ...
-			possible_letters, wheel_matrix_info, target_letter, tot_cyc, ...
-			rearrangeCycles, ener_mask); % returns cell array of wheel_num elements
+			possible_letters, wheel_matrix_info, target_letter,...
+			target_cycles, tot_cyc, rearrangeCycles, ener_mask); 
 			if (x == 2) %if a training trial
 				play_wheel = zeros(1,3); %bool array to include certain wheels for training trials
 				play_wheel(target_wheel_index) = 1; % only include the target wheel
@@ -273,7 +293,7 @@ for x = 1:reps
 							    target_sample_index = wheel_sample_index + ...
 							     track_sample_index;
 							    target_time = [target_time (target_sample_index / fs)];
-							    if tone_constant %check that tone target tone is constant
+							    if tone_constant %check that target tone is constant
 							        if (length(target_time) > 2)
 							            assert(strcmpi(pitch, old_pitch),...
 							             'Error: target tone not constant')
@@ -353,11 +373,13 @@ for x = 1:reps
 			% pass strings of binaries to Python for checking
 			paradigm = dec2bin(paradigm)'; %cast to bin then to string
 			paradigm_reshape = reshape(paradigm',[],1)';
-			file_name = strcat( paradigm, '_', 'tr', int2str(z - 1))
+			file_name = strcat( paradigm, '_', 'tr',...
+			order{block_no}(blocktrial(block_no)), ...
+			'b', int2str(block_no), location_code)
 			final_data_dir = fullfile(data_dir, file_name);
 			save(final_data_dir, 'target_letter', 'target_time',...
 			 'tot_wav_time', 'preblock_prime_sec', 'paradigm', ...
-			 'possible_letters');
+			 'possible_letters', 'target_cycles', 'wheel_matrix');
 			wav_name = fullfile(final_output_path, strcat(file_name,'.wav'));
 			% accounts for bug: matlab does not overwrite on all systems
 			if exist(wav_name, 'file') 
@@ -369,6 +391,7 @@ for x = 1:reps
 		end
 	end
 end
+% global variables for each subject and session
 save( fullfile( data_dir, 'global_vars'), 'condition_bin', 'wheel_matrix_info',...
- 'preblock_prime_sec', 'English', 'tot_cyc', 'trials_per_condition') % global variables for each subject and session
+ 'preblock_prime_sec', 'English', 'tot_cyc', 'trials_per_condition') 
 toc %print elapsed time

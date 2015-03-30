@@ -7,9 +7,13 @@ This script runs an experiment with spatially distributed letter streams.
 """
 # Author: Karl Marrett <kdmarret@uw.edu>, <kdmarrett@gmail.com>
 
-# TO DO
-# set luminosity via calibration
-# extra initial edf being saved
+#TODO
+#catch number of targets
+#add training section
+# only record from middle section
+# 3 blocks before a break
+# ask for a target number
+# add training
 
 import scipy
 import pyglet

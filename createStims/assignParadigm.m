@@ -1,11 +1,17 @@
 function [possibleLetters, target_letter, rearrangeCycles, tone_constant, ener_mask, letters_used, ...
     token_rate_modulation, AM_freq, AM_pow, shiftedLetters, instrNote_shifted, instrNote, envelope_type,...
      letter_fine_structure, sync_cycles  ] = assignParadigm(paradigm, letterArray, env_instrNotes, total_letters, wheel_matrix_info )
-    % Assign basic design parameters of each paradigm type
-    % BOOLEANS FOR DESIGN FEATURES, ORDERED: CONTROL, EACH WHEEL GROUP AT AN ORTHOGONAL FREQUENCY OF TOKEN RATE, MAXIMALLY DISPLACED ORDERING, TARGET LETTER 'R' AS OPPOSED TO X[i],
-    % LETTER ORDERS ARE RETAINED ACROSS CYCLES, TONE IS ASSIGNED RANDOMLY AS OPPOSED TO CONTIGUOSLY, EACH WHEEL GROUP GIVEN A UNIQUE FREQUENCY AM, EACH GROUP GIVEN THE SAME AM FREQUENCY 
+
+	% assign basic design parameters of each paradigm type booleans for
+	% design features, ordered: control, each wheel group at an
+	% orthogonal frequency of token rate, maximally displaced ordering,
+	% target letter 'r' as opposed to x[i],
+	% letter orders are retained across cycles, tone is assigned
+	% randomly as opposed to contiguously, each wheel group given a
+	% unique frequency am, each group given the same am frequency 
 
     ener_mask = 0;% assigns all non target letters to letter O 
+	target_letter = 'R'; %dummy target letter
 
     % ASSIGN LETTERS PER WHEEL
     if paradigm(1)
@@ -28,12 +34,12 @@ function [possibleLetters, target_letter, rearrangeCycles, tone_constant, ener_m
     end
     
     % % ASSIGN TARGET LETTER
-    if paradigm(3)
-        target_letter_i = {'B' 'C' 'D' 'E' 'G' 'P' 'T' 'V'}; %  of all letters ending [i] but 'Z'
-        target_letter = target_letter_i(randi([1, length(target_letter_i)])); %choose randomly
-    else
-        target_letter = {'R'};
-    end
+    %if paradigm(3)
+        %target_letter_i = {'B' 'C' 'D' 'E' 'G' 'P' 'T' 'V'}; %  of all letters ending [i] but 'Z'
+        %target_letter = target_letter_i(randi([1, length(target_letter_i)])); %choose randomly
+    %else
+        %target_letter = {'R'};
+    %end
    
     % ASSIGN INTER-CYCLE ORDERING
     if paradigm(4)
@@ -50,16 +56,16 @@ function [possibleLetters, target_letter, rearrangeCycles, tone_constant, ener_m
     end
 
     %AMPLITUDE MODULATOR SHIFTS AMPLITUDE
-        if paradigm(6)
-            AM_freq = [2 11 13 0 0 0 0 0]; %Hz rate of amplitude modulator elements for each wheel 0 for none
-            AM_pow =  [.15 .15 .15 0 0 0 0 0]; %decibel of each AM for each corresponding wheel
-        elseif paradigm(7)
-           AM_freq = [11 11 11 0 0 0 0 0]; %Hz rate of amplitude modulator elements for each wheel 0 for none
-            AM_pow =  [.15 .15 .15 0 0 0 0 0]; %decibel of each AM for each corresponding wheel
-        else
-          AM_freq = [0 0 0 0 0 0 0 0];  %Hz rate of amplitude modulator elements for each wheel 0 for none
-            AM_pow =  [0 0 0 0 0 0 0 0]; %decibel of each AM for each corresponding wheel
-        end
+	if paradigm(6)
+		AM_freq = [2 11 13 0 0 0 0 0]; %Hz rate of amplitude modulator elements for each wheel 0 for none
+		AM_pow =  [.15 .15 .15 0 0 0 0 0]; %decibel of each AM for each corresponding wheel
+	elseif paradigm(7)
+	   AM_freq = [11 11 11 0 0 0 0 0]; %Hz rate of amplitude modulator elements for each wheel 0 for none
+		AM_pow =  [.15 .15 .15 0 0 0 0 0]; %decibel of each AM for each corresponding wheel
+	else
+	  AM_freq = [0 0 0 0 0 0 0 0];  %Hz rate of amplitude modulator elements for each wheel 0 for none
+		AM_pow =  [0 0 0 0 0 0 0 0]; %decibel of each AM for each corresponding wheel
+	end
 
     % ASSIGN PITCH SHIFTING
     shiftedLetters = 0; % bool letters are monotonized and shifted within one octave above and below A3
