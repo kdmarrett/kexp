@@ -323,8 +323,7 @@ with ef.ExperimentController(*std_args, **std_kwargs) as ec:
 
     # READ IN PARTICPANT SESSION VARIABLES FROM MAT FILE
     # Reads in 'condition_bin', 'wheel_matrix_info', 'preblock_prime_sec'
-    final_datadir = op.join(
-        datadir,'Params', ec._exp_info['participant'], ec._exp_info['session'])
+    final_datadir = op.join( datadir, 'Params')
     global_vars = scipy.io.loadmat(op.join(final_datadir, 'global_vars.mat'))
     condition_uni = global_vars['condition_bin']  # Unicode by default
     condition_asc = []  # ASCII
