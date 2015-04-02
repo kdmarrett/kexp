@@ -1,20 +1,23 @@
 [target_letter, location_code, block_no, blocktrial] = assignTarget(trial_no, ...
 possible_letters, wheel_matrix_info, blocktrial);
 
-left_ind  = [1 4:13 34]; 
-mid_ind   = [2 14:23 35];
-right_ind = [3 24:33 36];
+%left_ind  = [1 4:13 34]; 
+%mid_ind   = [2 14:23 35];
+%right_ind = [3 24:33 36];
+left_ind  = [1 4:6 13:15 22:24]; 
+mid_ind   = [2 7:9 16:18 25:27 31];
+right_ind = [3 10:12 19:21 28:30];
 
 if (trial_no =< 3)
 	block_no = 1;
 	blocktrial(1) = blocktrial(1) + 1;
-elseif (trial_no =< 13)
+elseif (trial_no =< 12)
 	block_no = 2;
 	blocktrial(2) = blocktrial(2) + 1;
-elseif (trial_no =< 23)
+elseif (trial_no =< 21)
 	block_no = 3;
 	blocktrial(3) = blocktrial(3) + 1;
-elseif (trial_no =< 33)
+elseif (trial_no =< 30)
 	block_no = 4;
 	blocktrial(4) = blocktrial(4) + 1;
 else 
