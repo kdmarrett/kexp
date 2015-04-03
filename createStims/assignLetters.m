@@ -75,7 +75,6 @@ end
 
 % CHANGE ORDERING BETWEEN CYCLES
 if rearrangeCycles
-	fprintf('cycles rearranged');
     for i = 1:length(wheel_matrix)
         [wheel_matrix{i}] = reorderDisplaced(wheel_matrix{i});
     end

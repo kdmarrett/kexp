@@ -84,100 +84,22 @@ def ExperimentOrdering(block_in_sections, trial_in_block, condition_nums,
 
     # Make section 2
     section.append([random.sample(range(0, condition_nums), condition_nums)])
-    # decide Section 2 structure after piloting
-    # control_wraps = False
-    # while not control_wraps:
-    #     block = []
-    #     for i in range(block_in_sections[1]):
-    #         repeats = True
-    #         bicontrol = False
-    #         while repeats:
-    #             trial = random.sample(range(0, condition_nums),
-    # condition_nums)  # creates a shuffled range(8)
-    # add an extra controls to every trial for more comparisons
-    #             for j in range(controls_in_block - 1):
-    #                 control_ind = np.where(np.array(trial) == 0)[0].tolist()
-    # range of acceptable indices
-    #                 replacement_range = range(condition_nums)
-    #                 other_ind = []
-    #                 for k in range(len(control_ind)):
-    #                     other_ind.append(control_ind[k] + 1)
-    #                     other_ind.append(control_ind[k] - 1)
-    #                 control_ind.extend(other_ind)
-    #                 for k in range(len(control_ind)):
-    #                     try:
-    # delete by value
-    #                         replacement_range.remove(control_ind[k])
-    #                     except:
-    # ignore all exceptions for out of range
-    #                         pass
-    #                 next_control_ind = random.sample(replacement_range, 1)[0]
-    #                 trial[next_control_ind] = 0
-    # check no condition has consecutive trials
-    #             repeats = checkRepeats(trial)
-    #         block.append(trial)
-    #     control_wraps = controlProceedsFollows(block, num_enforced_wraps)
-    # section.append(block)
 
     # Make section 3
     section.append([random.sample(range(0, condition_nums), condition_nums)])
-    # block = []
-    # condition_ordering = random.sample(
-    #     range(0, condition_nums), condition_nums)
-    # for i in range(condition_nums):
-    #     block.append(condition_ordering[i])
-    # section.append(block)
     return section
 
-
-def checkRepeats(trial):
-    """ Checks for any repeats in a given list """
-    repeats = False
-    for i in range(len(trial) - 1):
-        if (trial[i] == trial[i + 1]):
-            repeats = True
-    return repeats
-
-
-def controlProceedsFollows(block, num_enforced_wraps):
-    """ For section 2 checks whether the block as
-    a whole has at least one occurrence of the control
-    condition before and after every other condition"""
-
-    # Create arrays with elements counting which condition has
-    # proceeded/followed a control element compared to all other
-    # conditions
-    proceeds_condition = np.zeros((condition_nums - 1), int)
-    follows_condition = np.zeros((condition_nums - 1), int)
-    for i in range(len(block)):
-        trial = np.array(block[i])
-        control_ind = np.where(trial == 0)[0]
-        for j in range(len(control_ind)):
-            ind = control_ind[j]
-            if ind != 0:  # avoids index out of bounds error
-                proceeds_condition[trial[ind - 1] - 1] += 1
-            if ind != (condition_nums - 1):
-                follows_condition[trial[ind + 1] - 1] += 1
-    control_wraps = False
-    # check that all conditions proceeded and followed by control by at least
-    # enforced wraps
-    if (len(np.where(proceeds_condition >= num_enforced_wraps)[0]) == (condition_nums - 1)):
-        if (len(np.where(follows_condition >= num_enforced_wraps)[0]) == (condition_nums - 1)):
-            control_wraps = True
-    return control_wraps
-
-
-def recordTrial(wheel_matrix_info, preblock, id_, wav_indices, instr, ec, el,
-                stimdir, final_datadir, record_pupil=True):
+def recordTrial(wheel_matrix_info, preblock, id_, wav_indices,
+        block_ind, bnum, instr, ec, el, stimdir, final_datadir, record_pupil=True):
     """ Takes the indice of all current condition types and the binary name
     of the condition to find the trial wav.  Displays instructions according
     to instr() and plays stimuli while recording and logging
     pupillometry data.  """
 
     # identify paradigm and trial number
-    wav_num = wav_indices[id_]
-    data_file_name = id_ + '_tr' + str(wav_num)
-    stim_file_name = id_ + '_tr' + str(wav_num) + '.wav'
+    wav_num = block_ind[bnum]
+    data_file_name = 'b' + str(bnum) + '_tr' + wav_num
+    stim_file_name = data_file_name + '.wav'
     trial_data_path = op.join(final_datadir, data_file_name)
     trial_stim_path = op.join(stimdir, stim_file_name)
 
@@ -186,7 +108,9 @@ def recordTrial(wheel_matrix_info, preblock, id_, wav_indices, instr, ec, el,
     # 'paradigm', 'possible_letters' 'tot_cyc'
     trial_vars = scipy.io.loadmat(trial_data_path)
     target_time = trial_vars['target_time']
+    target_cycles = trial_vars['target_cycles']
     target_letter = trial_vars['target_letter'][0][0][0].encode('ascii')
+    location_code = trial_vars['location_code'][0][0][0].encode('ascii')
     possible_letters = trial_vars['possible_letters'][0]
     # check loading of correct mat file
     assert (trial_vars['paradigm'][0].encode('ascii')
@@ -220,8 +144,8 @@ def recordTrial(wheel_matrix_info, preblock, id_, wav_indices, instr, ec, el,
     ec.stop()
     ec.trial_ok()
     # update
-    wav_indices[id_] += 1
-    return wav_indices
+    block_ind[bnum] += 1
+    return
 
 
 def drawPrimer(wheel_matrix_info, target_letter, possible_letters):
@@ -331,9 +255,12 @@ with ef.ExperimentController(*std_args, **std_kwargs) as ec:
         condition_asc.append(condition_uni[i].encode('ascii'))
     condition_nums = len(condition_asc)
     wheel_matrix_info = global_vars['wheel_matrix_info'][0]
+    order = global_vars['order'][0]
     # keep track of which new wav file to use
-    wav_indices = dict(
-        zip(condition_asc, np.zeros(len(condition_asc), dtype=int)))
+    #wav_indices = dict(
+        #zip(condition_asc, np.zeros(len(condition_asc), dtype=int)))
+    block_ind = dict(
+        zip(range(len(order)), np.zeros(len(order), dtype=int)))
     preblock = global_vars['preblock_prime_sec'][0]
     # adjust instruction languages according subject in runcreatestims
     if global_vars['English']:
@@ -342,9 +269,9 @@ with ef.ExperimentController(*std_args, **std_kwargs) as ec:
         from text_kexp_GER import *
 
     # MAKE CONDITION ORDERING
-    section = ExperimentOrdering(
-        block_in_sections, trial_in_block, condition_nums, controls_in_block,
-        num_enforced_wraps)
+    #section = ExperimentOrdering(
+        #block_in_sections, trial_in_block, condition_nums, controls_in_block,
+        #num_enforced_wraps)
 
     ec.screen_prompt(instr['start_exp'], live_keys=button_keys['start_exp'])
     for snum in range(len(section)):

@@ -1,11 +1,6 @@
 % createStim.m
 %   Author: Karl Marrett
 
-%TODO
-%make all trials have 1 or 2 targets in them
-%save this as a int 'target'
-%which wheel is the target in 
-
 close all
 clear all
 tic
@@ -200,8 +195,6 @@ for x = 1:reps
 			[target_letter, target_wheel_index, location_code, block_no, blocktrial ...
 			base_wheel_matrix ] = assignTarget( trial_no, possible_letters, ... 
 			wheel_matrix_info, blocktrial, left_ind, mid_ind, right_ind);
-			trial_no
-			block_no
 			target_time = []; % also clear target time from last trial
 			% returns cell array of wheel_num elements
 			[ wheel_matrix ] = assignLetters( ...
@@ -276,7 +269,7 @@ for x = 1:reps
 							% VIEW
 							% plot(letter_sound)
 							% hold on
-							% % plot(instrNote_sound, 'r')
+							% plot(instrNote_sound, 'r')
 							% title(letter)
 							% waitforbuttonpress
 							% hold off
@@ -376,15 +369,12 @@ for x = 1:reps
 			% pass strings of binaries to Python for checking
 			paradigm = dec2bin(paradigm)'; %cast to bin then to string
 			paradigm_reshape = reshape(paradigm',[],1)';
-			%file_name = strcat( paradigm, '_', 'tr',...
-			%order{block_no}(blocktrial(block_no)), ...
-			%'b', int2str(block_no), location_code)
 			file_name = strcat('b', int2str(block_no), '_', 'tr',...
-			int2str(order{block_no}(blocktrial(block_no))), location_code)
+			int2str(order{block_no}(blocktrial(block_no))))
 			final_data_dir = fullfile(data_dir, file_name);
 			save(final_data_dir, 'target_letter', 'target_time',...
 			 'tot_wav_time', 'preblock_prime_sec', 'paradigm', ...
-			 'possible_letters', 'target_cycles', 'wheel_matrix');
+			 'possible_letters', 'target_cycles', 'location_code', 'wheel_matrix');
 			wav_name = fullfile(final_output_path, strcat(file_name,'.wav'));
 			% accounts for bug: matlab does not overwrite on all systems
 			if exist(wav_name, 'file') 
@@ -398,9 +388,11 @@ for x = 1:reps
 end
 % global variables for each subject and session
 save( fullfile( data_dir, 'global_vars'), 'condition_bin', 'wheel_matrix_info',...
- 'preblock_prime_sec', 'English', 'tot_cyc', 'trials_per_condition') 
+ 'preblock_prime_sec', 'English', 'tot_cyc', 'trials_per_condition',...
+ 'order') 
 
 for i = 1:length(blocktrial)
 	assert(blocktrial(i) == length(order{i}))
 end
-toc %print elapsed time
+
+toc 
