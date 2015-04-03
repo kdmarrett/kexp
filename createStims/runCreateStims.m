@@ -52,14 +52,13 @@ ILIms = repmat(ILImsBase, 3, 1);
 token_rates = [3 5 7];
 English = 1; % English or German
 wheel_matrix_info = [10 10 10];  %how many letters in each wheel
-blocktrial = ones(3,1);
-%randperm all blockorder
-order{1} = randperm(9) - 1;
-order{2} = randperm(27) - 1;
-order{3} = randperm(27) - 1;
-order{4} = randperm(27) - 1;
-order{5} = randperm(3) - 1;
-% index into block order to get to convert z to a trial number
+tot_blocks = 5;
+blocktrial = zeros(tot_blocks,1); % keeps track of indexer into block orders
+% load 'order'
+load block_ordering.mat
+left_ind  = [1 4:6 13:15 22:24]; 
+mid_ind   = [2 7:9 16:18 25:27 31];
+right_ind = [3 10:12 19:21 28:30];
 
 % SET LETTERS
 if English
@@ -119,7 +118,7 @@ if ~English
 	condition_type = condition_type([1:2, 4, 6:end], :)
 end
 [condition_no, bar] = size(condition_type);
-trials_per_condition = 3;
+trials_per_condition = 31;
 condition_trials = repmat(trials_per_condition, length(condition_type), 1);
 
 if makeTraining
@@ -193,18 +192,22 @@ for x = 1:reps
 		end
 		
 		%%  GENERATE EACH TRIAL WAV
-		for z = 1:condition_trials(y);
+		for trial_no = 1:condition_trials(y);
 			paradigm = condition_type(y, :);
 			%choose 1 or 2 target cycles per block
 			target_cycles = randi(max_targets);
 			% assign target letter
-			[target_letter, location_code, block_no] = assignTarget(z, ...
-			possible_letters, wheel_matrix_info);
+			[target_letter, target_wheel_index, location_code, block_no, blocktrial ...
+			base_wheel_matrix ] = assignTarget( trial_no, possible_letters, ... 
+			wheel_matrix_info, blocktrial, left_ind, mid_ind, right_ind);
+			trial_no
+			block_no
 			target_time = []; % also clear target time from last trial
 			% returns cell array of wheel_num elements
-			[ wheel_matrix, target_wheel_index ] = assignLetters( ...
+			[ wheel_matrix ] = assignLetters( ...
 			possible_letters, wheel_matrix_info, target_letter,...
-			target_cycles, tot_cyc, rearrangeCycles, ener_mask); 
+			target_cycles, tot_cyc, rearrangeCycles, ener_mask,...
+			base_wheel_matrix, target_wheel_index); 
 			if (x == 2) %if a training trial
 				play_wheel = zeros(1,3); %bool array to include certain wheels for training trials
 				play_wheel(target_wheel_index) = 1; % only include the target wheel
@@ -373,9 +376,11 @@ for x = 1:reps
 			% pass strings of binaries to Python for checking
 			paradigm = dec2bin(paradigm)'; %cast to bin then to string
 			paradigm_reshape = reshape(paradigm',[],1)';
-			file_name = strcat( paradigm, '_', 'tr',...
-			order{block_no}(blocktrial(block_no)), ...
-			'b', int2str(block_no), location_code)
+			%file_name = strcat( paradigm, '_', 'tr',...
+			%order{block_no}(blocktrial(block_no)), ...
+			%'b', int2str(block_no), location_code)
+			file_name = strcat('b', int2str(block_no), '_', 'tr',...
+			int2str(order{block_no}(blocktrial(block_no))), location_code)
 			final_data_dir = fullfile(data_dir, file_name);
 			save(final_data_dir, 'target_letter', 'target_time',...
 			 'tot_wav_time', 'preblock_prime_sec', 'paradigm', ...
@@ -394,4 +399,8 @@ end
 % global variables for each subject and session
 save( fullfile( data_dir, 'global_vars'), 'condition_bin', 'wheel_matrix_info',...
  'preblock_prime_sec', 'English', 'tot_cyc', 'trials_per_condition') 
+
+for i = 1:length(blocktrial)
+	assert(blocktrial(i) == length(order{i}))
+end
 toc %print elapsed time
