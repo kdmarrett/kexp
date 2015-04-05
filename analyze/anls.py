@@ -24,6 +24,22 @@ session = 3
 blocks = 3
 datadir = os.path.abspath(os.path.join(os.pardir, 'Data'))
 
+
+def getTrialInfo(block_ind, bnum):
+    # LOAD IN TRIAL DATA/STIMS
+	data_file_name = 'b' + str(bnum) + '_tr' + block_ind[bnum] + 'final'
+    trial_data_path = op.join(final_datadir, data_file_name)
+    trial_vars = scipy.io.loadmat(trial_data_path)
+    condition_no = trial_vars['paradigm'][0]
+    target_time = trial_vars['target_time']
+    target_cycles = trial_vars['target_cycles']
+    target_letter = trial_vars['target_letter'][0][0][0].encode('ascii')
+    location_code = trial_vars['location_code'][0][0][0].encode('ascii')
+    possible_letters = trial_vars['possible_letters'][0]
+    #id_ = condition_asc[condition_no]
+    # id_ = decimals_to_binary(id_, np.ones(1, len(id_)))
+    return condition_no, target_time, location_code, correct 
+
 # READ IN PARTICPANT SESSION VARIABLES FROM MAT FILE
 # Reads in 'condition_bin', 'wheel_matrix_info', 'preblock_prime_sec'
 ps = []
@@ -33,6 +49,7 @@ for subj in subjects:
     final_data_dir = op.join(data_dir, 'Params', 'Karl', str(session))
     global_vars = scipy.io.loadmat(op.join(final_data_dir, 'global_vars.mat'))
     condition_uni = global_vars['condition_bin']  # Unicode by default
+    order = global_vars['order'][0]
     #trials = global_vars['trials_per_condition'][0]
     trials = 3; # temp
     condition_asc = []  # ASCII
@@ -41,6 +58,8 @@ for subj in subjects:
     condition_nums = len(condition_asc)
     wheel_matrix_info = global_vars['wheel_matrix_info'][0]
     # keep track of which new wav file to use
+    block_ind = dict(
+        zip(range(len(order)), np.zeros(len(order), dtype=int)))
     wav_indices = dict(
         zip(condition_asc, np.zeros(len(condition_asc), dtype=int)))
     preblock = global_vars['preblock_prime_sec'][0]
