@@ -21,8 +21,9 @@ createStruct(data_dir);
 createStruct(stimuli_path);
 
 %GLOBAL INPUT PARAMETERS OF BLOCK DESIGN
-% Includes a preblock primer where target letters are played in their respective 
-% location and pitch, and a post_block to provide time between trials.
+% Includes a preblock primer where target letters are played in their
+% respective location and pitch, and a post_block to provide time
+% between trials.
 instr_amp_weights = [2 1 4];
 rms_amp = .05; %final normalization (loudness)
 letter_decibel = 10; %amplitude of letters in wheel; final stim normalized
@@ -47,13 +48,13 @@ ILIms = repmat(ILImsBase, 3, 1);
 token_rates = [3 5 7];
 English = 1; % English or German
 wheel_matrix_info = [10 10 10];  %how many letters in each wheel
-tot_blocks = 5;
+tot_blocks = 8;
 blocktrial = zeros(tot_blocks,1); % keeps track of indexer into block orders
 % load 'order'
-load block_ordering.mat
-left_ind  = [1 4:6 13:15 22:24]; 
-mid_ind   = [2 7:9 16:18 25:27 31];
-right_ind = [3 10:12 19:21 28:30];
+load order.mat
+left_ind  = [2:4 12:13 20:22 30:31]; 
+mid_ind   = [1 5:7 14:16 23:25 29 32:33];
+right_ind = [8:10 17:19 26:28 34:35];
 
 % SET LETTERS
 if English
@@ -103,17 +104,15 @@ pitches.notesWhole = {'C3', 'D3', 'E3', 'Gb3', 'Ab3', 'Bb3', 'C4', 'D4', ...
 assert((length(pitches.notes) == length(pitches.all)),...
  'Error: note names do not cover range of possible pitches')
 
-% condition_type = eye(7);
-% condition_type = [zeros(1, 7); condition_type];
-% condition_type(5, 2) = 1;
 % smaller set of conditions for final testing
 condition_type = [0, 0, 0, 0, 0, 0, 0; 0, 1, 0, 0, 0, 0, 0; 0, 1, 0, 1, 0, 0, 0];
 % remove conditions where the letters are displaced for German
 if ~English
 	condition_type = condition_type([1:2, 4, 6:end], :)
 end
+
 [condition_no, bar] = size(condition_type);
-trials_per_condition = 31;
+trials_per_condition = 35;
 condition_trials = repmat(trials_per_condition, length(condition_type), 1);
 
 if makeTraining
@@ -179,8 +178,9 @@ for x = 1:reps
 		% COMPUTE MISC. BASIC PARAMS OF BLOCK
 		[ IWI, tot_trial, tot_wheel, letter_difference, min_wheel, preblock, ...
 		ILI, tot_wav_time, min_wheel_time, min_wheel_time_ind ] = ...
-		assignTimeVars( wheel_matrix_info, fs, tot_cyc, letter_samples, ...
-			token_rate_modulation, preblock_prime_sec, postblock_sec, ILIms, token_rates );
+		assignTimeVars( wheel_matrix_info, fs, tot_cyc, letter_samples,...  
+			token_rate_modulation, preblock_prime_sec, postblock_sec,...  
+			ILIms, token_rates );
 		if tone_constant
 			[ letter_to_pitch ] = assignConstantPitch( possible_letters, ...
 				total_letters, total_pitches, wheel_matrix_info, pitch_wheel);
@@ -194,11 +194,12 @@ for x = 1:reps
 			% assign target letter
 			[target_letter, target_wheel_index, location_code, block_no, blocktrial ...
 			base_wheel_matrix ] = assignTarget( trial_no, possible_letters, ... 
-			wheel_matrix_info, blocktrial, left_ind, mid_ind, right_ind);
+			wheel_matrix_info, blocktrial, left_ind, mid_ind,...
+			right_ind, y);
 			target_time = []; % also clear target time from last trial
 			% returns cell array of wheel_num elements
 			[ wheel_matrix ] = assignLetters( ...
-			possible_letters, wheel_matrix_info, target_letter,...
+			possible_letters, wheel_matrix_info, target_letter, ...
 			target_cycles, tot_cyc, rearrangeCycles, ener_mask,...
 			base_wheel_matrix, target_wheel_index); 
 			if (x == 2) %if a training trial
@@ -369,12 +370,14 @@ for x = 1:reps
 			% pass strings of binaries to Python for checking
 			paradigm = dec2bin(paradigm)'; %cast to bin then to string
 			paradigm_reshape = reshape(paradigm',[],1)';
-			file_name = strcat('b', int2str(block_no), '_', 'tr',...
+			% 0 indexed block and trial numbers
+			file_name = strcat('b', int2str(block_no - 1), '_', 'tr',...
 			int2str(order{block_no}(blocktrial(block_no))))
 			final_data_dir = fullfile(data_dir, file_name);
 			save(final_data_dir, 'target_letter', 'target_time',...
 			 'tot_wav_time', 'preblock_prime_sec', 'paradigm', ...
-			 'possible_letters', 'target_cycles', 'location_code', 'wheel_matrix');
+			 'possible_letters', 'target_cycles', 'location_code',...
+			 'wheel_matrix');
 			wav_name = fullfile(final_output_path, strcat(file_name,'.wav'));
 			% accounts for bug: matlab does not overwrite on all systems
 			if exist(wav_name, 'file') 
