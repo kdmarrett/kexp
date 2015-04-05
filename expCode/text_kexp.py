@@ -18,6 +18,15 @@ instr = dict()
 button_keys = dict()
 
 # SECTION 1 (INTRODUCTION) INSTRUCTIONS
+instr['cond_pass'] = ('Excellent!  You passed the training for this
+condition')
+
+instr['start_train'] = ('In this part of the experiment, we will test
+        your ability to identify the correct number of letters in a
+        given trial.  For each condition you must get two consecutive
+        trials correct in order to continue.  When you are ready
+        to start press "{}" to continue.'.format(cont_btn_label))
+
 instr['start_exp'] =      ('In this experiment you will be listening to letters grouped into '
                           'three different spatial locations (left, middle, and right). '
                           'Each letter group has a distinct speaker for the letters. To orient you to the layout,'

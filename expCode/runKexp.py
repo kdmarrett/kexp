@@ -8,12 +8,11 @@ This script runs an experiment with spatially distributed letter streams.
 # Author: Karl Marrett <kdmarret@uw.edu>, <kdmarrett@gmail.com>
 
 #TODO
-#catch number of targets
-#add training section
-# only record from middle section
-# 3 blocks before a break
-# ask for a target number
-# add training
+#how to import functions from and mat files from different dirs
+#is there a point to writing to the log file
+#locking in a version of ef
+#simplify the response buttons
+#deep review of all the instr
 
 import scipy
 import pyglet
@@ -34,12 +33,11 @@ processPupil._check_pyeparse()
 
 #assert ef.__version__ == '2.0.0.DASCogLoad'
 
+# do this in two lines
 localPath = os.path.abspath(os.curdir)
-print localPath
 os.chdir("..")
 PATH = os.path.abspath(os.curdir)
 os.chdir(localPath)
-print PATH
 datadir = op.join(PATH, 'Data')
 
 # EC PARAMETERS
@@ -48,25 +46,25 @@ gen_survey_btn = range(total_btns)
 rel_survey_btn = [1, 2]
 pretrial_wait = 2.5
 std_args = ['kexp']
-std_kwargs = dict(screen_num=0, window_size=[800, 600],
-        full_screen=True, stim_db=65, noise_db=40, #session='1',
-        participant='foo', stim_rms=0.01, check_rms=None,
-        suppress_resamp=False, response_device='keyboard',
-        output_dir=datadir, stim_fs=16000)  # 44100.0
+std_kwargs = dict(screen_num=0, window_size=[800, 600], check_rms=None,
+		full_screen=True, stim_db=65, noise_db=40, stim_rms=0.01,
+		#session='1',participant='foo',  
+		suppress_resamp=False, response_device='keyboard',
+		output_dir=datadir, stim_fs=16000)  # 44100.0
 
-# RANDOM NUMBER GENERATOR
-rng = np.random.RandomState(0)
 # GLOBAL VARIABLES
-controls_in_block = 3  # only applies to section 2
-num_enforced_wraps = 1  # takes too long if above 1
 wait_brief = .2
 wait_long = 2
 msg_dur = 3.0
-postblock = 5  # time after each trial to record pupil
+postblock = 1  # time after each trial to record pupil
 # these should be hardcoded and read in from the matlab stimuli script
-block_in_sections = [1, 5, 1]
-trial_in_block = [8, 8, 8]
 extra_wait = 10
+
+# MAKE CONDITION ORDERING
+section = []
+section.append(0) # Make section 1
+section.append([1, 2, 3]) # Make section 2
+section.append(4) # Make section 3
 
 
 def drawPrimer(wheel_matrix_info, target_letter, possible_letters):
@@ -171,7 +169,6 @@ def recordTrial(wheel_matrix_info, preblock, block_ind, bnum, instr, ec,
     target_time = trial_vars['target_time']
     target_cycles = trial_vars['target_cycles']
     target_letter = trial_vars['target_letter'][0][0][0].encode('ascii')
-    location_code = trial_vars['location_code'][0][0][0].encode('ascii')
     possible_letters = trial_vars['possible_letters'][0]
     # check loading of correct mat file
     # load WAVs for this block
@@ -197,18 +194,17 @@ def recordTrial(wheel_matrix_info, preblock, block_ind, bnum, instr, ec,
     ec.flip()
     # write out data
     if record_pupil:
+		#write all pertinent data as a safety
         ec.write_data_line('target_time', target_time)
         ec.write_data_line('target_letter', target_letter)
+        ec.write_data_line('target_cycles', target_cycles)
 
+	# do these fail silently if there is no current edf?
     ec.stop()
     ec.trial_ok()
-    # update
+    # update indexer
     block_ind[bnum] += 1
-    fix = visual.FixationDot(ec, colors=['magenta', 'magenta'])
-    fix.draw()
-    ec.flip()  # the fixation dot is displayed
-    raw_resp = ec.screen_prompt('', timestamp=False);
-    response = int(raw_resp)
+	response = promptResponse(ec)
     if (response == target_cycles):
         correct = 1
     else:
@@ -219,60 +215,76 @@ def recordTrial(wheel_matrix_info, preblock, block_ind, bnum, instr, ec,
         scipy.savemat(final_df, trial_vars)
     return correct
 
-def train(order, wheel_matrix_info, preblock, id_, 
-    block_ind, train_block_ind, instr, ec, el, stimdir,
-    final_datadir, record_pupil=False, record_correct=False ):
+def correctFeedback(ec):
+	fix = visual.FixationDot(ec, colors=['Lime', 'Lime'])
+	fix.draw()
+	ec.flip()  # the fixation dot is displayed
+	ec.wait_sec(2)
+	return
+
+def failFeedback(ec):
+	fix = visual.FixationDot(ec, colors=['magenta', 'magenta'])
+	fix.draw()
+	ec.flip()  # the fixation dot is displayed
+	ec.wait_sec(2)
+	return
+
+def promptResponse(ec):
+	fix = visual.FixationDot(ec, colors=['yellow', 'yellow'])
+	fix.draw()
+	ec.flip()  # the fixation dot is displayed
+    raw_resp = ec.screen_prompt('', timestamp=False, flip=False)
+    return int(raw_resp)
+	
+
+def train(order, wheel_matrix_info, preblock, block_ind, instr, ec, el,
+		stimdir, final_datadir, record_pupil=False, record_correct=False
+		):
 
     """ Run record trial for each conditions type until subject
     gets two in a row.  If subject doesn't get two in a row after
     specified number of tries, experiment exits"""
 
     tries = 2
-    counter = 0;
     tot_train_blocks = 3
-    train_block_ind = 5
-    status_passed = False;
+    train_num = 5
     # instructions
     # for each condition type
+	ec.screen_prompt(instr['start_train'], live_keys=button_keys['start_exp'])
+	ec.screen_prompt(instr['more_train'], live_keys=button_keys['start_exp'])
     for i in range(tot_train_blocks):
-        while (counter < (tries* (len(order[train_block_ind][0])))):
+		counter = 0;
+		status_passed = False;
+		oldCorrect = 0
+        while (counter < (tries* (len(order[train_num][0])))):
             counter += 1
-            oldCorrect = 0
-            # this needs to be rewritten with special 
-            trial_key = 's' + str(snum) + '_' + 'start_trial_'
-            + str(condition_no)
-            ec.screen_prompt( instr[(trial_key)],
-                    live_keys=button_keys[(trial_key)],
-                    max_wait=wait_keys[trial_key])
+			snum = 0
+			correct = 0
+			condition_no = getTrialCondition(block_ind, train_num)
+			# change this to the instructions given in the introduction
+			ec.screen_prompt(instr['start_train'], live_keys=button_keys['start_exp'])
             correct = recordTrial( wheel_matrix_info, preblock,
-                    block_ind, train_block_ind, instr, ec, el, stimdir,
+                    block_ind, train_num, instr, ec, el, stimdir,
                     final_datadir, record_pupil, record_correct )
-            if (correct && oldCorrect):
-                print 'Stop experiment via a permanent \
-                screen_text'
-                # must two in a row to continue
-                fix = visual.FixationDot(ec, colors=['green', 'green'])
-                fix.draw()
-                ec.flip()  # the fixation dot is displayed
-                ec.wait_sec(2)
-                raw_resp = ec.screen_prompt(instr['cond_pass'], timestamp=False);
-                status_passed = True
-                break
-            oldCorrect = correct
-            # End trial
-            trial_end_key = 's' + str(snum) + '_' + 'end_trial'
-            ec.screen_prompt( instr[(trial_end_key)],
-                    live_keys=button_keys[ (trial_end_key)],
-                    max_wait=wait_keys[trial_end_key])
+            if (correct):
+				correctFeedback(ec)
+				if (oldCorrect):
+					# must get two in a row to continue
+					ec.screen_prompt(instr['cond_pass'], timestamp=False,
+							live_keys=button_keys['start_exp'], max_wait=2);
+					status_passed = True
+					break
+			else:
+				failFeedback(ec)
+			oldCorrect = correct
 
         if (!status_passed):
-            print 'Stop experiment via a permanent \
-            screen_text'
             ec.screen_text(instr['train_fail'], timestamp=False);
         else:
-            train_block_ind += 1
+            train_num += 1
 
-    ec.screen_text('congrats you passed')
+	ec.screen_prompt(instr['end_train'], live_keys=button_keys['start_exp'])
+	return
 
 def getTrialCondition(block_ind, bnum):
     # LOAD IN TRIAL DATA/STIMS
@@ -297,11 +309,12 @@ with ef.ExperimentController(*std_args, **std_kwargs) as ec:
     ec.flip()
     ec.start_noise()
 
-     assert(os.path.isdir(stimdir), 'Can not find Stim directory. \
-     Have you runCreateStims.m yet?')
+    assert(os.path.isdir(stimdir), 'Can not find Stim directory. \
+    Have you runCreateStims.m yet?')
+    assert(os.path.isdir(final_datadir), 'Can not find Data directory. \
+    Have you runCreateStims.m yet?')
 
-    # READ IN PARTICPANT SESSION VARIABLES FROM MAT FILE
-    # Reads in 'condition_bin', 'wheel_matrix_info', 'preblock_prime_sec'
+    # read in particpant session variables from mat file
     final_datadir = op.join( datadir, 'Params')
     global_vars = scipy.io.loadmat(op.join(final_datadir, 'global_vars.mat'))
     condition_uni = global_vars['condition_bin']  # Unicode by default
@@ -311,27 +324,22 @@ with ef.ExperimentController(*std_args, **std_kwargs) as ec:
     condition_nums = len(condition_asc)
     wheel_matrix_info = global_vars['wheel_matrix_info'][0]
     order = global_vars['order'][0]
-
-    # keep track of which new wav file to use
-    #wav_indices = dict(
-        #zip(condition_asc, np.zeros(len(condition_asc), dtype=int)))
-    block_ind = dict(
-        zip(range(len(order)), np.zeros(len(order), dtype=int)))
     preblock = global_vars['preblock_prime_sec'][0]
-    # adjust instruction languages according subject in runcreatestims
+
+    # adjust instruction languages according to runcreatestims
     if global_vars['English']:
         from text_kexp import *
     else:
         from text_kexp_GER import *
 
-    # MAKE CONDITION ORDERING
-    section = []
-    section.append(0) # Make section 1
-    section.append([1, 2, 3]) # Make section 2
-    section.append(4) # Make section 3
+    # keep track which new trial to use with array of ind for each block
+    block_ind = dict(
+        zip(range(len(order)), np.zeros(len(order), dtype=int)))
 
     ec.screen_prompt(instr['start_exp'], live_keys=button_keys['start_exp'])
     for snum in range(len(section)):
+        ec.write_data_line('Section: ', snum)
+        # Initialize section vars
         if (snum == 1):
             # record only in middle section
             record_pupil = True
@@ -339,9 +347,6 @@ with ef.ExperimentController(*std_args, **std_kwargs) as ec:
         else:
             record_pupil = False
             record_correct = False
-
-        ec.write_data_line('Section: ', snum)
-        # Initialize section vars
         section_key = 's' + str(snum) + '_' + 'start_sect'
         ec.screen_prompt(
             instr[(section_key)], live_keys=button_keys[(section_key)],
@@ -349,24 +354,20 @@ with ef.ExperimentController(*std_args, **std_kwargs) as ec:
 
         # run block
         for bnum in range(len(section[snum])):
-            ec.write_data_line('Block: ', bnum)
+            ec.write_data_line('Block: ', str(bnum))
             # show instructions
             block_key = 's' + str(snum) + '_' + 'start_block_' + str(bnum)
             ec.screen_prompt( instr[(block_key)],
                     live_keys=button_keys[(block_key)],
                     max_wait=wait_keys[block_key])
-
-            # log block name
-            ec.write_data_line('block', str(bnum))
             if (snum == 1):
+				#start a new EDF file only in the middle section 
                 el.calibrate(prompt=True)
-
             for tnum in range(len(order[section[snum][bnum]][0])):
                 ec.write_data_line('Trial: ', tnum)
 
                 if (snum == 0):
                     condition_no = getTrialCondition(block_ind, bnum)
-
                 #remove instructions from section 3
                 if snum == 2:
                     # use instructions from section 1
@@ -396,9 +397,8 @@ with ef.ExperimentController(*std_args, **std_kwargs) as ec:
 
             # train for the first section 
             if (snum == 0):
-                train(order, wheel_matrix_info, preblock, id_, 
-                    block_ind, train_block_ind, instr, ec, el, stimdir,
-                    final_datadir, record_pupil, record_correct )
+				train(order, wheel_matrix_info, preblock, block_ind,
+						instr, ec, el, stimdir, final_datadir )
 
             # End block
             block_end_key = 's' + str(snum) + '_' + 'end_block'
