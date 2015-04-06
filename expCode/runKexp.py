@@ -8,11 +8,18 @@ This script runs an experiment with spatially distributed letter streams.
 # Author: Karl Marrett <kdmarret@uw.edu>, <kdmarrett@gmail.com>
 
 #TODO
+#el.close()?
+#pathological responses
 #deep review of all the instr
 #how to import functions from and mat files from different dirs
 #log file heuristics?
 #locking in a version of ef
 #simplify the response buttons
+# try catch?
+# should they only be allowed to answer 1 or 2?
+#Need to
+#separate TDT continue button input from the keyboard input for
+#subjects
 
 # from processPupil import *
 #import processPupil
@@ -33,7 +40,8 @@ import os
 
 #assert ef.__version__ == '2.0.0.DASCogLoad'
 
-datadir = op.join(os.path.abspath(os.pardir), 'Data')
+PATH = os.path.abspath(os.pardir)
+datadir = op.join(PATH, 'Data')
 
 # EC PARAMETERS
 total_btns = 10
@@ -48,6 +56,7 @@ std_kwargs = dict(screen_num=0, window_size=[800, 600], check_rms=None,
 		output_dir=datadir, stim_fs=16000)  # 44100.0
 
 # GLOBAL VARIABLES
+debug = True
 wait_brief = .2
 wait_long = 2
 msg_dur = 3.0
@@ -55,10 +64,10 @@ postblock = 1  # time after each trial to record pupil
 
 # MAKE CONDITION ORDERING
 np.random.seed
-mid_block_order = np.random.permutation(range(1,4))
+mid_block_order = np.random.permutation(range(1,4)).tolist()
 section = []
 section.append([0]) # Make section 1
-section.append(mid_block_order.tolist()) # Make section 2
+section.append(mid_block_order) # Make section 2
 section.append([4]) # Make section 3
 
 def drawPrimer(wheel_matrix_info, target_letter, possible_letters):
@@ -84,20 +93,21 @@ def drawPrimer(wheel_matrix_info, target_letter, possible_letters):
                 font_size=30, wrap=False)
 
 
-def cogLoadSurvey(gen_survey, mid_survey, rel_survey, paradigm, ec):
-    """ Prompt users with cognitive load questions for each condition"""
+def cogLoadSurvey(gen_survey, mid_survey, rel_survey, paradigm,
+        edf_outputdir, ec):
+    """ Prompt users with cognitive load questions for each condition.
+    Saves a separate mat file for each paradigm with keys also
+    identified by paradigm and qnum."""
     
-    #save with rest of the EDF files
-    edf_outputdir = ec._exp_info['participant'] + '_' + \
-        ec._exp_info['date']
     resp_dict = dict()
     ec.write_data_line('cogLoadSurvey')
     ec.write_data_line(paradigm)
     ec.write_data_line('gen_survey')
     for qnum in dict.keys(gen_survey):
+        #key by paradigm for safety
         key = 'gen_' + paradigm + '_qnum_' + str(qnum)
         ec.write_data_line(key)
-        response = surveyInput(gen_survey[qnum], gen_survey_btn, ec)
+        response = getInput(gen_survey_btn, ec, text=gen_survey[qnum])
         ec.write_data_line(response)
         resp_dict[key] = response
 
@@ -108,20 +118,24 @@ def cogLoadSurvey(gen_survey, mid_survey, rel_survey, paradigm, ec):
     for qnum in dict.keys(rel_survey):
         key = 'rel_' + paradigm + '_qnum_' + str(qnum)
         ec.write_data_line(key)
-        response = surveyInput(rel_survey[qnum], rel_survey_btn, ec)
+        response = getInput(rel_survey_btn, ec, text=rel_survey[qnum])
         ec.write_data_line(response)
         resp_dict[key] = response
-    matname = op.join(edf_outputdir, 'cog_resp.mat')
-    sio.savemat('matname', 'resp_dict')
+    identifier = paradigm + '_cog_resp.mat'
+    matname = op.join(edf_outputdir, identifier )
+    #save with rest of the EDF files
+    sio.savemat('matname', resp_dict)
 
-def surveyInput(text, response_btns, ec):
-    """Handles and directs user input for survey section.  +++ Need to
-    separate TDT continue button input from the keyboard input for
-    subjects"""
+def getInput(response_btns, ec, text=None):
+    """Handles and directs user input for survey section."""  
 
     response = ''
     while not response:
-        response = ec.screen_prompt(text, timestamp=False)
+        if not text:
+            response = ec.wait_one_press(max_wait=np.inf, min_wait=.2,
+            timestamp=False, live_keys=response_btns)
+        else:
+            response = ec.screen_prompt(text, timestamp=False)
         # check input
         try:
             assert(int(response) in response_btns)
@@ -148,7 +162,7 @@ def surveyInput(text, response_btns, ec):
             ' redo'.format(cont_btn_label), timestamp=False)
         if check_response != str(cont_btn):
             response = ''  # clear past response and loop again
-    return response
+    return int(response)
 
 def getId_list(paradigm):
     """ Converts a string paradigm to a list for trial stamping """
@@ -187,26 +201,32 @@ def recordTrial(wheel_matrix_info, preblock, block_ind, bnum, instr, ec,
     ec.load_buffer(stims[0])
     # draw visual primer
     drawPrimer(wheel_matrix_info, target_letter, possible_letters)
-	# edf stamped for epoch starts
+    # edf stamped for epoch starts
     ec.identify_trial(ec_id=id_list, el_id=id_list, ttl_id=id_list)
     ec.start_stimulus(flip=True)  # the visual primer is displayed
-    ec.wait_secs(preblock / 3)
+    if debug:
+        ec.wait_secs(2)
+    else:
+        ec.wait_secs(preblock / 3)
     # Draw fixation dot to visual buffer
     fix = visual.FixationDot(ec, colors=['whitesmoke', 'whitesmoke'])
     fix.draw()
     ec.flip()  # the fixation dot is displayed
-    ec.wait_secs(stim_dur - preblock / 3)  # wait until stim has finished
-    ec.wait_secs(postblock)
+    if debug:
+        ec.wait_secs(1)  
+    else:
+        # wait until stim has finished
+        ec.wait_secs(stim_dur - preblock / 3)  
+        ec.wait_secs(postblock)
     # clear screen
     ec.flip()
-    # write out data
+    #write all pertinent data as a safety
     if record_pupil:
-		#write all pertinent data as a safety
         ec.write_data_line('target_time', target_time)
         ec.write_data_line('target_letter', target_letter)
         ec.write_data_line('target_cycles', target_cycles)
 
-	# do these fail silently if there is no current edf?
+    # do these fail silently if there is no current edf?
     ec.stop()
     ec.trial_ok()
     # update indexer
@@ -240,9 +260,7 @@ def promptResponse(ec):
     fix = visual.FixationDot(ec, colors=['yellow', 'yellow'])
     fix.draw()
     ec.flip()  # the fixation dot is displayed
-    raw_resp = ec.screen_prompt('', timestamp=False, flip=False)
-    return int(raw_resp)
-	
+    return getInput(gen_survey_btn, ec)
 
 def train(order, wheel_matrix_info, preblock, block_ind, instr, ec, el,
         stimdir, final_datadir, record_pupil=False,
@@ -311,6 +329,14 @@ def getTrialCondition(block_ind, bnum):
 
 # RUN EXPERIMENT
 with ef.ExperimentController(*std_args, **std_kwargs) as ec:
+    edf_outputdir = ec._exp_info['participant'] + '_' + \
+        ec._exp_info['date']
+    exp_vars = dict()
+    exp_vars['mid_block_order'] = mid_block_order
+    identifier = 'mid_block_order.mat'
+    ordermat = op.join(edf_outputdir, identifier )
+    #save with rest of the EDF files
+    sio.savemat('ordermat', exp_vars)
     stimdir = op.join(PATH, 'Stims')
     el = EyelinkController(ec)  # create el instance
     ec.set_visible(True)
@@ -318,11 +344,11 @@ with ef.ExperimentController(*std_args, **std_kwargs) as ec:
     ec.flip()
     ec.start_noise()
 
-    assert(os.path.isdir(stimdir), 'Can not find Stim directory. \
-    Have you runCreateStims.m yet?')
+    assert os.path.isdir(stimdir), 'Can not find Stim directory. \
+    Have you runCreateStims.m yet?'
     final_datadir = op.join( datadir, 'Params')
-    assert(os.path.isdir(final_datadir), 'Can not find Data directory. \
-    Have you runCreateStims.m yet?')
+    assert os.path.isdir(final_datadir), 'Can not find Data directory. \
+    Have you runCreateStims.m yet?'
 
     # read in particpant session variables from mat file
     global_vars = sio.loadmat(op.join(final_datadir, 'global_vars.mat'))
@@ -394,7 +420,7 @@ with ef.ExperimentController(*std_args, **std_kwargs) as ec:
                         record_pupil, record_correct )
                 if (snum == 2):
                     cogLoadSurvey(gen_survey, mid_survey, rel_survey,
-                            paradigm, ec)
+                            paradigm, edf_outputdir, ec)
                 if (snum == 0):
                     # End trial text feedback
                     trial_end_key = 's' + str(snum) + '_' + 'end_trial'

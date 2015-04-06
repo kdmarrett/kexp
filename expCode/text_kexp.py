@@ -22,10 +22,20 @@ instr['cond_pass'] = ('Excellent!  You passed the training for this'
 'condition')
 
 instr['start_train'] = ('In this part of the experiment, we will test'
-        'your ability to identify the correct number of letters in a'
-        'given trial.  For each condition you must get two consecutive'
-        'trials correct in order to continue.  When you are ready'
-        'to start press "{}" to continue.'.format(cont_btn_label))
+        ' your ability to identify the correct number of letters in a'
+        ' given trial.  For each condition you must get two consecutive'
+        ' trials correct in order to continue. '
+        'To continue, press "{}" .'.format(cont_btn_label))
+
+instr['more_train'] = ('Your job for this experiment is to listen to '
+		'the number of times the target letter occurs.  The target '
+		'letter is spoken at the location it will be presented at and '
+		'is shown in green at the beginning of the trial.  At the end '
+		'of the trial, the fixation dot will turn yellow, prompting you'
+		' to enter the number of targets your heard.  For this section '
+		' you will be given feedback as to whether your response was'
+		' correct. When you are ready '
+                'to start press "{}" to continue.'.format(cont_btn_label))
 
 instr['start_exp'] =('In this experiment you will be listening to letters grouped into '
 					  'three different spatial locations (left, middle, and right). '
