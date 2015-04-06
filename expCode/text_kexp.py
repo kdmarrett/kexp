@@ -30,7 +30,8 @@ instr['start_train'] = ('In this part of the experiment, we will test'
 instr['more_train'] = ('Your job for this experiment is to listen to '
 		'the number of times the target letter occurs.  The target '
 		'letter is spoken at the location it will be presented at and '
-		'is shown in green at the beginning of the trial.  At the end '
+		'is shown in green at the location it will be spoken at'
+                'during the beginning of the trial.  At the end '
 		'of the trial, the fixation dot will turn yellow, prompting you'
 		' to enter the number of targets your heard.  For this section '
 		' you will be given feedback as to whether your response was'
@@ -58,7 +59,7 @@ button_keys['s0_start_sect'] = [cont_btn]
 
 instr['s0_start_block_0'] = ('In this first section, you will be introduced to the different condition types. This section contains'
                              ' 1 block with a trial for every condition for a total of 8 trials. Again, pay attention to the occurrences of the' 
-                             'target green highlighted letter that is spoken at the beginning of each trial. '
+                             ' target green highlighted letter that is spoken at the beginning of each trial. '
                              ' There will also be background noise to make the task more challenging. '
                              'Don\'t worry if the letter is difficult to hear at first. Do your best to attend every occurrence of the target letter throughout the trial. '
                              'Push "{}" to start.'.format(cont_btn_label))
@@ -84,7 +85,7 @@ button_keys['s0_start_trial_1'] = [cont_btn]
 
 instr['s0_start_trial_2'] = ('In this condition, letters are assigned a spatial location in a random order. '
           'Throughout the trial, the ordering of the letters will change meaning you will not know when the target letter will occur.'
-          'You can use the unique speaker and location to help you listen for each occurrence of'
+          ' You can use the unique speaker and location to help you listen for each occurrence of'
                              ' the target letter in this condition. Push "{}" to start.'.format(cont_btn_label))
 
 button_keys['s0_start_trial_2'] = [cont_btn]

@@ -156,10 +156,10 @@ def getInput(response_btns, ec, text=None):
         except:  # if any other exception arises start over
             response = ''
             continue
-        check_response = ec.screen_prompt('You pressed ' + str(
+        check_response = ec.screen_prompt(('You pressed ' + str(
             response) + ', if this is the number you want press "{}" to' +
             ' continue otherwise press any other key to' +
-            ' redo'.format(cont_btn_label), timestamp=False)
+            ' redo'.format(cont_btn_label)), timestamp=False)
         if check_response != str(cont_btn):
             response = ''  # clear past response and loop again
     return int(response)
@@ -169,7 +169,7 @@ def getId_list(paradigm):
     return map(int, list(paradigm))
 
 def recordTrial(wheel_matrix_info, preblock, block_ind, bnum, instr, ec,
-        el, stimdir, final_datadir, record_pupil, record_correct):
+        stimdir, final_datadir, record_pupil, record_correct):
 
     """ Takes the indice of all current condition types and the binary
     name of the condition to find the trial wav.  Displays instructions
@@ -202,7 +202,10 @@ def recordTrial(wheel_matrix_info, preblock, block_ind, bnum, instr, ec,
     # draw visual primer
     drawPrimer(wheel_matrix_info, target_letter, possible_letters)
     # edf stamped for epoch starts
-    ec.identify_trial(ec_id=id_list, el_id=id_list, ttl_id=id_list)
+    if record_pupil:
+        ec.identify_trial(ec_id=id_list, el_id=id_list, ttl_id=id_list)
+    else:
+        ec.identify_trial(ec_id=id_list, ttl_id=id_list)
     ec.start_stimulus(flip=True)  # the visual primer is displayed
     if debug:
         ec.wait_secs(2)
@@ -246,14 +249,14 @@ def correctFeedback(ec):
 	fix = visual.FixationDot(ec, colors=['Lime', 'Lime'])
 	fix.draw()
 	ec.flip()  # the fixation dot is displayed
-	ec.wait_sec(2)
+	ec.wait_secs(2)
 	return
 
 def failFeedback(ec):
 	fix = visual.FixationDot(ec, colors=['magenta', 'magenta'])
 	fix.draw()
 	ec.flip()  # the fixation dot is displayed
-	ec.wait_sec(2)
+	ec.wait_secs(2)
 	return
 
 def promptResponse(ec):
@@ -262,7 +265,7 @@ def promptResponse(ec):
     ec.flip()  # the fixation dot is displayed
     return getInput(gen_survey_btn, ec)
 
-def train(order, wheel_matrix_info, preblock, block_ind, instr, ec, el,
+def train(order, wheel_matrix_info, preblock, block_ind, instr, ec, 
         stimdir, final_datadir, record_pupil=False,
         record_correct=False):
 
@@ -292,7 +295,7 @@ def train(order, wheel_matrix_info, preblock, block_ind, instr, ec, el,
             ec.screen_prompt(instr['start_train'],
                     live_keys=button_keys['start_exp'])
             correct = recordTrial( wheel_matrix_info, preblock,
-                    block_ind, train_num, instr, ec, el, stimdir,
+                    block_ind, train_num, instr, ec, stimdir,
                     final_datadir, record_pupil, record_correct )
             if (correct):
                 correctFeedback(ec)
@@ -329,8 +332,9 @@ def getTrialCondition(block_ind, bnum):
 
 # RUN EXPERIMENT
 with ef.ExperimentController(*std_args, **std_kwargs) as ec:
-    edf_outputdir = ec._exp_info['participant'] + '_' + \
+    folder = ec._exp_info['participant'] + '_' + \
         ec._exp_info['date']
+    edf_outputdir = op.join(datadir, folder)
     exp_vars = dict()
     exp_vars['mid_block_order'] = mid_block_order
     identifier = 'mid_block_order.mat'
@@ -338,7 +342,6 @@ with ef.ExperimentController(*std_args, **std_kwargs) as ec:
     #save with rest of the EDF files
     sio.savemat('ordermat', exp_vars)
     stimdir = op.join(PATH, 'Stims')
-    el = EyelinkController(ec)  # create el instance
     ec.set_visible(True)
     ec.set_background_color([0.1] * 3)
     ec.flip()
@@ -387,6 +390,8 @@ with ef.ExperimentController(*std_args, **std_kwargs) as ec:
         ec.screen_prompt(
             instr[(section_key)], live_keys=button_keys[(section_key)],
             max_wait=wait_keys[section_key])
+        if snum == 1:
+            el = EyelinkController(ec)  # create el instance
 
         # run block
         for bnum in range(len(section[snum])):
@@ -396,9 +401,10 @@ with ef.ExperimentController(*std_args, **std_kwargs) as ec:
             ec.screen_prompt( instr[(block_key)],
                     live_keys=button_keys[(block_key)],
                     max_wait=wait_keys[block_key])
+            #start a new EDF file only in the middle section 
             if (snum == 1):
-                #start a new EDF file only in the middle section 
                 el.calibrate(prompt=True)
+                assert el.recording 
             for tnum in range(len(order[section[snum][bnum]][0])):
                 ec.write_data_line('Trial: ', tnum)
 
@@ -416,7 +422,7 @@ with ef.ExperimentController(*std_args, **std_kwargs) as ec:
 
                 # start trial
                 recordTrial( wheel_matrix_info, preblock, block_ind,
-                        bnum, instr, ec, el, stimdir, final_datadir,
+                        bnum, instr, ec, stimdir, final_datadir,
                         record_pupil, record_correct )
                 if (snum == 2):
                     cogLoadSurvey(gen_survey, mid_survey, rel_survey,
@@ -430,12 +436,12 @@ with ef.ExperimentController(*std_args, **std_kwargs) as ec:
             # train for the first section 
             if (snum == 0):
                 train(order, wheel_matrix_info, preblock, block_ind,
-                        instr, ec, el, stimdir, final_datadir )
+                        instr, ec, stimdir, final_datadir )
 
             # End block
             block_end_key = 's' + str(snum) + '_' + 'end_block'
             if (snum == 1):
-                el.stop() # close edf file for each block in 2 section
+                el.stop() # close edf file for each block in mid section
             ec.screen_prompt( instr[(block_end_key)],
                     live_keys=button_keys[ (block_end_key)],
                     max_wait=wait_keys[block_end_key])
