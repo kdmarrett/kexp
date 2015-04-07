@@ -50,10 +50,10 @@ rel_survey_btn = [1, 2]
 pretrial_wait = 2.5
 std_args = ['kexp']
 std_kwargs = dict(screen_num=0, window_size=[800, 600], check_rms=None,
-		full_screen=True, stim_db=65, noise_db=40, stim_rms=0.01,
-		session='1',participant='new',  
-		suppress_resamp=False, response_device='keyboard',
-		output_dir=datadir, stim_fs=16000)  # 44100.0
+                full_screen=True, stim_db=65, noise_db=40, stim_rms=0.01,
+                session='1',participant='new',  
+                suppress_resamp=False, response_device='keyboard',
+                output_dir=datadir, stim_fs=16000)  # 44100.0
 
 # GLOBAL VARIABLES
 debug = True
@@ -236,9 +236,9 @@ def recordTrial(wheel_matrix_info, preblock, block_ind, bnum, instr, ec,
     block_ind[bnum] += 1
     if (record_correct):
         response = promptResponse(ec)
-    	if (response == target_cycles):
+        if (response == target_cycles):
             correct = 1
-    	else:
+        else:
             correct = 0
         
         if save_correct:
@@ -251,18 +251,18 @@ def recordTrial(wheel_matrix_info, preblock, block_ind, bnum, instr, ec,
         return 0
 
 def correctFeedback(ec):
-	fix = visual.FixationDot(ec, colors=['Lime', 'Lime'])
-	fix.draw()
-	ec.flip()  # the fixation dot is displayed
-	ec.wait_secs(2)
-	return
+        fix = visual.FixationDot(ec, colors=['Lime', 'Lime'])
+        fix.draw()
+        ec.flip()  # the fixation dot is displayed
+        ec.wait_secs(2)
+        return
 
 def failFeedback(ec):
-	fix = visual.FixationDot(ec, colors=['red', 'red'])
-	fix.draw()
-	ec.flip()  # the fixation dot is displayed
-	ec.wait_secs(2)
-	return
+        fix = visual.FixationDot(ec, colors=['red', 'red'])
+        fix.draw()
+        ec.flip()  # the fixation dot is displayed
+        ec.wait_secs(2)
+        return
 
 def promptResponse(ec):
     fix = visual.FixationDot(ec, colors=['yellow', 'yellow'])
