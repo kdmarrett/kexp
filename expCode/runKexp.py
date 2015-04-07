@@ -169,7 +169,8 @@ def getId_list(paradigm):
     return map(int, list(paradigm))
 
 def recordTrial(wheel_matrix_info, preblock, block_ind, bnum, instr, ec,
-        stimdir, final_datadir, record_pupil, record_correct):
+        stimdir, final_datadir, record_pupil, record_correct,
+        save_correct):
 
     """ Takes the indice of all current condition types and the binary
     name of the condition to find the trial wav.  Displays instructions
@@ -234,15 +235,20 @@ def recordTrial(wheel_matrix_info, preblock, block_ind, bnum, instr, ec,
     # update indexer
     block_ind[bnum] += 1
     if (record_correct):
-    response = promptResponse(ec)
+        response = promptResponse(ec)
     	if (response == target_cycles):
-		correct = 1
+            correct = 1
     	else:
-		correct = 0
-        final_df = data_file_name + 'final'
-        trial_vars['correct'] = correct
-        sio.savemat(final_df, trial_vars)
-    return correct
+            correct = 0
+        
+        if save_correct:
+            final_df = data_file_name + 'final'
+            trial_vars['correct'] = correct
+            sio.savemat(final_df, trial_vars)
+
+        return correct
+    else:
+        return 0
 
 def correctFeedback(ec):
 	fix = visual.FixationDot(ec, colors=['Lime', 'Lime'])
@@ -252,7 +258,7 @@ def correctFeedback(ec):
 	return
 
 def failFeedback(ec):
-	fix = visual.FixationDot(ec, colors=['magenta', 'magenta'])
+	fix = visual.FixationDot(ec, colors=['red', 'red'])
 	fix.draw()
 	ec.flip()  # the fixation dot is displayed
 	ec.wait_secs(2)
@@ -266,7 +272,7 @@ def promptResponse(ec):
 
 def train(order, wheel_matrix_info, preblock, block_ind, instr, ec, 
         stimdir, final_datadir, record_pupil=False,
-        record_correct=False):
+        record_correct=True, save_correct=False):
 
     """ Run record trial for each conditions type until subject
     gets two in a row.  If subject doesn't get two in a row after
@@ -289,13 +295,16 @@ def train(order, wheel_matrix_info, preblock, block_ind, instr, ec,
             counter += 1
             snum = 0
             correct = 0
-            condition_no = getTrialCondition(block_ind, train_num)
-            # change this to the instructions given in the introduction
-            ec.screen_prompt(instr['start_train'],
+            #paradigm = getTrialCondition(block_ind, train_num)
+            condition_no = i
+            trial_key = 's' + str(0) + '_' + 'start_trial_' \
+            + str(condition_no)
+            ec.screen_prompt( instr[(trial_key)],
                     live_keys=button_keys['start_exp'])
             correct = recordTrial( wheel_matrix_info, preblock,
                     block_ind, train_num, instr, ec, stimdir,
-                    final_datadir, record_pupil, record_correct )
+                    final_datadir, record_pupil, record_correct,
+                    save_correct)
             if (correct):
                 correctFeedback(ec)
                 if (oldCorrect):
@@ -323,11 +332,11 @@ def getTrialCondition(block_ind, bnum):
     stim_file_name = data_file_name + '.wav'
     trial_data_path = op.join(final_datadir, data_file_name)
     trial_vars = sio.loadmat(trial_data_path)
-    condition_no = trial_vars['paradigm'][0]
+    paradigm = trial_vars['paradigm'][0]
     #condition_no = section[snum][bnum][tnum]
     #id_ = condition_asc[condition_no]
     # id_ = decimals_to_binary(id_, np.ones(1, len(id_)))
-    return condition_no
+    return paradigm
 
 # RUN EXPERIMENT
 with ef.ExperimentController(*std_args, **std_kwargs) as ec:
@@ -382,9 +391,11 @@ with ef.ExperimentController(*std_args, **std_kwargs) as ec:
             # record only in middle section
             record_pupil = True
             record_correct = True
+            save_correct = True
         else:
             record_pupil = False
             record_correct = False
+            save_correct = False
         section_key = 's' + str(snum) + '_' + 'start_sect'
         ec.screen_prompt(
             instr[(section_key)], live_keys=button_keys[(section_key)],
@@ -422,7 +433,7 @@ with ef.ExperimentController(*std_args, **std_kwargs) as ec:
                 # start trial
                 recordTrial( wheel_matrix_info, preblock, block_ind,
                         bnum, instr, ec, stimdir, final_datadir,
-                        record_pupil, record_correct )
+                        record_pupil, record_correct, save_correct )
                 if (snum == 2):
                     cogLoadSurvey(gen_survey, mid_survey, rel_survey,
                             paradigm, edf_outputdir, ec)

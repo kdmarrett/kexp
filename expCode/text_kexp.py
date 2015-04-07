@@ -19,10 +19,17 @@ button_keys = dict()
 
 # SECTION 1 (INTRODUCTION) INSTRUCTIONS
 instr['cond_pass'] = ('Excellent!  You passed the training for this'
-'condition')
+' condition')
+
+instr['end_train'] = ('Congratulations! You finished all the training.')
+
+instr['train_fail'] = ('Sorry, you did not pass the training section '
+'of the experiment. Unfortunately, you can not continue with the '
+'experiment but you will be paid for your time.  You may exit the booth '
+'now.')
 
 instr['start_train'] = ('In this part of the experiment, we will test'
-        ' your ability to identify the correct number of letters in a'
+        ' your ability to identify the correct number of target letters in a'
         ' given trial.  For each condition you must get two consecutive'
         ' trials correct in order to continue. '
         'To continue, press "{}" .'.format(cont_btn_label))
@@ -30,37 +37,46 @@ instr['start_train'] = ('In this part of the experiment, we will test'
 instr['more_train'] = ('Your job for this experiment is to listen to '
 		'the number of times the target letter occurs.  The target '
 		'letter is spoken at the location it will be presented at and '
-		'is shown in green at the location it will be spoken at'
+		'is shown in green at the location it will be spoken at '
                 'during the beginning of the trial.  At the end '
 		'of the trial, the fixation dot will turn yellow, prompting you'
-		' to enter the number of targets your heard.  For this section '
+		' to enter the number of targets your heard.  During'
+                ' this training '
 		' you will be given feedback as to whether your response was'
-		' correct. When you are ready '
-                'to start press "{}" to continue.'.format(cont_btn_label))
+		' correct. When your response was correct, the dot will'
+                ' change to green you entered the incorrect amount of '
+                'targets it will instead shift to red.  When you are ready '
+                ' to start press "{}" to continue.'.format(cont_btn_label))
 
 instr['start_exp'] =('In this experiment you will be listening to letters grouped into '
-					  'three different spatial locations (left, middle, and right). '
-					  'Each letter group has a distinct speaker for the letters. To orient you to the layout'
-					  ' and ordering, each trial will begin with a visual primer of the spatial location of the letters. '
-					  'In these primers, you will notice that one of the letters is colored green and spoken, this is the target letter for the trial. '
-					  'Together, the groups will span the full alphabet along with the extra voiced commands \'Read\' , \'Pause\', \'Space\', and \'Delete\'. '
-					  ' Your task for each trial in this experiment is to listen for every occurrence of your target letter for the duration of'
-					  ' the trial. Push "{}" to continue.'.format(cont_btn_label))
+                      'three different spatial locations (left, middle, and right). '
+                      ' Your task for each trial in this experiment is'
+                      ' to count every occurrence of your target letter for the duration of'
+                      ' the trial. '
+                       'This experiment is split into 3 sections, each with a '
+                       'varying number of blocks which contain grouped trials.  '
+                       'Between each section, there will'
+                      ' be an opportunity to take a break and leave the booth.'
+                      '  Push "{}" to continue.'.format(cont_btn_label))
 
 button_keys['start_exp'] = [cont_btn]
 
-instr['s0_start_sect'] = ('This experiment will assess pupil responses, so after the primer for each trial a small fixation dot'
+instr['s0_start_sect'] = ('This experiment will also assess pupil responses, so after the primer for each trial a small fixation dot'
                           ' will appear in the center of screen. Keep your eyes fixated on this dot for as long as it remains visible. '
-                          'This experiment is split into 3 sections, each with a varying number of blocks which contain grouped trials.  Between each section, there will'
-                          ' be an opportunity to take a break and leave the booth.'
-                          ' Push "{}" to continue.'.format(cont_btn_label))
+                          'Push "{}" to continue.'.format(cont_btn_label))
 
 button_keys['s0_start_sect'] = [cont_btn]
 
-instr['s0_start_block_0'] = ('In this first section, you will be introduced to the different condition types. This section contains'
-                             ' 1 block with a trial for every condition for a total of 8 trials. Again, pay attention to the occurrences of the' 
-                             ' target green highlighted letter that is spoken at the beginning of each trial. '
-                             ' There will also be background noise to make the task more challenging. '
+instr['s0_start_block_0'] = ( 'In this first section, you will be introduced to the different condition types.'
+				' Each letter group, left, middle, and right, has a distinct speaker for the letters. To orient you to the layout'
+					  ' and ordering, each trial will begin with a visual primer of the spatial location of the letters. '
+					  'In these primers, you will notice that one of the letters is colored green and spoken, this is the target letter for the trial. '
+					  'Together, the groups will span the full alphabet along with the extra voiced commands \'Read\' , \'Pause\', \'Space\', and \'Delete\'. '
+							' Again, pay attention to the occurrences of the' 
+                             ' target green highlighted letter that is '
+							 'spoken at the beginning of each trial. '
+                             ' There will also be background noise to make the'
+							 ' task more challenging. '
                              'Don\'t worry if the letter is difficult to hear at first. Do your best to attend every occurrence of the target letter throughout the trial. '
                              'Push "{}" to start.'.format(cont_btn_label))
 
@@ -144,9 +160,15 @@ instr['s0_end_sect'] = ('Great! You\'re done with the first section of the '
 button_keys['s0_end_sect'] = [cont_btn]
 
 # SECTION 2 INSTRUCTIONS
-instr['s1_start_sect'] = ('You\'re about to begin the second section of the experiment. There are about 9 trials in each'
-                          ' block and 5 blocks in this section, with breaks in between blocks. Just as'
-                          ' in the introduction, there is no feedback. In this section, a new trial of a different condition'
+instr['s1_start_sect'] = ('You\'re about to begin the second section of'
+							'the experiment. There are 27 trials in each'
+                          ' block and 3 blocks in this section, with breaks in between blocks. Just as'
+                          ' in the training section, at the end of each'
+						  ' trial the fixation dot will change yellow'
+						  ' prompting you for the number of targets in'
+						  ' the trial.  Unlike the training however, there'
+						  ' is no feedback as to whether your responses'
+						  ' were correct. In this section, a new trial of a different condition'
                           ' will start automatically shortly after the previous trial ends. Note that in this section the different conditions'
                           ' are interspersed and there is no longer a description before each trial. This means that you must orient yourself to the particular condition by either the primer or'
                           ' by listening to the unique cues of the particular trial. When you\'re ready to begin, press "{}"'.format(cont_btn_label))
@@ -181,30 +203,16 @@ button_keys['s1_start_trial_0'] = []
 instr['s1_start_block_1'] = ('You\'re about to begin the second block in this section of '
                              'the experiment. Reminder: there is no feedback, and new '
                              'trials start automatically shortly after the previous '
-                             'trial ends. There are 8 trials in this block. Press "{}" to begin.'.format(cont_btn_label))
+                             'trial ends. There are 27 trials in this block. Press "{}" to begin.'.format(cont_btn_label))
 
 button_keys['s1_start_block_1'] = [cont_btn]
 
-instr['s1_start_block_2'] = ('You\'re about to begin the third block in this section of '
+instr['s1_start_block_2'] = ('You\'re about to begin the last block in this section of '
                              'the experiment. Reminder: there is no feedback, and new '
                              'trials start automatically shortly after the previous '
-                             'trial ends. There are 8 trials in this block. Press "{}" to begin.'.format(cont_btn_label))
+                             'trial ends. There are 27 trials in this block. Press "{}" to begin.'.format(cont_btn_label))
 
 button_keys['s1_start_block_2'] = [cont_btn]
-
-instr['s1_start_block_3'] = ('You\'re about to begin the fourth block in this section of '
-                             'the experiment. Reminder: there is no feedback, and new '
-                             'trials start automatically shortly after the previous '
-                             'trial ends. There are 8 trials in this block. Press "{}" to begin.'.format(cont_btn_label))
-
-button_keys['s1_start_block_3'] = [cont_btn]
-
-instr['s1_start_block_4'] = ('You\'re about to begin the last block in this section of '
-                             'the experiment. Reminder: there is no feedback, and new '
-                             'trials start automatically shortly after the previous '
-                             'trial ends. There are 8 trials in this block. Press "{}" to begin.'.format(cont_btn_label))
-
-button_keys['s1_start_block_4'] = [cont_btn]
 
 instr['s1_end_trial'] = ('')
 
@@ -225,8 +233,8 @@ button_keys['s1_end_block'] = [cont_btn]
 instr['s2_start_sect'] = ('You\'re about to begin the last section of the experiment. Reminder: just as'
                           ' in the introduction section, there is no feedback and your task for each trial is to listen for every occurrence of your target letter for the duration of'
                           ' the trial. In this section you will be presented with 1'
-                          ' trial of the same condition then asked to answer several questions about the relative'
-                          ' difficulty of each condition.  In this section there are eight blocks, one for each condition type. '
+                          ' trial from each condition type then asked to answer several questions about the relative'
+                          ' difficulty of each condition.'
                           ' We are interested in your experience with the experiment. In the most general sense, we'
                           ' are examining the \'workload\' you experienced. The factors that influence you experience of'
                           ' workload may come from the task itself, your feelings about your own performance, how much effort'
