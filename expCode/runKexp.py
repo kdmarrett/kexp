@@ -157,7 +157,7 @@ def getInput(response_btns, ec, text=None):
             response = ''
             continue
         check_response = ec.screen_prompt(('You pressed ' + str(
-            response) + ', if this is the number you want press "{}" to' +
+            response) + ', if this is the number you want press "0" to' +
             ' continue otherwise press any other key to' +
             ' redo'.format(cont_btn_label)), timestamp=False)
         if check_response != str(cont_btn):
@@ -229,17 +229,16 @@ def recordTrial(wheel_matrix_info, preblock, block_ind, bnum, instr, ec,
         ec.write_data_line('target_letter', target_letter)
         ec.write_data_line('target_cycles', target_cycles)
 
-    # do these fail silently if there is no current edf?
     ec.stop()
     ec.trial_ok()
     # update indexer
     block_ind[bnum] += 1
-    response = promptResponse(ec)
-    if (response == target_cycles):
-        correct = 1
-    else:
-        correct = 0
     if (record_correct):
+    response = promptResponse(ec)
+    	if (response == target_cycles):
+		correct = 1
+    	else:
+		correct = 0
         final_df = data_file_name + 'final'
         trial_vars['correct'] = correct
         sio.savemat(final_df, trial_vars)

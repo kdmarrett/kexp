@@ -40,7 +40,7 @@ instr['more_train'] = ('Your job for this experiment is to listen to '
 
 instr['start_exp'] =('In this experiment you will be listening to letters grouped into '
 					  'three different spatial locations (left, middle, and right). '
-					  'Each letter group has a distinct speaker for the letters. To orient you to the layout,'
+					  'Each letter group has a distinct speaker for the letters. To orient you to the layout'
 					  ' and ordering, each trial will begin with a visual primer of the spatial location of the letters. '
 					  'In these primers, you will notice that one of the letters is colored green and spoken, this is the target letter for the trial. '
 					  'Together, the groups will span the full alphabet along with the extra voiced commands \'Read\' , \'Pause\', \'Space\', and \'Delete\'. '
