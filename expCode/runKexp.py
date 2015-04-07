@@ -8,9 +8,6 @@ This script runs an experiment with spatially distributed letter streams.
 # Author: Karl Marrett <kdmarret@uw.edu>, <kdmarrett@gmail.com>
 
 #TODO
-#el.close()?
-#pathological responses
-#deep review of all the instr
 #how to import functions from and mat files from different dirs
 #log file heuristics?
 #locking in a version of ef
@@ -22,7 +19,7 @@ This script runs an experiment with spatially distributed letter streams.
 #subjects
 
 # from processPupil import *
-#import processPupil
+# import processPupil
 #processPupil._check_pyeparse()
 
 from scipy import io as sio
@@ -50,13 +47,13 @@ rel_survey_btn = [1, 2]
 pretrial_wait = 2.5
 std_args = ['kexp']
 std_kwargs = dict(screen_num=0, window_size=[800, 600], check_rms=None,
-                full_screen=True, stim_db=65, noise_db=40, stim_rms=0.01,
+                full_screen=False, stim_db=65, noise_db=40, stim_rms=0.01,
                 session='1',participant='new',  
                 suppress_resamp=False, response_device='keyboard',
                 output_dir=datadir, stim_fs=16000)  # 44100.0
 
 # GLOBAL VARIABLES
-debug = True
+debug = False
 wait_brief = .2
 wait_long = 2
 msg_dur = 3.0
@@ -186,6 +183,7 @@ def recordTrial(wheel_matrix_info, preblock, block_ind, bnum, instr, ec,
     # UNLOAD TRIAL VARS (AVOIDS AWKWARD INDEXING)
     # Creates dict of vars: 'target_letter', 'target_time',
     # 'tot_wav_time', 'paradigm', 'possible_letters' 'tot_cyc'
+    import pdb; pdb.set_trace()
     trial_vars = sio.loadmat(trial_data_path)
     paradigm = trial_vars['paradigm'][0]
     target_time = trial_vars['target_time']
