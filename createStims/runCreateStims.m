@@ -39,6 +39,7 @@ primer_start = 3000;  %sample # that primer letter will play in preblock (less t
 makeTraining = 0;
 force_recreate = 1; %bool to force recreation of letters or pitches even if dir exists from previous run
 default_fs = 16000;
+final_fs = 24414;
 instrument_dynamics = 'mf'; %mezzoforte
 env_instrNotes = 0; % bool for creating instrument notes based off of letter envelopes
 start_sample_one = 1; % start each instrument envelope at the begining of each letter regardless of letter power
@@ -384,6 +385,8 @@ for x = 1:reps
 				delete(wav_name)
 			end
 			final_sample = rms_amp * (final_sample / sqrt(mean(mean(final_sample.^2))));
+            [P, Q] = rat(final_fs, fs);
+            final_sample = resample(final_sample, P, Q);
 			final_sample = normalizeSoundVector(final_sample);
 			wavwrite(final_sample, fs, wav_name);   %  Stimuli saved by trial 
 		end
