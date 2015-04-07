@@ -183,7 +183,6 @@ def recordTrial(wheel_matrix_info, preblock, block_ind, bnum, instr, ec,
     # UNLOAD TRIAL VARS (AVOIDS AWKWARD INDEXING)
     # Creates dict of vars: 'target_letter', 'target_time',
     # 'tot_wav_time', 'paradigm', 'possible_letters' 'tot_cyc'
-    import pdb; pdb.set_trace()
     trial_vars = sio.loadmat(trial_data_path)
     paradigm = trial_vars['paradigm'][0]
     target_time = trial_vars['target_time']
@@ -195,6 +194,7 @@ def recordTrial(wheel_matrix_info, preblock, block_ind, bnum, instr, ec,
     # load WAVs for this block
     stims = []
     stims.append(read_wav(trial_stim_path)[0])  # ignore fs
+    import pdb; pdb.set_trace()
     stim_dur = stims[0].shape[-1] / ec.stim_fs
     ec.clear_buffer()
     ec.load_buffer(stims[0])
