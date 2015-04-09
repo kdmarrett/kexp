@@ -9,14 +9,15 @@ tic
 cd ..
 PATH = cd ; %letter and output directory
 cd createStims
-stimuli_path = fullfile(PATH, 'Stims/');%dir for all subject stimulus
+default_fs = 16000;
+new_fs = 24414;
+stimuli_path = fullfile(PATH, 'Stims', int2str(new_fs));%dir for all subject stimulus
 letter_path = fullfile(PATH, 'Letters', 'Files'); %dir to untrimmed letters
 K70_dir = fullfile(PATH, 'K70'); % computed HRTF
 instrNote_dir = fullfile(PATH, 'instrNotes/'); % instrument notes
 lester_dir = '/Volumes/labdocs/kdmarrett/kexp';
 
 data_dir = fullfile(PATH, 'Data', 'Params');
-stimuli_path = fullfile(stimuli_path);
 createStruct(data_dir);
 createStruct(stimuli_path);
 
@@ -25,7 +26,6 @@ createStruct(stimuli_path);
 % respective location and pitch, and a post_block to provide time
 % between trials.
 instr_amp_weights = [2 1 4];
-rms_amp = .05; %final normalization (loudness)
 letter_decibel = 10; %amplitude of letters in wheel; final stim normalized
 white_noise_decibel = 0;  %amplitude
 noise = 0;  % bool adds noise
@@ -38,8 +38,6 @@ preblock_prime_sec = 	15.5; %seconds until letters start playing
 primer_start = 3000;  %sample # that primer letter will play in preblock (less than preblock)
 makeTraining = 0;
 force_recreate = 1; %bool to force recreation of letters or pitches even if dir exists from previous run
-default_fs = 16000;
-final_fs = 24414;
 instrument_dynamics = 'mf'; %mezzoforte
 env_instrNotes = 0; % bool for creating instrument notes based off of letter envelopes
 start_sample_one = 1; % start each instrument envelope at the begining of each letter regardless of letter power
@@ -123,12 +121,6 @@ if makeTraining
 	reps = 2; %repeat again for training stimuli
 else
 	reps= 1;
-end
-
-%CREATE STIM FILE STRUCTURE 
-for i = 1:condition_no
-	fn = fullfile(stimuli_path);
-	createStruct(fn);
 end
 
 % CREATE STIM TRAINING STRUCTURE
@@ -240,7 +232,7 @@ for x = 1:reps
 								pitch = pitch_wheel{j}{k, l}; %finds the pitch in pitch_wheel cell
 							end
 							
-							% GET LETTER WAV FILE
+							% FIND LETTER WAV PATH
 							angle = angle_wheel{j}(k, l); %finds the angle in angle_wheel for each letter
 							if shiftedLetters
 								path = fullfile(final_letter_path, pitch, letter);
@@ -266,7 +258,9 @@ for x = 1:reps
 							else
 								instrNote_sound = zeros(letter_samples, 1);
 							end
+                            % get letter
 							[letter_sound, fs] = wavread(path);
+                            assert(fs == default_fs);
 							
 							% VIEW
 							% plot(letter_sound)
@@ -284,7 +278,8 @@ for x = 1:reps
 							combined_sound = createGate(combined_sound, fs, 1,1);
 							[L, R] = stimuliHRTF(combined_sound, fs, angle, ...
 								distance_sound, K70_dir);
-							combined_sound_proc = (10 ^(letter_decibel / 20)) * [L R];
+							combined_sound_proc = [L R];
+							%combined_sound_proc = (10 ^(letter_decibel / 20)) * [L R];
 							
 							% % RECORD TARGET TIME
 							if strcmp(letter, target_letter)
@@ -384,14 +379,12 @@ for x = 1:reps
 			if exist(wav_name, 'file') 
 				delete(wav_name)
 			end
-			final_sample = rms_amp * (final_sample / sqrt(mean(mean(final_sample.^2))));
-            [P, Q] = rat(final_fs, fs);
-            final_sample = resample(final_sample, P, Q);
 			final_sample = normalizeSoundVector(final_sample);
 			wavwrite(final_sample, fs, wav_name);   %  Stimuli saved by trial 
 		end
 	end
 end
+
 % global variables for each subject and session
 save( fullfile( data_dir, 'global_vars'), 'condition_bin', 'wheel_matrix_info',...
  'preblock_prime_sec', 'English', 'tot_cyc', 'trials_per_condition',...
