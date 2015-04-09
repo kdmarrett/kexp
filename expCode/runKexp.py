@@ -10,17 +10,10 @@ This script runs an experiment with spatially distributed letter streams.
 #TODO
 #how to import functions from and mat files from different dirs
 #log file heuristics?
-#locking in a version of ef
 #simplify the response buttons
 # try catch?
-# should they only be allowed to answer 1 or 2?
-#Need to
-#separate TDT continue button input from the keyboard input for
+#Need to separate TDT continue button input from the keyboard input for
 #subjects
-
-# from processPupil import *
-# import processPupil
-#processPupil._check_pyeparse()
 
 from scipy import io as sio
 import pyglet
@@ -47,7 +40,7 @@ rel_survey_btn = [1, 2]
 pretrial_wait = 2.5
 std_args = ['kexp']
 std_kwargs = dict(screen_num=0, window_size=[800, 600], check_rms=None,
-                full_screen=False, stim_db=65, noise_db=40, stim_rms=0.01,
+                full_screen=True, stim_db=65, noise_db=40, stim_rms=0.01,
                 session='1',participant='new',  
                 suppress_resamp=False, response_device='keyboard',
                 output_dir=datadir, stim_fs=24414)  
@@ -194,7 +187,6 @@ def recordTrial(wheel_matrix_info, preblock, block_ind, bnum, instr, ec,
     # load WAVs for this block
     stims = []
     stims.append(read_wav(trial_stim_path)[0])  # ignore fs
-    import pdb; pdb.set_trace()
     stim_dur = stims[0].shape[-1] / ec.stim_fs
     ec.clear_buffer()
     ec.load_buffer(stims[0])
@@ -382,6 +374,7 @@ with ef.ExperimentController(*std_args, **std_kwargs) as ec:
     cond_dict = dict()
 
     ec.screen_prompt(instr['start_exp'], live_keys=button_keys['start_exp'])
+    #ec.screen_prompt(instr['start_exp_cont'], live_keys=button_keys['start_exp'])
     for snum in range(len(section)):
         ec.write_data_line('Section: ', snum)
         # Initialize section vars

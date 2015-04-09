@@ -9,8 +9,9 @@ tic
 cd ..
 PATH = cd ; %letter and output directory
 cd createStims
-default_fs = 16000;
+default_fs = 16000; % asserted sampling for all input wav files
 new_fs = 24414;
+stim_rms = .01;
 stimuli_path = fullfile(PATH, 'Stims', int2str(new_fs));%dir for all subject stimulus
 letter_path = fullfile(PATH, 'Letters', 'Files'); %dir to untrimmed letters
 K70_dir = fullfile(PATH, 'K70'); % computed HRTF
@@ -155,14 +156,16 @@ for x = 1:reps
 		 	scale_type, pitches, descend_pitch );
 		
 		% prepare letters
-		[trim_letter_path, letterEnvelope, mean_speaker_sample] = ...
+		[fs, trim_letter_path, letterEnvelope, mean_speaker_sample] = ...
 		 trimLetters(total_letters, letter_samples, letter_path, letterArray,...
 		 pitches, force_recreate, speaker_list, version_num, ...
 		 speaker_amp_weights, shiftedLetters, env_instrNotes, English, ...
-		 wheel_matrix_info, default_fs, new_fs);
+		 wheel_matrix_info, default_fs);
+
+         assert(default_fs == fs);
          % prepare instrument notes
 		if instrNote
-			trimInstrNotes(new_fs, instrNote_dir, letter_samples, pitches, ...
+			trimInstrNotes(fs, instrNote_dir, letter_samples, pitches, ...
             instrument_dynamics, env_instrNotes, instr_list, speaker_list,...
              letterEnvelope, list_of_pitches, force_recreate, letterArray,...
              envelope_type, mean_speaker_sample, start_sample_one, ...
@@ -172,7 +175,7 @@ for x = 1:reps
 		% compute misc. basic params of block
 		[ IWI, tot_trial, tot_wheel, letter_difference, min_wheel, preblock, ...
 		ILI, tot_wav_time, min_wheel_time, min_wheel_time_ind ] = ...
-		assignTimeVars( wheel_matrix_info, new_fs, tot_cyc, letter_samples,...  
+		assignTimeVars( wheel_matrix_info, fs, tot_cyc, letter_samples,...  
 			token_rate_modulation, preblock_prime_sec, postblock_sec,...  
 			ILIms, token_rates );
 		if tone_constant
@@ -261,7 +264,7 @@ for x = 1:reps
 							end
                             % get letter
 							[letter_sound, fs] = wavread(path);
-                            assert(fs == new_fs);
+                            assert(fs == default_fs);
 							
 							% VIEW
 							% plot(letter_sound)
@@ -380,7 +383,15 @@ for x = 1:reps
 			if exist(wav_name, 'file') 
 				delete(wav_name)
 			end
-			wavwrite(final_sample, fs, wav_name);   %  Stimuli saved by trial 
+            [P, Q] = rat(new_fs/fs);
+            final_sample = resample(final_sample, P, Q);
+            temp = sum(final_sample, 2);
+            % use non zero samples to compute rms scaling
+            valid_samps = final_sample(find(temp ~= 0), :);
+            final_sample = stim_rms * (final_sample / ...
+                mean(sqrt(mean(valid_samps.^2, 2))));
+            %final_sample = normalizeSoundVector(final_sample);
+			wavwrite(final_sample, new_fs, wav_name);   %  Stimuli saved by trial 
 		end
 	end
 end
