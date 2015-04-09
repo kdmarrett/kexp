@@ -3,11 +3,13 @@ function [output] = reorderDisplaced (input)
 
 [rows, cols] = size(input);
 
-for i = 1:rows
+for i = 2:rows
 	inputRow = input(i, :);
-	ind = randi([2 (cols - 1)]);
+	ind = randi([2, (cols)]);
 	firstHalf = inputRow(ind:cols);
 	secondHalf = inputRow(1:(ind - 1));
-	output(i, :) = [firstHalf secondHalf];
+    newRow = [firstHalf, secondHalf];
+    assert(length(newRow) == length(cols))
+	output(i, :) = newRow;
 end
 

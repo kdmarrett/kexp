@@ -17,6 +17,8 @@ This script runs an experiment with spatially distributed letter streams.
 #subjects
 # need to enter appropriate text if they input the wrong thing to
 # getinput
+# check that conditions are interspersed
+# check that subjects are told they can take a break between blocks
 
 from scipy import io as sio
 import pyglet
@@ -403,7 +405,7 @@ with ef.ExperimentController(*std_args, **std_kwargs) as ec:
             bnum = section[snum][b_ind]
             ec.write_data_line('Block: ', str(bnum))
             # show instructions
-            block_key = 's' + str(snum) + '_' + 'start_block_' + str(bnum)
+            block_key = 's' + str(snum) + '_' + 'start_block_' + str(b_ind)
             ec.screen_prompt( instr[(block_key)],
                     live_keys=button_keys[(block_key)],
                     max_wait=wait_keys[block_key])
@@ -411,7 +413,7 @@ with ef.ExperimentController(*std_args, **std_kwargs) as ec:
             if (snum == 1):
                 el.calibrate(prompt=True)
                 assert el.recording 
-            for tnum in range(len(order[section[snum][bnum]][0])):
+            for tnum in range(len(order[section[snum][b_ind]][0])):
                 ec.write_data_line('Trial: ', tnum)
 
                 if (snum == 0):
@@ -440,9 +442,10 @@ with ef.ExperimentController(*std_args, **std_kwargs) as ec:
                             live_keys=button_keys['start_exp'],
                             max_wait=wait_keys[trial_end_key])
             # train for the first section 
-            if (snum == 0):
-                train(order, wheel_matrix_info, preblock, block_ind,
-                        instr, ec, stimdir, final_datadir )
+            if not debug:
+                if (snum == 0):
+                    train(order, wheel_matrix_info, preblock, block_ind,
+                            instr, ec, stimdir, final_datadir )
 
             # End block
             block_end_key = 's' + str(snum) + '_' + 'end_block'

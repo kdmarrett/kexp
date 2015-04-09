@@ -64,7 +64,7 @@ if English
 	  'S' 'T' 'U' 'V' 'W' 'X' 'Y' 'Z' 'Read' 'Delete' };  % right wheel
 	%maximal phoneme separation
 	letterArray.displaced =  {'Space' 'Pause', 'A' 'B' 'F' 'O' 'E' 'M' 'I' 'T' ...
-	'J' 'C' 'H' 'Q' 'G' 'N' 'U' 'V' 'K' 'D' ... % middle wheel
+	'J' 'C' 'H' 'Q' 'G' 'N' 'X' 'V' 'K' 'D' ... % middle wheel
 	'L' 'U' 'P' 'S' 'Z' 'R' 'W' 'Y' 'Read' 'Delete' }; % right wheel
 	speaker_list = {'mjc1', 'female', 'mnre0'};
 	speaker_amp_weights = [1 1 1];
@@ -73,7 +73,7 @@ else
 	 'I' 'J' 'K' 'L' 'M' 'N' 'O' 'P' 'Q' 'R' 'S' 'T' 'U' 'V' 'W' 'X' 'Y' 'Z',...
 	  'Lesen', 'Losche'};
 	letterArray.displaced =  {'Leer', 'Paus', 'A' 'B' 'F' 'O' 'E' 'M' 'I' 'T'...
-	 'J' 'C' 'H' 'Q' 'G' 'N' 'U' 'V' 'K' 'D' 'L' 'U' 'P' 'S' 'Z' 'R' 'W' 'Y'...
+	 'J' 'C' 'H' 'Q' 'G' 'N' 'X' 'V' 'K' 'D' 'L' 'U' 'P' 'S' 'Z' 'R' 'W' 'Y'...
 	  'Lesen' 'Losche'}; %maximal phoneme separation
 	speaker_list = {'male_1_G', 'female_1_G', 'male_2_G'}
 	speaker_amp_weights = [1 1.5 1];
@@ -399,7 +399,7 @@ end
 % global variables for each subject and session
 save( fullfile( data_dir, 'global_vars'), 'condition_bin', 'wheel_matrix_info',...
  'preblock_prime_sec', 'English', 'tot_cyc', 'trials_per_condition',...
- 'order') 
+ 'order', 'stim_rms', 'new_fs') 
 
 for i = 1:length(blocktrial)
 	assert(blocktrial(i) == length(order{i}))

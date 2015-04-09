@@ -241,7 +241,7 @@ instr['s2_start_sect'] = ('You\'re about to begin the last section of the experi
                           ' in the introduction section, there is no feedback and your task for each trial is to listen for every occurrence of your target letter for the duration of'
                           ' the trial. In this section you will be presented with 1'
                           ' trial from each condition type then asked to answer several questions about the relative'
-                          ' difficulty of each condition.'
+                          ' difficulty of each condition.\n\n'
                           ' We are interested in your experience with the experiment. In the most general sense, we'
                           ' are examining the \'workload\' you experienced. The factors that influence you experience of'
                           ' workload may come from the task itself, your feelings about your own performance, how much effort'
