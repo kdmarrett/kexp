@@ -347,7 +347,7 @@ with ef.ExperimentController(*std_args, **std_kwargs) as ec:
     ordermat = op.join(edf_outputdir, identifier )
     #save with rest of the EDF files
     sio.savemat('ordermat', exp_vars)
-    stimdir = op.join(PATH, 'Stims')
+    stimdir = op.join(PATH, 'Stims', str(ec.stim_fs))
     ec.set_visible(True)
     ec.set_background_color([0.1] * 3)
     ec.flip()
