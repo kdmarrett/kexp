@@ -1,8 +1,8 @@
-function [ trim_letter_path, letterEnvelope, mean_speaker_sample ] = ...
+function [ fs, trim_letter_path, letterEnvelope, mean_speaker_sample ] = ...
 	trimLetters(total_letters, letter_samples, letter_path, letterArray, ...
 		pitches, force_recreate, speaker_list, version_num, ...
 		speaker_amp_weights, shiftedLetters, env_instrNotes, English, ...
-		wheel_matrix_info, default_fs, new_fs);
+		wheel_matrix_info, default_fs);
 % Writes all new letters with the specified sample length of letter_samples and saves into 
 % folder trim_letter_path a subdirectory of letter_path
 
@@ -86,6 +86,7 @@ for x = 1:length(speaker_list)
 			end
 
 			% TRIM EACH LETTER 
+			% for j = 1:wheel_matrix_info(x)  implement this later for efficiency
 			for j = 1:total_letters
 				% adjust output path by pitch 
 				if shiftedLetters
@@ -102,9 +103,7 @@ for x = 1:length(speaker_list)
 				pwr_est = final_trimmedLetters{j}.^2;
 				summed_letter_speaker(:, x) = summed_letter_speaker(:, x) + pwr_est;
 				fname = fullfile(final_output_path, strcat(letterArray.alphabetic{j}, '.wav'));
-                [P, Q] = rat(new_fs, fs_speaker);
-                final_trimmedLetters{j}= resample(final_trimmedLetters{j}, P, Q);
-				wavwrite(final_trimmedLetters{j}, new_fs, fname);
+				wavwrite(final_trimmedLetters{j}, fs_speaker, fname);
 			end    
 		end
 	end
