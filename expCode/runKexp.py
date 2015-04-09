@@ -12,8 +12,11 @@ This script runs an experiment with spatially distributed letter streams.
 #log file heuristics?
 #simplify the response buttons
 # try catch?
+# 3rd training trial U and U in primer???
 #Need to separate TDT continue button input from the keyboard input for
 #subjects
+# need to enter appropriate text if they input the wrong thing to
+# getinput
 
 from scipy import io as sio
 import pyglet
@@ -40,13 +43,13 @@ rel_survey_btn = [1, 2]
 pretrial_wait = 2.5
 std_args = ['kexp']
 std_kwargs = dict(screen_num=0, window_size=[800, 600], check_rms=None,
-                full_screen=True, stim_db=65, noise_db=40, stim_rms=0.01,
-                session='1',participant='new',  
+                full_screen=False, stim_db=65, noise_db=40, stim_rms=0.01,
+                #session='1',participant='new',  
                 suppress_resamp=False, response_device='keyboard',
                 output_dir=datadir, stim_fs=24414)  
 
 # GLOBAL VARIABLES
-debug = False
+debug = True
 wait_brief = .2
 wait_long = 2
 msg_dur = 3.0
@@ -268,9 +271,10 @@ def train(order, wheel_matrix_info, preblock, block_ind, instr, ec,
     gets two in a row.  If subject doesn't get two in a row after
     specified number of tries, experiment exits"""
 
-    tries = 2
+    tries = 1
     tot_train_blocks = 3
     train_num = 5
+    trials_per_cond = len(order[train_num][0])
     # instructions
     # for each condition type
     ec.screen_prompt(instr['start_train'],
@@ -281,7 +285,7 @@ def train(order, wheel_matrix_info, preblock, block_ind, instr, ec,
         counter = 0;
         status_passed = False;
         oldCorrect = 0
-        while (counter < (tries* (len(order[train_num][0])))):
+        while (counter < (tries* trials_per_cond)):
             counter += 1
             snum = 0
             correct = 0
@@ -311,7 +315,7 @@ def train(order, wheel_matrix_info, preblock, block_ind, instr, ec,
         if (status_passed):
             train_num += 1
         else:
-            ec.screen_text(instr['train_fail'], timestamp=False);
+            ec.screen_prompt(instr['train_fail']);
     ec.screen_prompt(instr['end_train'],
             live_keys=button_keys['start_exp']) 
     return
@@ -395,7 +399,8 @@ with ef.ExperimentController(*std_args, **std_kwargs) as ec:
             el = EyelinkController(ec)  # create el instance
 
         # run block
-        for bnum in range(len(section[snum])):
+        for b_ind in range(len(section[snum])):
+            bnum = section[snum][b_ind]
             ec.write_data_line('Block: ', str(bnum))
             # show instructions
             block_key = 's' + str(snum) + '_' + 'start_block_' + str(bnum)
