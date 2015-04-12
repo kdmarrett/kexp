@@ -34,9 +34,9 @@ distance_sound = 5; %distance for stimuli to be played in HRTF
 scale_type = 'whole'; %string 'whole' or 'diatonic'
 tot_cyc = 5;
 max_targets = 2;
-postblock_sec = 1.5; %secs after letterblocks
-preblock_prime_sec = 	15.5; %seconds until letters start playing
-primer_start = 3000;  %sample # that primer letter will play in preblock (less than preblock)
+postblock_sec = 1.0; %secs after letterblocks
+preblock_prime_sec = 11; %seconds until letters start playing
+primer_start = 3000; %sample # that primer letter will play in preblock (less than preblock)
 makeTraining = 0;
 force_recreate = 1; %bool to force recreation of letters or pitches even if dir exists from previous run
 instrument_dynamics = 'mf'; %mezzoforte
@@ -52,9 +52,9 @@ tot_blocks = 8;
 blocktrial = zeros(tot_blocks,1); % keeps track of indexer into block orders
 % load 'order'
 load order.mat
-left_ind  = [2:4 12:13 20:22 30:31]; 
-mid_ind   = [1 5:7 14:16 23:25 29 32:33];
-right_ind = [8:10 17:19 26:28 34:35];
+left_ind  = [2:4 12:13 20:22 30:33]; 
+mid_ind   = [1 5:7 14:16 23:25 29 34:37];
+right_ind = [8:10 17:19 26:28 38:41];
 
 % SET LETTERS
 if English
@@ -112,7 +112,7 @@ if ~English
 end
 
 [condition_no, bar] = size(condition_type);
-trials_per_condition = 35;
+trials_per_condition = 41;
 condition_trials = repmat(trials_per_condition, length(condition_type), 1);
 
 if makeTraining

@@ -22,7 +22,7 @@ instr['bad_input'] = ('Please enter either a 1 or 2 on the keyboard for '
 
 instr['start_exp'] =('In this experiment you will be listening to'
         ' letters and commands grouped into '
-          'three different spatial locations. '
+          'different spatial locations. '
            'This experiment is split into 3 sections, each with a '
            'varying number of blocks.  '
            'Between each section and block, there will'
@@ -31,20 +31,21 @@ instr['start_exp'] =('In this experiment you will be listening to'
 
 button_keys['start_exp'] = [cont_btn]
 
-instr['s0_start_sect'] = ( 'After the visual representation of all of the'
-        'letter locations is shown at the beginning of each trial, a small fixation dot'
-      ' will appear in the center of screen. Keep your eyes fixated on this dot for as long as it remains visible. '
+instr['s0_start_sect'] = ( 
+        'In this section, you will be'
+        ' introduced to each condition type before beginning the training.'
+        ' Each letter group, left, middle, and right, has a distinct speaker for the letters. To orient you to the layout'
+      ' and ordering, each trial will begin with a visual' 
+      ' representation of the spatial locations of the letters. '
       'Push any key to continue.'.format(cont_btn_label))
 
 button_keys['s0_start_sect'] = [cont_btn]
 
-instr['s0_start_block_0'] = ( 'In this section, you will be
-        introduced to each condition type before beginning the training.'
-        ' Each letter group, left, middle, and right, has a distinct speaker for the letters. To orient you to the layout'
-          ' and ordering, each trial will begin with a visual primer of the spatial location of the letters. '
-          'In these primers, you will notice that one of the letters is colored green and spoken, this is the target letter for the trial. '
-            ' Count the occurrences of the target green highlighted letter that is '
-             'spoken at the beginning of each trial. '
+instr['s0_start_block_0'] = ( 
+      'In these visual representations, you will notice that one of the letters is colored green and spoken, this is the target letter for the trial. '
+        'Count the occurrences of this target letter during the trial. '
+        'After the visual representation, a small fixation dot'
+      ' will appear in the center of screen. Keep your eyes fixated on this dot for as long as it remains visible. '
              'Push any key to start.'.format(cont_btn_label))
 
 button_keys['s0_start_block_0'] = [cont_btn]
@@ -139,14 +140,13 @@ instr['start_train'] = ('This training section tests'
         ' trials correct in order to continue. '
         'To continue, press any key.'.format(cont_btn_label))
 
-instr['more_train'] = ( 'count the number of times the target letter occurs.  The target '
-		'letter is spoken and shown in green at the location it will be presented at '
-        'during the beginning of each the trial.  At the end '
-		'of the trial, the fixation dot will turn yellow, prompting you'
-		' to enter on the keyboard the number of times the target letter was repeated.  '
+instr['more_train'] = ('During each trial, fixate on the center dot for as long as it'
+          ' remains visible. When it changes yellow,'
+          ' enter the number of target occurrences in'
+          ' the trial 1 or 2.\n\n'
         'During this training,'
-		' you will be given feedback as to whether your response was'
-		' correct. When your response was correct, the dot will'
+        ' you will be given feedback as to whether your response was'
+        ' correct. When your response was correct, the dot will'
         ' change to green.  If you entered the incorrect repeats of '
         'targets it will instead shift to red.  When you are ready '
         'to start press any key to continue.'.format(cont_btn_label))
@@ -158,11 +158,11 @@ button_keys['s0_end_sect'] = [cont_btn]
 
 # SECTION 2 INSTRUCTIONS
 instr['s1_start_sect'] = ('You\'re about to begin the second section of'
-						  ' the experiment. There are breaks between'
+                          ' the experiment. There are breaks between'
                           ' each of the 3 blocks in this section.'
                           ' Unlike the training, there'
-						  ' is no feedback as to whether your responses'
-						  ' were correct.' 
+                          ' is no feedback as to whether your responses'
+                          ' were correct.' 
                           ' Note that in this section the different conditions'
                           ' are interspersed and new trials will start'
                           ' automatically shortly after the previous'
@@ -182,7 +182,7 @@ instr['s1_start_block_1'] = ('You\'re about to begin the second block in this se
                              'the experiment. During each trial, fixate on the center dot for as long as it'
                               ' remains visible. When it changes yellow,'
                               ' enter the number of target occurrences in'
-                              ' the trial 1 or 2.' 
+                              ' the trial 1 or 2.')
 
 button_keys['s1_start_block_1'] = [cont_btn]
 
