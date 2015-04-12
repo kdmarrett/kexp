@@ -7,19 +7,6 @@ This script runs an experiment with spatially distributed letter streams.
 """
 # Author: Karl Marrett <kdmarret@uw.edu>, <kdmarrett@gmail.com>
 
-#TODO
-#how to import functions from and mat files from different dirs
-#log file heuristics?
-#simplify the response buttons
-# try catch?
-# 3rd training trial U and U in primer???
-#Need to separate TDT continue button input from the keyboard input for
-#subjects
-# need to enter appropriate text if they input the wrong thing to
-# getinput
-# check that conditions are interspersed
-# check that subjects are told they can take a break between blocks
-
 from scipy import io as sio
 import pyglet
 from math import pi
@@ -45,17 +32,18 @@ rel_survey_btn = [1, 2]
 pretrial_wait = 2.5
 std_args = ['kexp']
 std_kwargs = dict(screen_num=0, window_size=[800, 600], check_rms=None,
-                full_screen=False, stim_db=65, noise_db=40, stim_rms=0.01,
-                #session='1',participant='new',  
-                suppress_resamp=False, response_device='keyboard',
-                output_dir=datadir, stim_fs=24414)  
+    full_screen=True, stim_db=65, noise_db=40, stim_rms=0.01,
+    session='1',participant='new',  
+    suppress_resamp=False, response_device='keyboard',
+    output_dir=datadir, stim_fs=24414)  
 
 # GLOBAL VARIABLES
 debug = True
 wait_brief = .2
 wait_long = 2
 msg_dur = 3.0
-postblock = 1  # time after each trial to record pupil
+postblock = 0  # time after each trial to record pupil
+vPrimerLen = 5
 
 # MAKE CONDITION ORDERING
 np.random.seed
@@ -102,7 +90,8 @@ def cogLoadSurvey(gen_survey, mid_survey, rel_survey, paradigm,
         #key by paradigm for safety
         key = 'gen_' + paradigm + '_qnum_' + str(qnum)
         ec.write_data_line(key)
-        response = getInput(gen_survey_btn, ec, text=gen_survey[qnum])
+        response = getInput(gen_survey_btn, ec, double_check=True,
+                text=gen_survey[qnum])
         ec.write_data_line(response)
         resp_dict[key] = response
 
@@ -113,18 +102,23 @@ def cogLoadSurvey(gen_survey, mid_survey, rel_survey, paradigm,
     for qnum in dict.keys(rel_survey):
         key = 'rel_' + paradigm + '_qnum_' + str(qnum)
         ec.write_data_line(key)
-        response = getInput(rel_survey_btn, ec, text=rel_survey[qnum])
+        response = getInput(rel_survey_btn, ec, double_check=True, 
+                text=rel_survey[qnum])
         ec.write_data_line(response)
         resp_dict[key] = response
     identifier = paradigm + '_cog_resp.mat'
     matname = op.join(edf_outputdir, identifier )
     #save with rest of the EDF files
-    sio.savemat('matname', resp_dict)
+    sio.savemat(matname, resp_dict)
 
-def getInput(response_btns, ec, text=None):
+def getInput(response_btns, ec, double_check=False, text=None,
+        cogLoad=True):
     """Handles and directs user input for survey section."""  
 
-    response = ''
+    if (cogLoad):
+        response = ''
+    else:
+        response = ec.wait_one_press(timestamp=False);
     while not response:
         if not text:
             response = ec.wait_one_press(max_wait=np.inf, min_wait=.2,
@@ -151,12 +145,13 @@ def getInput(response_btns, ec, text=None):
         except:  # if any other exception arises start over
             response = ''
             continue
-        check_response = ec.screen_prompt(('You pressed ' + str(
-            response) + ', if this is the number you want press "0" to' +
-            ' continue otherwise press any other key to' +
-            ' redo'.format(cont_btn_label)), timestamp=False)
-        if check_response != str(cont_btn):
-            response = ''  # clear past response and loop again
+        if (double_check):
+            check_response = ec.screen_prompt(('You pressed ' + str(
+                response) + ', if this is the number you want press any key to' +
+                ' continue otherwise press any other key to' +
+                ' redo'.format(cont_btn_label)), timestamp=False)
+            if check_response != str(cont_btn):
+                response = ''  # clear past response and loop again
     return int(response)
 
 def getId_list(paradigm):
@@ -206,7 +201,7 @@ def recordTrial(wheel_matrix_info, preblock, block_ind, bnum, instr, ec,
     if debug:
         ec.wait_secs(2)
     else:
-        ec.wait_secs(preblock / 3)
+        ec.wait_secs(vPrimerLen)
     # Draw fixation dot to visual buffer
     fix = visual.FixationDot(ec, colors=['whitesmoke', 'whitesmoke'])
     fix.draw()
@@ -215,7 +210,7 @@ def recordTrial(wheel_matrix_info, preblock, block_ind, bnum, instr, ec,
         ec.wait_secs(1)  
     else:
         # wait until stim has finished
-        ec.wait_secs(stim_dur - preblock / 3)  
+        ec.wait_secs(stim_dur - vPrimerLen)  
         ec.wait_secs(postblock)
     # clear screen
     ec.flip()
@@ -237,9 +232,12 @@ def recordTrial(wheel_matrix_info, preblock, block_ind, bnum, instr, ec,
             correct = 0
         
         if save_correct:
-            final_df = data_file_name + 'final'
+            final_dfn = data_file_name + 'final'
+            # save with other edf files for exp
+            out_path = op.join(edf_outputdir, final_dfn)
+            # add in an extra 'correct' data field
             trial_vars['correct'] = correct
-            sio.savemat(final_df, trial_vars)
+            sio.savemat(out_path, trial_vars)
 
         return correct
     else:
@@ -263,7 +261,8 @@ def promptResponse(ec):
     fix = visual.FixationDot(ec, colors=['yellow', 'yellow'])
     fix.draw()
     ec.flip()  # the fixation dot is displayed
-    return getInput(gen_survey_btn, ec)
+    return getInput(rel_survey_btn, ec, double_check=False, 
+            text=instr['bad_input'], cogLoad=False)
 
 def train(order, wheel_matrix_info, preblock, block_ind, instr, ec, 
         stimdir, final_datadir, record_pupil=False,
@@ -273,30 +272,32 @@ def train(order, wheel_matrix_info, preblock, block_ind, instr, ec,
     gets two in a row.  If subject doesn't get two in a row after
     specified number of tries, experiment exits"""
 
-    tries = 1
+    tries = 2
     tot_train_blocks = 3
     train_num = 5
     trials_per_cond = len(order[train_num][0])
     # instructions
     # for each condition type
-    ec.screen_prompt(instr['start_train'],
-            live_keys=button_keys['start_exp'])
-    ec.screen_prompt(instr['more_train'],
-            live_keys=button_keys['start_exp'])
+    ec.screen_prompt(instr['start_train'])
+    ec.screen_prompt(instr['more_train'])
     for i in range(tot_train_blocks):
         counter = 0;
         status_passed = False;
         oldCorrect = 0
         while (counter < (tries* trials_per_cond)):
-            counter += 1
-            snum = 0
+            if (counter >= trials_per_cond):
+                ec.screen_prompt('You did not pass the '
+                        'training for this condition.'
+                        ' You can try again one more time'
+                        'by pressing any key')
+                counter = 0
             correct = 0
             #paradigm = getTrialCondition(block_ind, train_num)
-            condition_no = i
-            trial_key = 's' + str(0) + '_' + 'start_trial_' \
-            + str(condition_no)
-            ec.screen_prompt( instr[(trial_key)],
-                    live_keys=button_keys['start_exp'])
+            if (counter == 0):
+                condition_no = i
+                trial_key = 's' + str(0) + '_' + 'start_trial_' \
+                + str(condition_no)
+                ec.screen_prompt( instr[(trial_key)])
             correct = recordTrial( wheel_matrix_info, preblock,
                     block_ind, train_num, instr, ec, stimdir,
                     final_datadir, record_pupil, record_correct,
@@ -307,19 +308,18 @@ def train(order, wheel_matrix_info, preblock, block_ind, instr, ec,
                     # must get two in a row to continue
                     ec.screen_prompt(instr['cond_pass'],
                             timestamp=False,
-                            live_keys=button_keys['start_exp'],
                             max_wait=2);
                     status_passed = True
                     break
             else:
                 failFeedback(ec)
             oldCorrect = correct
+            counter += 1
         if (status_passed):
             train_num += 1
         else:
             ec.screen_prompt(instr['train_fail']);
-    ec.screen_prompt(instr['end_train'],
-            live_keys=button_keys['start_exp']) 
+    ec.screen_prompt(instr['end_train'])
     return
 
 def getTrialCondition(block_ind, bnum):
@@ -339,12 +339,13 @@ with ef.ExperimentController(*std_args, **std_kwargs) as ec:
     folder = ec._exp_info['participant'] + '_' + \
         ec._exp_info['date']
     edf_outputdir = op.join(datadir, folder)
+    os.makedirs(edf_outputdir)
     exp_vars = dict()
     exp_vars['mid_block_order'] = mid_block_order
     identifier = 'mid_block_order.mat'
     ordermat = op.join(edf_outputdir, identifier )
     #save with rest of the EDF files
-    sio.savemat('ordermat', exp_vars)
+    sio.savemat(ordermat, exp_vars)
     stimdir = op.join(PATH, 'Stims', str(ec.stim_fs))
     ec.set_visible(True)
     ec.set_background_color([0.1] * 3)
@@ -379,8 +380,7 @@ with ef.ExperimentController(*std_args, **std_kwargs) as ec:
         zip(range(len(order)), np.zeros(len(order), dtype=int)))
     cond_dict = dict()
 
-    ec.screen_prompt(instr['start_exp'], live_keys=button_keys['start_exp'])
-    #ec.screen_prompt(instr['start_exp_cont'], live_keys=button_keys['start_exp'])
+    ec.screen_prompt(instr['start_exp'])
     for snum in range(len(section)):
         ec.write_data_line('Section: ', snum)
         # Initialize section vars
@@ -395,7 +395,7 @@ with ef.ExperimentController(*std_args, **std_kwargs) as ec:
             save_correct = False
         section_key = 's' + str(snum) + '_' + 'start_sect'
         ec.screen_prompt(
-            instr[(section_key)], live_keys=button_keys[(section_key)],
+            instr[(section_key)], 
             max_wait=wait_keys[section_key])
         if snum == 1:
             el = EyelinkController(ec)  # create el instance
@@ -407,7 +407,6 @@ with ef.ExperimentController(*std_args, **std_kwargs) as ec:
             # show instructions
             block_key = 's' + str(snum) + '_' + 'start_block_' + str(b_ind)
             ec.screen_prompt( instr[(block_key)],
-                    live_keys=button_keys[(block_key)],
                     max_wait=wait_keys[block_key])
             #start a new EDF file only in the middle section 
             if (snum == 1):
@@ -423,8 +422,7 @@ with ef.ExperimentController(*std_args, **std_kwargs) as ec:
                     # instructions if the first section
                     trial_key = 's' + str(snum) + '_' + 'start_trial_' \
                     + str(condition_no)
-                    ec.screen_prompt( instr[(trial_key)],
-                            live_keys=button_keys['start_exp'])
+                    ec.screen_prompt( instr[(trial_key)])
                 if (snum == 2):
                     paradigm = getTrialCondition(block_ind, bnum)
 
@@ -439,7 +437,6 @@ with ef.ExperimentController(*std_args, **std_kwargs) as ec:
                     # End trial text feedback
                     trial_end_key = 's' + str(snum) + '_' + 'end_trial'
                     ec.screen_prompt( instr[(trial_end_key)],
-                            live_keys=button_keys['start_exp'],
                             max_wait=wait_keys[trial_end_key])
             # train for the first section 
             if not debug:
@@ -452,12 +449,10 @@ with ef.ExperimentController(*std_args, **std_kwargs) as ec:
             if (snum == 1):
                 el.stop() # close edf file for each block in mid section
             ec.screen_prompt( instr[(block_end_key)],
-                    live_keys=button_keys[ (block_end_key)],
                     max_wait=wait_keys[block_end_key])
 
         # End section
         section_end_key = 's' + str(snum) + '_' + 'end_sect'
         ec.screen_prompt( instr[(section_end_key)],
-                live_keys=button_keys[(section_end_key)],
                 max_wait=wait_keys[section_end_key])
     ec.stop_noise()
