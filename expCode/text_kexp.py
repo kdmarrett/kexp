@@ -46,7 +46,7 @@ instr['s0_start_block_0'] = (
         'Count the occurrences of this target letter during the trial. '
         'After the visual representation, a small fixation dot'
       ' will appear in the center of screen. Keep your eyes fixated on this dot for as long as it remains visible. '
-             'Push any key to start.'.format(cont_btn_label))
+         'Push any key to start.'.format(cont_btn_label))
 
 button_keys['s0_start_block_0'] = [cont_btn]
 
@@ -145,7 +145,7 @@ instr['more_train'] = ('During each trial, fixate on the center dot for as long 
           ' enter the number of target occurrences in'
           ' the trial 1 or 2.\n\n'
         'During this training,'
-        ' you will be given feedback as to whether your response was'
+        ' you will be given feedback of whether your response was'
         ' correct. When your response was correct, the dot will'
         ' change to green.  If you entered the incorrect repeats of '
         'targets it will instead shift to red.  When you are ready '
@@ -160,21 +160,20 @@ button_keys['s0_end_sect'] = [cont_btn]
 instr['s1_start_sect'] = ('You\'re about to begin the second section of'
                           ' the experiment. There are breaks between'
                           ' each of the 3 blocks in this section.'
-                          ' Unlike the training, there'
-                          ' is no feedback as to whether your responses'
-                          ' were correct.' 
-                          ' Note that in this section the different conditions'
-                          ' are interspersed and new trials will start'
-                          ' automatically shortly after the previous'
-                          ' trial ends.  This means that you must'
+                          ' Now the different conditions'
+                          ' are interspersed and you will not be given' 
+                          ' feedback after each trial.  This means that you must'
                           ' orient yourself to the particular condition by either the primer or'
                           ' by listening to the unique orderings of the'
                           ' particular trial. When you\'re ready to begin, press any key.'.format(cont_btn_label))
 
 button_keys['s1_start_sect'] = [cont_btn]
 
-instr['s1_start_block_0'] = (
-    'You\'re about to begin the first block in this section.  Here we go!'.format(cont_btn_label))
+instr['s1_start_block_0'] = ('You\'re about to begin the first block in this section of '
+                             'the experiment. During each trial, fixate on the center dot for as long as it'
+                              ' remains visible. When it changes yellow,'
+                              ' enter the number of target occurrences in'
+                              ' the trial 1 or 2. Press any key to start.')
 
 button_keys['s1_start_block_0'] = []
 
@@ -182,7 +181,7 @@ instr['s1_start_block_1'] = ('You\'re about to begin the second block in this se
                              'the experiment. During each trial, fixate on the center dot for as long as it'
                               ' remains visible. When it changes yellow,'
                               ' enter the number of target occurrences in'
-                              ' the trial 1 or 2.')
+                              ' the trial 1 or 2. Press any key to start.')
 
 button_keys['s1_start_block_1'] = [cont_btn]
 
@@ -190,7 +189,7 @@ instr['s1_start_block_2'] = ('You\'re about to begin the last block in this sect
                              'the experiment. During each trial, fixate on the center dot for as long as it'
                               ' remains visible. When it changes yellow,'
                               ' enter the number of target occurrences in'
-                              ' the trial 1 or 2.')
+                              ' the trial 1 or 2. Press any key to start.')
 
 button_keys['s1_start_block_2'] = [cont_btn]
 
@@ -210,13 +209,13 @@ instr['s1_end_sect'] = ('Good work! You\'re done with the second section of the 
 button_keys['s1_end_block'] = [cont_btn]
 
 # SECTION 3 COGNTIVE LOAD ASSESSMENT INSTRUCTIONS
-instr['s2_start_sect'] = ('You\'re about to begin the last section of the experiment. Reminder: just as'
-                          ' in the introduction section, there is no feedback and your task for each trial is to listen for every occurrence of your target letter for the duration of'
-                          ' the trial. In this section you will be presented with 1'
-                          ' trial from each condition type then asked to answer several questions about the relative'
-                          ' difficulty of each condition.\n\n'
-                          ' We are interested in your experience with the experiment. In the most general sense, we'
-                          ' are examining the \'workload\' you experienced. The factors that influence you experience of'
+instr['s2_start_sect'] = ('In this last section, you will be presented with 1'
+                          ' trial from each condition type then asked'
+                          ' several questions about its difficulty.'
+                          ' We are interested in your experience with'
+                          ' the particular condition. In the most general sense, we'
+                          ' are examining the \'workload\' you'
+                          ' experienced. The factors that influence your experience of'
                           ' workload may come from the task itself, your feelings about your own performance, how much effort'
                           ' you put in, or any frustration you felt. Because workload may be caused by any of these'
                           ' factors, we would like you to evaluate several of them.'
@@ -268,7 +267,7 @@ gen_survey[4] = ('How hard did you have to work overall (both mentally and physi
 gen_survey[5] = ('How insecure, discouraged, irritated, stressed and annoyed versus secure, gratified, content, '
                  'relaxed and complacent did you feel during the task? Enter a digit value from 0 to 9 on the keyboard with 9 being highly relaxed.'.format(cont_btn_label))
 
-gen_survey['ValueError'] = 'Please enter a single digit value on the keyboard'
+gen_survey['ValueError'] = 'Please enter a single digit value on the keyboard.'
 
 mid_survey = dict()
 mid_survey[0] = ('Throughout this this the rating scales are used to assess your experiences in the different task '
@@ -335,3 +334,4 @@ for key in dict.keys(wait_keys):
         wait_keys[key] = 2
     else:
         wait_keys[key] = np.inf
+

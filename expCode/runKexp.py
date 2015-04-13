@@ -43,7 +43,7 @@ wait_brief = .2
 wait_long = 2
 msg_dur = 3.0
 postblock = 0  # time after each trial to record pupil
-vPrimerLen = 5
+vPrimerLen = 7
 
 # MAKE CONDITION ORDERING
 np.random.seed
@@ -111,20 +111,16 @@ def cogLoadSurvey(gen_survey, mid_survey, rel_survey, paradigm,
     #save with rest of the EDF files
     sio.savemat(matname, resp_dict)
 
-def getInput(response_btns, ec, double_check=False, text=None,
+def getInput(response_btns, ec, text, double_check=False,
         cogLoad=True):
     """Handles and directs user input for survey section."""  
 
-    if (cogLoad):
-        response = ''
-    else:
-        response = ec.wait_one_press(timestamp=False);
-    while not response:
-        if not text:
-            response = ec.wait_one_press(max_wait=np.inf, min_wait=.2,
-            timestamp=False, live_keys=response_btns)
-        else:
+    while True:
+        if cogLoad:
             response = ec.screen_prompt(text, timestamp=False)
+        else:
+            response = ec.wait_one_press(max_wait=np.inf, min_wait=0,
+                    timestamp=False)
         # check input
         try:
             assert(int(response) in response_btns)
@@ -146,12 +142,14 @@ def getInput(response_btns, ec, double_check=False, text=None,
             response = ''
             continue
         if (double_check):
-            check_response = ec.screen_prompt(('You pressed ' + str(
-                response) + ', if this is the number you want press any key to' +
-                ' continue otherwise press any other key to' +
-                ' redo'.format(cont_btn_label)), timestamp=False)
-            if check_response != str(cont_btn):
+            check_response = ec.screen_prompt('You pressed ' + str(
+                response) + ', if this is the number you want press, it' +
+                ' again key to continue, otherwise press any other key to' +
+                ' redo', timestamp=False)
+            if (check_response != response):
                 response = ''  # clear past response and loop again
+        if response:
+            break
     return int(response)
 
 def getId_list(paradigm):
@@ -196,7 +194,10 @@ def recordTrial(wheel_matrix_info, preblock, block_ind, bnum, instr, ec,
     if record_pupil:
         ec.identify_trial(ec_id=id_list, el_id=id_list, ttl_id=id_list)
     else:
-        ec.identify_trial(ec_id=id_list, ttl_id=id_list)
+        try:
+            ec.identify_trial(ec_id=id_list, ttl_id=id_list)
+        except:
+            ec.identify_trial(ec_id=id_list, el_id=id_list, ttl_id=id_list)
     ec.start_stimulus(flip=True)  # the visual primer is displayed
     if debug:
         ec.wait_secs(2)
@@ -289,7 +290,7 @@ def train(order, wheel_matrix_info, preblock, block_ind, instr, ec,
                 ec.screen_prompt('You did not pass the '
                         'training for this condition.'
                         ' You can try again one more time'
-                        'by pressing any key')
+                        'by pressing any key.')
                 counter = 0
             correct = 0
             #paradigm = getTrialCondition(block_ind, train_num)
@@ -406,8 +407,7 @@ with ef.ExperimentController(*std_args, **std_kwargs) as ec:
             ec.write_data_line('Block: ', str(bnum))
             # show instructions
             block_key = 's' + str(snum) + '_' + 'start_block_' + str(b_ind)
-            ec.screen_prompt( instr[(block_key)],
-                    max_wait=wait_keys[block_key])
+            ec.screen_prompt( instr[(block_key)])
             #start a new EDF file only in the middle section 
             if (snum == 1):
                 el.calibrate(prompt=True)
