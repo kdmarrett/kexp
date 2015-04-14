@@ -33,12 +33,12 @@ pretrial_wait = 2.5
 std_args = ['kexp']
 std_kwargs = dict(screen_num=0, window_size=[800, 600], check_rms=None,
     full_screen=True, stim_db=65, noise_db=40, stim_rms=0.01,
-    session='1',participant='new',  
+    #session='1',participant='new',  
     suppress_resamp=False, response_device='keyboard',
     output_dir=datadir, stim_fs=24414)  
 
 # GLOBAL VARIABLES
-debug = True
+debug = False
 wait_brief = .2
 wait_long = 2
 msg_dur = 3.0
@@ -150,6 +150,7 @@ def getInput(response_btns, ec, text, double_check=False,
                 response = ''  # clear past response and loop again
         if response:
             break
+    ec.flip()
     return int(response)
 
 def getId_list(paradigm):

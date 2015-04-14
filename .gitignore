@@ -5,3 +5,6 @@ Letters/Files
 *.pyc
 *.swp
 *.asv
+expCode/expyfun
+todo.txt
+backupFiles/
