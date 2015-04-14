@@ -396,6 +396,8 @@ with ef.ExperimentController(*std_args, **std_kwargs) as ec:
 
     ec.screen_prompt(instr['start_exp'])
     for snum in range(len(section)):
+        if (snum != 2):
+            continue
         ec.write_data_line('Section: ', snum)
         # Initialize section vars
         if (snum == 1):

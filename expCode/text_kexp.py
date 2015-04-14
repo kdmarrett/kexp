@@ -268,7 +268,7 @@ gen_survey[5] = ('How insecure, discouraged, irritated, stressed and annoyed ver
 gen_survey['ValueError'] = 'Please enter a single digit value on the keyboard.'
 
 mid_survey = dict()
-mid_survey[0] = ('Throughout this this the rating scales are used to assess your experiences in the different task '
+mid_survey[0] = ('Throughout this section, the rating scales are used to assess your experiences in the different task '
                  'conditions. People interpret these scales in individual ways. For example, some people feel that '
                  'mental or temporal demands are the essential aspects of workload regardless of the effort they '
                  'expended on a given task or the level of performance they achieved. '
