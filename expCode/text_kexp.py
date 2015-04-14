@@ -141,14 +141,12 @@ instr['start_train'] = ('This training section tests'
         'To continue, press any key.'.format(cont_btn_label))
 
 instr['more_train'] = ('During each trial, fixate on the center dot for as long as it'
-          ' remains visible. When it changes yellow,'
-          ' enter the number of target occurrences in'
-          ' the trial 1 or 2.\n\n'
-        'During this training,'
-        ' you will be given feedback of whether your response was'
-        ' correct. When your response was correct, the dot will'
-        ' change to green.  If you entered the incorrect repeats of '
-        'targets it will instead shift to red.  When you are ready '
+          ' remains visible and count the times you hear the target letter.  When the dot changes yellow,'
+          ' enter the number of targets in the trial 1 or 2.'
+        ' You will be given feedback of whether your response was'
+        ' correct. When correct, the dot will'
+        ' change to green.  If you entered the incorrect number, '
+        'it will instead shift to red.  When you are ready '
         'to start press any key to continue.'.format(cont_btn_label))
 
 instr['s0_end_sect'] = ('Great! You\'re done with the first section of the '

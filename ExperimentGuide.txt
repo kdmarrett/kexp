@@ -1,0 +1,121 @@
+# EXPERIMENT NAME
+kexp
+
+# RUN SCRIPT
+C:/Experiments/kdmarrett/kexp/expCode/runKexp.py
+
+# SCRIPT PROMPTS
+Will be prompted to enter subject # (sequential kexp subject #) and
+session number (always 1)
+
+# EXPERIMENT TYPE/EQUIPMENT
+Pupillometry: chin rest, pupillometry computer, etc.
+Behavioral: keyboard
+
+# APPROXIMATE RUN TIME
+1.5 - 2 hours.
+
+# LIGHTS ON/OFF
+Section 1
+Off
+
+Section 2
+Off
+
+Section 3
+On
+
+# SPECIAL INSTRUCTIONS
+Stimuli has already been generated for all subjects so the run script is
+all that is needed for each subject.  Depending on subject's height,
+they might want to sit on cushy stool or in big comfy chair (but
+sometimes helps to give more height by putting big blue blanket under
+them)
+
+# SECTION 1 AND 2 SPIEL
+You need to place your chin on this chin rest during the experiment and
+watch the screen. The chin rest is being used to keep your eye steady
+to record pupil data during the experiment.
+
+
+Your job is to count the occurences of the target letter during the
+trial.  Press button 1 if only one occurence of the target letter
+occurred in the trial and 2 if there were two.
+There will also be written
+instructions on the screen that walk you through this. Press any key to
+get you to the next screen of instructions.  Some conditions will be
+easy while others may be hard.  Please
+don't give up though; listen carefully and make your best guess for
+each trial.
+It's important to press the buttons you intend to press, so I
+suggest you just keep your index finger on 1, middle finger on 2,
+and always make your button presses with those fingers.
+This keyboard is here to insure you don't shift your fingers off of those
+buttons.  There will be a few training trials where you can practice
+the task. You'll get feedback whether or not you are giving the correct
+answers. 
+The experiment is split into three sections.  In this first section you
+will be introduced to the conditions then complete training.  
+After you get through the training, the real experiment will
+start in Section 2 where there won't be any more feedback. The experiment will be
+in blocks and you'll have the opportunity to rest your eyes or get up
+and take a break if you'd like in between any of the blocks. At the end
+of the second section, the instructions will tell you to get up and
+come outside the booth for a mandatory break. At that time, we will tell
+you the final instructions for the last section of the experiment.  
+If you need to tell us
+something or have a question or an issue and don't want to take out your
+earbuds or come outside the booth, just press this button (show). Any
+questions?
+
+# Section 3 Spiel
+
+# CODE
+Location Behavioural Tower C:\Experiments\1v1a\1v1aExp\' beh1v1a_2IFC:
+the main experimental loop that sets up the experiment, saves data, and
+runs all the other subfunctions.  stimuliMaker: generates all the
+stimuli for experiment and saves them in stimuli envNoiseMaker: used by
+stimuli maker to create noise envelopes for exp II and their orthogonal
+complements.  intervalMaker: takes trialCodes and pulls stimuli from
+stimuli files to create experimental trials presentTrial1v1a: takes
+intervalMakers auditory stim and circle diameter modulation and actually
+runs the audiovisual animation and then takes the participants response.
+training1v1a: practice before beginning main trials.  preThresh1v1a:
+roughly finds threshold of participants on a static circle, so that main
+experiment will start close to their threshold.  dataAnalysis1v1a: plots
+the results of a subject.
+
+# TASK
+2IFC: Determine whether the signal was present in the first or the
+second interval (1st or 2nd choice). Also respond at any time if the
+circle briefly changes color (3rd choice) (in order to maintain visual
+attention).
+
+27 experimental trials per condition, 3 conditions
+
+# STIMULI
+The auditory target was a 400 Hz tone of 2 second duration, whose
+amplitude varied sinusoidally at 6 Hz. Auditory masker was white noise.
+Each began and ended with a 10 ms cosine ramp.  The visual stimuli was a
+white ring around a grey disc whose diameter dynamically varied. All
+stimuli were presented diotically. 
+
+
+# EXPERIMENTAL CONDITIONS/DATA ORGANIZATION
+Data Location: Location Behavioural Tower C:\Experiments\1v1a\Data Each
+full experiment will have two files associated with it
+exp_1bindDet_1v1a_subj...  exp_2bindDet_1v1a_subj...
+
+In each of these is a response record file which is a fail safe with all
+the response, trial codes, and stim level on all trials.  and there is
+UD which is the collection of all the adaptive tracks there will be 7 of
+them.
+
+exp 1. Adaptive tracks correspond in order to the discs modulations 1. 0
+Hz (circle AM), 2. 3 Hz, 3. 5 Hz, 4. 6 Hz, 5. 6 Hz pi/2 (phase shift),
+6. 6 Hz pi, 7. 6 Hz 3*pi/2
+
+exp 2. Adaptive tracks correspond in order to the discs modulations 1.
+coherent, 2. orthogonal, 3. V0, 4. coherent +41.6 (audio precedes video)
+5. coherent +125 , 6. coherent -41.6 (video precedes audio ), 7.
+coherent -125

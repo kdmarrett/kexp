@@ -38,7 +38,8 @@ std_kwargs = dict(screen_num=0, window_size=[800, 600], check_rms=None,
     output_dir=datadir, stim_fs=24414)  
 
 # GLOBAL VARIABLES
-debug = False
+debug = True
+skipTrain = False
 wait_brief = .2
 wait_long = 2
 msg_dur = 3.0
@@ -57,7 +58,7 @@ def drawPrimer(wheel_matrix_info, target_letter, possible_letters):
     """ Creates the primer letters and draws to visual buffer """
 
     # get center locations of each wheel
-    wheel_loc = CircularLayout(3, radius=.45, angles=[- pi, (pi / 2), 0])
+    wheel_loc = CircularLayout(3, radius=.50, angles=[- pi, (pi / 2), 0])
     # get individual letter locations
     letter_loc = []
     for i in range(len(wheel_matrix_info)):
@@ -274,7 +275,6 @@ def train(order, wheel_matrix_info, preblock, block_ind, instr, ec,
     gets two in a row.  If subject doesn't get two in a row after
     specified number of tries, experiment exits"""
 
-    tries = 2
     tot_train_blocks = 3
     train_num = 5
     trials_per_cond = len(order[train_num][0])
@@ -286,13 +286,23 @@ def train(order, wheel_matrix_info, preblock, block_ind, instr, ec,
         counter = 0;
         status_passed = False;
         oldCorrect = 0
-        while (counter < (tries* trials_per_cond)):
-            if (counter >= trials_per_cond):
-                ec.screen_prompt('You did not pass the '
-                        'training for this condition.'
-                        ' You can try again one more time'
-                        'by pressing any key.')
-                counter = 0
+        lastTry = False
+        while True:
+            if (counter == (trials_per_cond - 1)):
+                if lastTry:
+                    ec.screen_text('You did not pass the'
+                            ' training for this condition.'
+                            ' Unfortunately you can not continue'
+                            ' with the experiment. You may exit the'
+                            ' booth now.')
+                else:
+                    ec.screen_prompt('You did not pass the'
+                            ' training for this condition.'
+                            ' You can try again one more time'
+                            ' by pressing any key.')
+                    block_ind[train_num] = 0 # reset ind to reloop
+                    counter = 0
+                    lastTry = True
             correct = 0
             #paradigm = getTrialCondition(block_ind, train_num)
             if (counter == 0):
@@ -440,7 +450,7 @@ with ef.ExperimentController(*std_args, **std_kwargs) as ec:
                     ec.screen_prompt( instr[(trial_end_key)],
                             max_wait=wait_keys[trial_end_key])
             # train for the first section 
-            if not debug:
+            if not skipTrain:
                 if (snum == 0):
                     train(order, wheel_matrix_info, preblock, block_ind,
                             instr, ec, stimdir, final_datadir )
