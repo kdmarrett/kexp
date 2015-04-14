@@ -8,6 +8,7 @@ This script runs an experiment with spatially distributed letter streams.
 # Author: Karl Marrett <kdmarret@uw.edu>, <kdmarrett@gmail.com>
 
 from scipy import io as sio
+import sys
 import pyglet
 from math import pi
 import numpy as np
@@ -290,11 +291,12 @@ def train(order, wheel_matrix_info, preblock, block_ind, instr, ec,
         while True:
             if (counter == (trials_per_cond - 1)):
                 if lastTry:
-                    ec.screen_text('You did not pass the'
+                    ec.screen_prompt('You did not pass the'
                             ' training for this condition.'
                             ' Unfortunately you can not continue'
                             ' with the experiment. You may exit the'
                             ' booth now.')
+                    sys.exit()
                 else:
                     ec.screen_prompt('You did not pass the'
                             ' training for this condition.'
