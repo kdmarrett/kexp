@@ -34,41 +34,90 @@ them)
 
 # SECTION 1 AND 2 SPIEL
 You need to place your chin on this chin rest during the experiment and
-watch the screen. The chin rest is being used to keep your eye steady
-to record pupil data during the experiment.
+watch the screen. The chin rest is being used to keep your eye steady to
+record pupil data during the experiment.
 
+the num keys
+any key to 1 or 2
+feedback as in green and red
+make sure that the eyelink is focused
+explain the conditions??
+speaker
+condition orders
+cut down more on the condition explanations
+calibrate more at the beginning
+throw out other edf files
+iswi
+num keys for the new keyboard
 
-Your job is to count the occurences of the target letter during the
-trial.  Press button 1 if only one occurence of the target letter
-occurred in the trial and 2 if there were two.
-There will also be written
-instructions on the screen that walk you through this. Press any key to
-get you to the next screen of instructions.  Some conditions will be
-easy while others may be hard.  Please
-don't give up though; listen carefully and make your best guess for
-each trial.
-It's important to press the buttons you intend to press, so I
-suggest you just keep your index finger on 1, middle finger on 2,
-and always make your button presses with those fingers.
-This keyboard is here to insure you don't shift your fingers off of those
-buttons.  There will be a few training trials where you can practice
-the task. You'll get feedback whether or not you are giving the correct
-answers. 
-The experiment is split into three sections.  In this first section you
-will be introduced to the conditions then complete training.  
-After you get through the training, the real experiment will
-start in Section 2 where there won't be any more feedback. The experiment will be
-in blocks and you'll have the opportunity to rest your eyes or get up
-and take a break if you'd like in between any of the blocks. At the end
-of the second section, the instructions will tell you to get up and
-come outside the booth for a mandatory break. At that time, we will tell
-you the final instructions for the last section of the experiment.  
-If you need to tell us
-something or have a question or an issue and don't want to take out your
-earbuds or come outside the booth, just press this button (show). Any
-questions?
+Each trial in this experiment will begin with a visual representation.
+In these visual representations, you will notice that one of the letters
+is colored green and spoken, this is the target letter for the trial.
+Count the occurrences of this target letter during the trial.  Press
+button 1 if only one occurence of the target letter occurred in the
+trial and 2 if there were two.  After the visual representation, a small
+fixation dot will appear in the center of screen. Keep your eyes fixated
+on this dot for as long as it remains visible.
+There will also be written instructions on the screen that walk you
+through this. Press any key to get you to the next screen of
+instructions.  Some conditions will be easy while others may be hard.
+Please don't give up though; listen carefully and make your best guess
+for each trial.  It's important to press the buttons you intend to
+press, so I suggest you just keep your index finger on 1, middle
+finger on 2, and always make your button presses with those fingers.
+This keyboard is here to insure you don't shift your fingers off of
+those buttons.  There will be a few training trials where you can
+practice the task. You'll get feedback whether or not you are giving
+the correct answers.  The experiment is split into three sections.
+In this first section you will be introduced to the conditions then
+complete training.  After you get through the training, the real
+experiment will start in Section 2 where there won't be any more
+feedback. The experiment will be in blocks and you'll have the
+opportunity to rest your eyes or get up and take a break if you'd
+like in between any of the blocks. At the end of the second section,
+the instructions will tell you to get up and come outside the booth
+for a mandatory break. At that time, we will tell you the final
+instructions for the last section of the experiment.  If you
+need to tell us something or have a question or an issue and
+don't want to take out your earbuds or come outside the booth,
+just press this button (show). Any questions?
 
 # Section 3 Spiel
+In this last section, you will be presented with 1 trial from each
+condition type then asked several questions about its difficulty.  We
+are interested in your experience with the particular condition. In the
+most general sense, we are examining the 'workload' you experienced. The
+factors that influence your experience of workload may come from the
+task itself, your feelings about your own performance, how much effort
+you put in, or any frustration you felt. Because workload may be caused
+by any of these factors, we would like you to evaluate several of them.
+
+After performing the task for each condition, you will be asked to rate
+your experience from 0 to 9 for several factors. Please consider each
+rating scale and condition type separately when answering the questions.
+Please read the descriptions of the set of six scales carefully.  
+
+Throughout this section, the rating scales are used to assess your
+experiences in the different task conditions. People interpret these
+scales in individual ways. For example, some people feel that mental or
+temporal demands are the essential aspects of workload regardless of the
+effort they expended on a given task or the level of performance they
+achieved.  The evaluation you are about to perform is a technique to
+assess the relative importance of six factors in determining how much
+workload you experienced.
+
+Afterwards, you will be presented with a series of pairs of rating scale
+titles (for example Effort versus Mental Demands) and asked to choose
+which of the items was more important to your experience of workload in
+the task that you just performed.  Indicate the Scale Title that
+represents the more important contributor to workload for the specific
+task you performed in the experiment.  Please consider your choices
+carefully and make them consistent with how you used the rating scales
+during the particular task you were asked to evaluate. There is no
+correct pattern -- we are only interested in your opinion.  If you need
+to tell us something or have a question or an issue and don't want to
+take out your earbuds or come outside the booth, just press this button
+(show). Any questions?
 
 # CODE
 Location Behavioural Tower C:\Experiments\1v1a\1v1aExp\' beh1v1a_2IFC:
@@ -86,19 +135,17 @@ experiment will start close to their threshold.  dataAnalysis1v1a: plots
 the results of a subject.
 
 # TASK
-2IFC: Determine whether the signal was present in the first or the
-second interval (1st or 2nd choice). Also respond at any time if the
-circle briefly changes color (3rd choice) (in order to maintain visual
-attention).
+kexp: Determine the number of target letter presented in a trial 1 or 2.
 
 27 experimental trials per condition, 3 conditions
 
 # STIMULI
-The auditory target was a 400 Hz tone of 2 second duration, whose
-amplitude varied sinusoidally at 6 Hz. Auditory masker was white noise.
-Each began and ended with a 10 ms cosine ramp.  The visual stimuli was a
-white ring around a grey disc whose diameter dynamically varied. All
-stimuli were presented diotically. 
+The auditory stimuli consisted of the target letter spoken followed by 
+silence then 5 cycles of the repeated alphabet plus a few commands.
+In 1 or 2 of these 5 cycles a target letter occurred. The visual
+stimuli draws all possible letters with their relative spatial location.
+The target letter is highlighted green.  Subjects are given,
+green, and red feedback to their input during training.
 
 
 # EXPERIMENTAL CONDITIONS/DATA ORGANIZATION
