@@ -222,7 +222,7 @@ instr['s2_start_sect'] = ('In this last section, you will be presented with 1'
 button_keys['s2_start_sect'] = [cont_btn]
 
 instr['s2_start_block_0'] = ('After performing the task for each condition,'
-                             ' you will be asked to rate your experience from 0 to 9 for several factors. Please consider each rating'
+                             ' you will be asked to rate your experience from 1 to 9 for several factors. Please consider each rating'
                              ' scale and condition type separately when answering the questions. '
                              'Please read the descriptions of the set of six scales carefully. '
                              'If you have a question about any of the scales, please don\'t hesitate to ask someone outside the booth. Press any key to continue.'.format(cont_btn_label))
@@ -247,23 +247,23 @@ button_keys['s2_end_block'] = []
 gen_survey = dict()
 gen_survey[0] = ('How mentally demanding was the task? How much mental and perceptual activity was required (e.g.'
                  'thinking, deciding, remembering, looking, searching)? Was the task easy or demanding, simple or '
-                 'complex, exacting or forgiving? Enter a digit value from 0 to 9 on the keyboard with 9 being heavily demanding.'.format(cont_btn_label))
+                 'complex, exacting or forgiving? Enter a digit value from 1 to 9 on the keyboard with 9 being heavily demanding.'.format(cont_btn_label))
 
 gen_survey[1] = ('How much physical activity was required (e.g. pushing, pulling, turning, controlling, activating)?'
-                 ' Was the task easy or demanding, slow or brisk, slack or strenuous, restful or laborious? Enter a digit value from 0 to 9 on the keyboard with 9 being heavily demanding.'.format(cont_btn_label))
+                 ' Was the task easy or demanding, slow or brisk, slack or strenuous, restful or laborious? Enter a digit value from 1 to 9 on the keyboard with 9 being heavily demanding.'.format(cont_btn_label))
 
 gen_survey[2] = ('How much time pressure did you feel to keep up with the rate or pace at which the task or task elements'
-                 ' occurred? Was the pace slow and leisurely or rapid and frantic? Enter a digit value from 0 to 9 on the keyboard with 9 being heavily pressured by time.'.format(cont_btn_label))
+                 ' occurred? Was the pace slow and leisurely or rapid and frantic? Enter a digit value from 1 to 9 on the keyboard with 9 being heavily pressured by time.'.format(cont_btn_label))
 
 gen_survey[3] = ('How successful do you think you were in accomplishing the goals of the task set by the'
                  ' experimenter (or yourself)? How satisfied were you with your performance in accomplishing'
-                 ' these goals?  Enter a digit value from 0 to 9 on the keyboard with 9 being highly successful.'.format(cont_btn_label))
+                 ' these goals?  Enter a digit value from 1 to 9 on the keyboard with 9 being highly successful.'.format(cont_btn_label))
 
 gen_survey[4] = ('How hard did you have to work overall (both mentally and physically) to accomplish your level of performance?'
-                 ' Enter a digit value from 0 to 9 on the keyboard with 9 being extremely hard.'.format(cont_btn_label))
+                 ' Enter a digit value from 1 to 9 on the keyboard with 9 being extremely hard.'.format(cont_btn_label))
 
 gen_survey[5] = ('How insecure, discouraged, irritated, stressed and annoyed versus secure, gratified, content, '
-                 'relaxed and complacent did you feel during the task? Enter a digit value from 0 to 9 on the keyboard with 9 being highly relaxed.'.format(cont_btn_label))
+                 'relaxed and complacent did you feel during the task? Enter a digit value from 1 to 9 on the keyboard with 9 being highly relaxed.'.format(cont_btn_label))
 
 gen_survey['ValueError'] = 'Please enter a single digit value on the keyboard.'
 
@@ -286,35 +286,35 @@ mid_survey[1] = ('Now you will be presented with a series of pairs of rating sca
 
 rel_survey = dict()
 rel_survey[
-    0] = '1. Physical Demand or 2. Temporal Demand. Press the key corresponding to the aspect that you consider the larger factor contributing to the workload.'
+    0] = '1. Physical Demand\n 2. Temporal Demand\n Press the key corresponding to the aspect that you consider the larger factor contributing to the workload.'
 rel_survey[
-    1] = '1. Effort or 2. Mental Demand. Press the key corresponding to the aspect that you consider the larger factor contributing to the workload.'
+    1] = '1. Effort\n 2. Mental Demand\n Press the key corresponding to the aspect that you consider the larger factor contributing to the workload.'
 rel_survey[
-    2] = '1. Frustration or 2. Physical Demand. Press the key corresponding to the aspect that you consider the larger factor contributing to the workload.'
+    2] = '1. Frustration\n 2. Physical Demand\n Press the key corresponding to the aspect that you consider the larger factor contributing to the workload.'
 rel_survey[
-    3] = '1. Effort or 2. Frustration. Press the key corresponding to the aspect that you consider the larger factor contributing to the workload.'
+    3] = '1. Effort\n 2. Frustration\n Press the key corresponding to the aspect that you consider the larger factor contributing to the workload.'
 rel_survey[
-    4] = '1. Mental Demand or 2. Temporal Demand. Press the key corresponding to the aspect that you consider the larger factor contributing to the workload.'
+    4] = '1. Mental Demand\n 2. Temporal Demand\n Press the key corresponding to the aspect that you consider the larger factor contributing to the workload.'
 rel_survey[
-    5] = '1. Physical Demand or 2. Effort. Press the key corresponding to the aspect that you consider the larger factor contributing to the workload.'
+    5] = '1. Physical Demand\n 2. Effort\n Press the key corresponding to the aspect that you consider the larger factor contributing to the workload.'
 rel_survey[
-    6] = '1. Temporal Demand or 2. Performance. Press the key corresponding to the aspect that you consider the larger factor contributing to the workload.'
+    6] = '1. Temporal Demand\n 2. Performance\n Press the key corresponding to the aspect that you consider the larger factor contributing to the workload.'
 rel_survey[
-    7] = '1. Frustration or 2. Mental Demand. Press the key corresponding to the aspect that you consider the larger factor contributing to the workload.'
+    7] = '1. Frustration\n 2. Mental Demand\n Press the key corresponding to the aspect that you consider the larger factor contributing to the workload.'
 rel_survey[
-    8] = '1. Temporal Demand or 2. Frustration. Press the key corresponding to the aspect that you consider the larger factor contributing to the workload.'
+    8] = '1. Temporal Demand\n 2. Frustration\n Press the key corresponding to the aspect that you consider the larger factor contributing to the workload.'
 rel_survey[
-    9] = '1. Performance or 2. Effort. Press the key corresponding to the aspect that you consider the larger factor contributing to the workload.'
+    9] = '1. Performance\n 2. Effort\n Press the key corresponding to the aspect that you consider the larger factor contributing to the workload.'
 rel_survey[
-    10] = '1. Effort or 2. Temporal Demand. Press the key corresponding to the aspect that you consider the larger factor contributing to the workload.'
+    10] = '1. Effort\n 2. Temporal Demand\n Press the key corresponding to the aspect that you consider the larger factor contributing to the workload.'
 rel_survey[
-    11] = '1. Frustration or 2. Performance. Press the key corresponding to the aspect that you consider the larger factor contributing to the workload.'
+    11] = '1. Frustration\n 2. Performance\n Press the key corresponding to the aspect that you consider the larger factor contributing to the workload.'
 rel_survey[
-    12] = '1. Performance or 2. Physical Demand. Press the key corresponding to the aspect that you consider the larger factor contributing to the workload.'
+    12] = '1. Performance\n 2. Physical Demand\n Press the key corresponding to the aspect that you consider the larger factor contributing to the workload.'
 rel_survey[
-    13] = '1. Mental Demand or 2. Performance. Press the key corresponding to the aspect that you consider the larger factor contributing to the workload.'
+    13] = '1. Mental Demand\n 2. Performance\n Press the key corresponding to the aspect that you consider the larger factor contributing to the workload.'
 rel_survey[
-    14] = '1. Mental Demand or 2. Physical Demand. Press the key corresponding to the aspect that you consider the larger factor contributing to the workload.'
+    14] = '1. Mental Demand\n or 2. Physical Demand\n. Press the key corresponding to the aspect that you consider the larger factor contributing to the workload.'
 
 # ASSIGN BUTTON_KEYS AND WAIT TIMES BY GENERAL PATTERN
 template = dict.fromkeys(instr)
