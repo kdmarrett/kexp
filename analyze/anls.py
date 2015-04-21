@@ -26,11 +26,10 @@ session = 1
 blocks = 3
 datadir = os.path.abspath(os.path.join(os.pardir, 'Data'))
 
-
+# LOAD IN TRIAL DATA/STIMS
 def getTrialInfo(block_ind, bnum):
-    # LOAD IN TRIAL DATA/STIMS
-	data_file_name = 'b' + str(bnum) + '_tr' + block_ind[bnum] + 'final'
-    trial_data_path = op.join(final_datadir, data_file_name)
+    data_file_name = 'b' + str(bnum) + '_tr' + block_ind[bnum] + 'final'
+    trial_data_path = op.join(final_data_dir, data_file_name)
     trial_vars = scipy.io.loadmat(trial_data_path)
     condition_no = trial_vars['paradigm'][0]
     target_time = trial_vars['target_time']
@@ -74,6 +73,10 @@ for subj in subjects:
 
     # return all edfs files for a given subject
     fnames = sorted(glob.glob(op.join(data_dir, '%s_*' % subj, '*.edf')))
+    subj_data_dir = sorted(glob.glob(op.join(data_dir, '%s_*' % subj)))
+    trial_mats = sorted(glob.glob(op.join(data_dir, '%s_*' % subj,
+        '*final.mat')))
+    for ti, trial_mat in range(len(trial_mats)):
 
     # Add assertions to check MATLAB trial parameters with
     # assert len(fnames) == len(params['block_trials'])
@@ -109,9 +112,9 @@ for subj in subjects:
                 wav_num = wav_indices[id_]
                 wav_indices[id_] += 1
                 data_file_name = id_ + '_tr' + str(wav_num)
-                trial_data_path = op.join(final_datadir, data_file_name)
+                trial_data_path = op.join(final_data_dir, data_file_name)
 
-                # UNLOAD TRIAL VARS (AVOIDS AWKWARD INDEXING) Creates dict
+                # unload trial vars (avoids awkward indexing) creates dict
                 # of vars: 'target_letter', 'target_time', 'tot_wav_time',
                 # 'paradigm', 'possible_letters' 'tot_cyc'
                 trial_vars = scipy.io.loadmat(trial_data_path)

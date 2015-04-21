@@ -215,23 +215,23 @@ instr['cog_orient'] = ('Now'
                          ' from 1 to 9 for several factors. Remember to consider each rating'
                          ' scale and this condition type independently when answering the questions. '
                          'Please read the descriptions of the set of six scales carefully. '
-                         'If you have a question about any of the scales, please don\'t hesitate to ask someone outside the booth. press 1 to continue.'.format(cont_btn_label))
+                         'If you have a question about any of the scales, please don\'t hesitate to ask someone outside the booth. Press 1 to continue.'.format(cont_btn_label))
 
 button_keys['s2_start_block_0'] = [cont_btn]
 
 # trial instr taken from section 1
 #continue automatically
-instr['s2_end_trial'] = ('Thank you for your responses.')
 
-button_keys['s2_end_trial'] = []
-
-instr['s2_end_block'] = ('Thank you for your responses, you are done with'
+instr['s2_end_trial'] = ('Thank you for your responses, you are done with'
         ' this condition. Take a break if you like, then press 1 when '
                          'you\'re ready for the next block.'.format(cont_btn_label))
 
+button_keys['s2_end_trial'] = []
+
 button_keys['s2_end_block'] = [cont_btn]
 
-instr['s2_end_sect'] = ('All done! Thank you very much for participating!')
+instr['s2_end_sect'] = ('All done! Thank you very much for participating!'
+        ' You may exit the booth now.')
 
 button_keys['s2_end_block'] = []
 
@@ -254,7 +254,8 @@ gen_survey[4] = ('How hard did you have to work overall (both mentally and physi
                  ' Enter a digit value from 1 to 9 on the keyboard with 9 being extremely hard.'.format(cont_btn_label))
 
 gen_survey[5] = ('How insecure, discouraged, irritated, stressed and annoyed versus secure, gratified, content, '
-                 'relaxed and complacent did you feel during the task? Enter a digit value from 1 to 9 on the keyboard with 9 being highly relaxed.'.format(cont_btn_label))
+                 'relaxed and complacent did you feel during the task?'
+                 ' Enter a digit value from 1 to 9 on the keyboard with 9 being highly relaxed.'.format(cont_btn_label))
 
 gen_survey['ValueError'] = 'Please enter a single digit value on the keyboard.'
 
@@ -285,36 +286,35 @@ instr['cog_mid_abbrev'] = ( 'Press the number corresponding to the scale title t
                  'during the particular task you were asked to evaluate. Press 1 to continue.'.format(cont_btn_label))
 
 rel_survey = dict()
+rel_survey[0] = ' 1. Physical Demand\n2. Temporal Demand\nWhich do you consider the larger factor contributing to the workload?'
 rel_survey[
-    0] = '1. Physical Demand\n2. Temporal Demand\nWhich do you consider the larger factor contributing to the workload?'
+    1] = ' 1. Effort\n2. Mental Demand\nWhich do you consider the larger factor contributing to the workload?'
 rel_survey[
-    1] = '1. Effort\n2. Mental Demand\nWhich do you consider the larger factor contributing to the workload?'
+    2] = ' 1. Frustration\n2. Physical Demand\nWhich do you consider the larger factor contributing to the workload?'
 rel_survey[
-    2] = '1. Frustration\n2. Physical Demand\nWhich do you consider the larger factor contributing to the workload?'
+    3] = ' 1. Effort\n2. Frustration\nWhich do you consider the larger factor contributing to the workload?'
 rel_survey[
-    3] = '1. Effort\n2. Frustration\nWhich do you consider the larger factor contributing to the workload?'
+    4] = ' 1. Mental Demand\n2. Temporal Demand\nWhich do you consider the larger factor contributing to the workload?'
 rel_survey[
-    4] = '1. Mental Demand\n2. Temporal Demand\nWhich do you consider the larger factor contributing to the workload?'
+    5] = ' 1. Physical Demand\n2. Effort\nWhich do you consider the larger factor contributing to the workload?'
 rel_survey[
-    5] = '1. Physical Demand\n2. Effort\nWhich do you consider the larger factor contributing to the workload?'
+    6] = ' 1. Temporal Demand\n2. Performance\nWhich do you consider the larger factor contributing to the workload?'
 rel_survey[
-    6] = '1. Temporal Demand\n2. Performance\nWhich do you consider the larger factor contributing to the workload?'
+    7] = ' 1. Frustration\n2. Mental Demand\nWhich do you consider the larger factor contributing to the workload?'
 rel_survey[
-    7] = '1. Frustration\n2. Mental Demand\nWhich do you consider the larger factor contributing to the workload?'
+    8] = ' 1. Temporal Demand\n2. Frustration\nWhich do you consider the larger factor contributing to the workload?'
 rel_survey[
-    8] = '1. Temporal Demand\n2. Frustration\nWhich do you consider the larger factor contributing to the workload?'
+    9] = ' 1. Performance\n2. Effort\nWhich do you consider the larger factor contributing to the workload?'
 rel_survey[
-    9] = '1. Performance\n2. Effort\nWhich do you consider the larger factor contributing to the workload?'
+    10] = ' 1. Effort\n2. Temporal Demand\nWhich do you consider the larger factor contributing to the workload?'
 rel_survey[
-    10] = '1. Effort\n2. Temporal Demand\nWhich do you consider the larger factor contributing to the workload?'
+    11] = ' 1. Frustration\n2. Performance\nWhich do you consider the larger factor contributing to the workload?'
 rel_survey[
-    11] = '1. Frustration\n2. Performance\nWhich do you consider the larger factor contributing to the workload?'
+    12] = ' 1. Performance\n2. Physical Demand\nWhich do you consider the larger factor contributing to the workload?'
 rel_survey[
-    12] = '1. Performance\n2. Physical Demand\nWhich do you consider the larger factor contributing to the workload?'
+    13] = ' 1. Mental Demand\n2. Performance\nWhich do you consider the larger factor contributing to the workload?'
 rel_survey[
-    13] = '1. Mental Demand\n2. Performance\nWhich do you consider the larger factor contributing to the workload?'
-rel_survey[
-    14] = '1. Mental Demand\nor 2. Physical Demand\nWhich do you consider the larger factor contributing to the workload?'
+    14] = ' 1. Mental Demand\nor 2. Physical Demand\nWhich do you consider the larger factor contributing to the workload?'
 
 # ASSIGN BUTTON_KEYS AND WAIT TIMES BY GENERAL PATTERN
 template = dict.fromkeys(instr)
@@ -332,4 +332,6 @@ for key in dict.keys(wait_keys):
         wait_keys[key] = 2
     else:
         wait_keys[key] = np.inf
+
+wait_keys['s2_end_trial'] = np.inf
 

@@ -39,7 +39,7 @@ std_kwargs = dict(screen_num=0, window_size=[800, 600], check_rms=None,
     output_dir=datadir, stim_fs=24414)  
 
 # GLOBAL VARIABLES
-debug = True
+debug = False
 skipTrain = True
 wait_brief = .2
 wait_long = 2
@@ -79,7 +79,7 @@ def drawPrimer(wheel_matrix_info, target_letter, possible_letters):
 
 
 def cogLoadSurvey(gen_survey, mid_survey, rel_survey, paradigm,
-        edf_outputdir, bnum, ec):
+        edf_outputdir, tnum, ec):
     """ Prompt users with cognitive load questions for each condition.
     Saves a separate mat file for each paradigm with keys also
     identified by paradigm and qnum."""
@@ -88,7 +88,7 @@ def cogLoadSurvey(gen_survey, mid_survey, rel_survey, paradigm,
     ec.write_data_line('cogLoadSurvey')
     ec.write_data_line(paradigm)
     ec.write_data_line('gen_survey')
-    if (bnum == 0):
+    if (tnum == 0):
         ec.screen_prompt(instr['cog_orient'])
 
     for qnum in dict.keys(gen_survey):
@@ -100,12 +100,11 @@ def cogLoadSurvey(gen_survey, mid_survey, rel_survey, paradigm,
         ec.write_data_line(response)
         resp_dict[key] = response
 
-    if (bnum == 0):
+    if (tnum == 0):
         for qnum in dict.keys(mid_survey):
             ec.screen_prompt(mid_survey[qnum])
     else:
-        ec.screen_prompt(instr['cog_mid_abbrev'j])
-
+        ec.screen_prompt(instr['cog_mid_abbrev'])
 
     ec.write_data_line('rel_survey')
     for qnum in dict.keys(rel_survey):
@@ -241,7 +240,7 @@ def recordTrial(wheel_matrix_info, preblock, block_ind, bnum, instr, ec,
             correct = 1
         else:
             correct = 0
-        
+        ec.write_data_line('correct: ', correct)
         if save_correct:
             final_dfn = data_file_name + 'final'
             # save with other edf files for exp
@@ -366,12 +365,14 @@ startInfo['inputSection'] = inputSection
 startInfo['inputBlock'] = inputBlock
 #save this information into the data file
 with ef.ExperimentController(*std_args, **std_kwargs) as ec:
+    el = EyelinkController(ec)  # create el instance
     folder = ec._exp_info['participant'] + '_' + \
         ec._exp_info['date']
     edf_outputdir = op.join(datadir, folder)
-    os.makedirs(edf_outputdir)
+    #os.makedirs(edf_outputdir)
     exp_vars = dict()
     exp_vars['mid_block_order'] = mid_block_order
+    ec.write_data_line('mid_block_order', mid_block_order);
     identifier = 'mid_block_order.mat'
     ordermat = op.join(edf_outputdir, identifier )
     startmat = op.join(edf_outputdir, 'startInfo.mat')
@@ -432,22 +433,20 @@ with ef.ExperimentController(*std_args, **std_kwargs) as ec:
         ec.screen_prompt(
             instr[(section_key)], 
             max_wait=wait_keys[section_key])
-        if snum == 1:
-            el = EyelinkController(ec)  # create el instance
 
         # run block
         for b_ind in range(len(section[snum])):
-            if (snum == 1):
-                if (bnum != inputBlock):
-                    continue
             bnum = section[snum][b_ind]
+            if (snum == 1):
+                if (b_ind < inputBlock):
+                    continue
             ec.write_data_line('Block: ', str(bnum))
             # show instructions
             if (snum != 2):
                 block_key = 's' + str(snum) + '_' + 'start_block_' + str(b_ind)
                 ec.screen_prompt( instr[(block_key)])
             #start a new EDF file only in the middle section 
-            if (snum == 1):
+            if (snum != 2):
                 el.calibrate(prompt=True)
                 assert el.recording 
             for tnum in range(len(order[section[snum][b_ind]][0])):
@@ -472,8 +471,8 @@ with ef.ExperimentController(*std_args, **std_kwargs) as ec:
                 pck.dump(block_ind, blockfile) # overwrites
                 if (snum == 2):
                     cogLoadSurvey(gen_survey, mid_survey, rel_survey,
-                            paradigm, edf_outputdir, bnum, ec)
-                if (snum == 0):
+                            paradigm, edf_outputdir, tnum, ec)
+                if (snum != 1):
                     # End trial text feedback
                     trial_end_key = 's' + str(snum) + '_' + 'end_trial'
                     ec.screen_prompt( instr[(trial_end_key)],
@@ -488,9 +487,9 @@ with ef.ExperimentController(*std_args, **std_kwargs) as ec:
             block_end_key = 's' + str(snum) + '_' + 'end_block'
             if (snum == 1):
                 el.stop() # close edf file for each block in mid section
-            if ((snum != 2) && (bnum != 1))
-            ec.screen_prompt( instr[(block_end_key)],
-                    max_wait=wait_keys[block_end_key])
+            if (snum != 2):
+                ec.screen_prompt( instr[(block_end_key)],
+                        max_wait=wait_keys[block_end_key])
 
         # End section
         section_end_key = 's' + str(snum) + '_' + 'end_sect'

@@ -6,7 +6,17 @@ C:/Experiments/kdmarrett/kexp/expCode/runKexp.py
 
 # SCRIPT PROMPTS
 Will be prompted to enter subject # (sequential kexp subject #) and
-session number (always 1)
+session number. 
+default:
+session = 1
+subj = subject code
+section = 0
+
+If subject had to restart or redo the experiment for some reason the
+session number will be 2 otherwise it will always be one.
+In the case that the subject is restarting the experiment and had
+gotten part way through the experiment, the experimenter can start the
+experiment at the specified section or block.
 
 # EXPERIMENT TYPE/EQUIPMENT
 Pupillometry: chin rest, pupillometry computer, etc.
@@ -33,17 +43,7 @@ sometimes helps to give more height by putting big blue blanket under
 them)
 
 # SECTION 1 AND 2 SPIEL
-
-the num keys
-any key to 1 or 2
-feedback as in green and red
-make sure that the eyelink is focused
-condition orders
-cut down more on the condition explanations
-calibrate more at the beginning
-throw out other edf files
-iswi
-num keys for the new keyboard
+# Make sure that the eyelink is focused
 
 In this condition, letters are assigned a spatial location in alphabetic
 order.  You can use the unique speaker and location to help you listen
@@ -52,7 +52,7 @@ for each occurrence of the target letter.
 In this condition, letters are assigned a spatial location in a random
 order.  Throughout the trial, the ordering of the letters will remain
 constant.  You can use the unique speaker and location to help you
-listen for each occurrence of' the target letter in this condition.
+listen for each occurrence of the target letter in this condition.
 
 In this condition, letters are assigned a spatial location in a random
 order.  Throughout the trial, the ordering of the letters will change
@@ -120,40 +120,40 @@ achieved.  The evaluation you are about to perform is a technique to
 assess the relative importance of six factors in determining how much
 workload you experienced.
 
-Afterwards, you will be presented with a series of pairs of rating scale titles (for 
-example Effort versus Mental Demands) and asked to choose which of the items was more 
-important to your experience of workload. 
-Press the number corresponding to the scale title that represents the more important contributor to workload. 
-Remember, you are rating the relative difficulty 
-of the task only for the task of the
- condition that you just heard independently of the other conditions.
-Please consider your choices carefully and make them consistent with how you used the rating scales
-during the particular task you were asked to evaluate. There is no correct pattern -- we 
-are only interested in your opinion. If you need
-to tell us something or have a question or an issue and don't want to
-take out your earbuds or come outside the booth, just press this button
-(show). Any questions?
-
+Afterwards, you will be presented with a series of pairs of rating scale
+titles (for example Effort versus Mental Demands) and asked to choose
+which of the items was more important to your experience of workload.
+Press the number corresponding to the scale title that represents the
+more important contributor to workload.  Remember, you are rating the
+relative difficulty of the task only for the task of the condition that
+you just heard independently of the other conditions.  Please consider
+your choices carefully and make them consistent with how you used the
+rating scales during the particular task you were asked to evaluate.
+There is no correct pattern -- we are only interested in your opinion.
+If you need to tell us something or have a question or an issue and
+don't want to take out your earbuds or come outside the booth, just
+press this button (show). Any questions?
 
 # CODE
-Location Behavioural Tower C:\Experiments\1v1a\1v1aExp\' beh1v1a_2IFC:
+Location Behavioural Tower 
+C:/Experiments/kdmarrett/kexp/expCode/runKexp.py :
 the main experimental loop that sets up the experiment, saves data, and
-runs all the other subfunctions.  stimuliMaker: generates all the
-stimuli for experiment and saves them in stimuli envNoiseMaker: used by
-stimuli maker to create noise envelopes for exp II and their orthogonal
-complements.  intervalMaker: takes trialCodes and pulls stimuli from
-stimuli files to create experimental trials presentTrial1v1a: takes
-intervalMakers auditory stim and circle diameter modulation and actually
-runs the audiovisual animation and then takes the participants response.
-training1v1a: practice before beginning main trials.  preThresh1v1a:
-roughly finds threshold of participants on a static circle, so that main
-experiment will start close to their threshold.  dataAnalysis1v1a: plots
-the results of a subject.
+runs all the other subfunctions.  
+
+C:/Experiments/kdmarrett/kexp/createStims/runCreateStims.m : 
+generates all the
+stimuli for experiment and saves them in 'Stims/'.  Note this does not
+need to be rerun for each subject.
+
+C:/Experiments/kdmarrett/kexp/analyze/anls.py  :
+plots the results of a subject.
 
 # TASK
 kexp: Determine the number of target letter presented in a trial 1 or 2.
+Afterwards, rate the difficulty of the three conditions
 
-27 experimental trials per condition, 3 conditions
+27 experimental trials per condition, 3 conditions, followed by survey
+questions
 
 # STIMULI
 The auditory stimuli consisted of the target letter spoken followed by 
@@ -163,22 +163,12 @@ stimuli draws all possible letters with their relative spatial location.
 The target letter is highlighted green.  Subjects are given,
 green, and red feedback to their input during training.
 
-
 # EXPERIMENTAL CONDITIONS/DATA ORGANIZATION
-Data Location: Location Behavioural Tower C:\Experiments\1v1a\Data Each
-full experiment will have two files associated with it
-exp_1bindDet_1v1a_subj...  exp_2bindDet_1v1a_subj...
+Data Location: Location Behavioural Tower
+C:\Experiments\kdmarrett\kexp\Data
+Each full experiment will have two files and one folder associated with
+it.  The folder contains all of the relevant mat files and edf files.
+The other two files are the log files for the el and tag file for the ec
+actions that occurred during the experiment.  Both of these files act as
+a fail safe for recording relevant responses throughout the experiment.
 
-In each of these is a response record file which is a fail safe with all
-the response, trial codes, and stim level on all trials.  and there is
-UD which is the collection of all the adaptive tracks there will be 7 of
-them.
-
-exp 1. Adaptive tracks correspond in order to the discs modulations 1. 0
-Hz (circle AM), 2. 3 Hz, 3. 5 Hz, 4. 6 Hz, 5. 6 Hz pi/2 (phase shift),
-6. 6 Hz pi, 7. 6 Hz 3*pi/2
-
-exp 2. Adaptive tracks correspond in order to the discs modulations 1.
-coherent, 2. orthogonal, 3. V0, 4. coherent +41.6 (audio precedes video)
-5. coherent +125 , 6. coherent -41.6 (video precedes audio ), 7.
-coherent -125
