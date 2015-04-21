@@ -11,6 +11,7 @@ from scipy import io as sio
 import sys
 import pyglet
 from math import pi
+import pickle as pck
 import numpy as np
 import math
 import os.path as op
@@ -28,9 +29,8 @@ datadir = op.join(PATH, 'Data')
 
 # EC PARAMETERS
 total_btns = 10
-gen_survey_btn = range(total_btns)
+gen_survey_btn = range(1, total_btns)
 rel_survey_btn = [1, 2]
-pretrial_wait = 2.5
 std_args = ['kexp']
 std_kwargs = dict(screen_num=0, window_size=[800, 600], check_rms=None,
     full_screen=True, stim_db=65, noise_db=40, stim_rms=0.01,
@@ -40,7 +40,7 @@ std_kwargs = dict(screen_num=0, window_size=[800, 600], check_rms=None,
 
 # GLOBAL VARIABLES
 debug = True
-skipTrain = False
+skipTrain = True
 wait_brief = .2
 wait_long = 2
 msg_dur = 3.0
@@ -79,7 +79,7 @@ def drawPrimer(wheel_matrix_info, target_letter, possible_letters):
 
 
 def cogLoadSurvey(gen_survey, mid_survey, rel_survey, paradigm,
-        edf_outputdir, ec):
+        edf_outputdir, bnum, ec):
     """ Prompt users with cognitive load questions for each condition.
     Saves a separate mat file for each paradigm with keys also
     identified by paradigm and qnum."""
@@ -88,6 +88,9 @@ def cogLoadSurvey(gen_survey, mid_survey, rel_survey, paradigm,
     ec.write_data_line('cogLoadSurvey')
     ec.write_data_line(paradigm)
     ec.write_data_line('gen_survey')
+    if (bnum == 0):
+        ec.screen_prompt(instr['cog_orient'])
+
     for qnum in dict.keys(gen_survey):
         #key by paradigm for safety
         key = 'gen_' + paradigm + '_qnum_' + str(qnum)
@@ -97,8 +100,12 @@ def cogLoadSurvey(gen_survey, mid_survey, rel_survey, paradigm,
         ec.write_data_line(response)
         resp_dict[key] = response
 
-    for qnum in dict.keys(mid_survey):
-        ec.screen_prompt(mid_survey[qnum])
+    if (bnum == 0):
+        for qnum in dict.keys(mid_survey):
+            ec.screen_prompt(mid_survey[qnum])
+    else:
+        ec.screen_prompt(instr['cog_mid_abbrev'j])
+
 
     ec.write_data_line('rel_survey')
     for qnum in dict.keys(rel_survey):
@@ -145,9 +152,9 @@ def getInput(response_btns, ec, text, double_check=False,
             continue
         if (double_check):
             check_response = ec.screen_prompt('You pressed ' + str(
-                response) + ', if this is the number you want press, it' +
+                response) + ', if this is the number you want, press it' +
                 ' again key to continue, otherwise press any other key to' +
-                ' redo', timestamp=False)
+                ' redo.', timestamp=False)
             if (check_response != response):
                 response = ''  # clear past response and loop again
         if response:
@@ -301,7 +308,7 @@ def train(order, wheel_matrix_info, preblock, block_ind, instr, ec,
                     ec.screen_prompt('You did not pass the'
                             ' training for this condition.'
                             ' You can try again one more time'
-                            ' by pressing any key.')
+                            ' by pressing 1.')
                     block_ind[train_num] = 0 # reset ind to reloop
                     counter = 0
                     lastTry = True
@@ -349,6 +356,15 @@ def getTrialCondition(block_ind, bnum):
     return paradigm
 
 # RUN EXPERIMENT
+inputSection = input('Start from section (0,1,2)? ')
+if (inputSection == 1):
+    inputBlock = input('Start from block (0,1,2)? ')
+else:
+    inputBlock = 0
+startInfo = dict()
+startInfo['inputSection'] = inputSection
+startInfo['inputBlock'] = inputBlock
+#save this information into the data file
 with ef.ExperimentController(*std_args, **std_kwargs) as ec:
     folder = ec._exp_info['participant'] + '_' + \
         ec._exp_info['date']
@@ -358,8 +374,10 @@ with ef.ExperimentController(*std_args, **std_kwargs) as ec:
     exp_vars['mid_block_order'] = mid_block_order
     identifier = 'mid_block_order.mat'
     ordermat = op.join(edf_outputdir, identifier )
+    startmat = op.join(edf_outputdir, 'startInfo.mat')
     #save with rest of the EDF files
     sio.savemat(ordermat, exp_vars)
+    sio.savemat(startmat, startInfo)
     stimdir = op.join(PATH, 'Stims', str(ec.stim_fs))
     ec.set_visible(True)
     ec.set_background_color([0.1] * 3)
@@ -391,12 +409,13 @@ with ef.ExperimentController(*std_args, **std_kwargs) as ec:
 
     # keep track which new trial to use with array of ind for each block
     block_ind = dict(
-        zip(range(len(order)), np.zeros(len(order), dtype=int)))
+        zip(range(len(order)), np.zeros(len(order), dtype=int).tolist()))
+
     cond_dict = dict()
 
     ec.screen_prompt(instr['start_exp'])
     for snum in range(len(section)):
-        if (snum != 2):
+        if (snum < inputSection):
             continue
         ec.write_data_line('Section: ', snum)
         # Initialize section vars
@@ -418,11 +437,15 @@ with ef.ExperimentController(*std_args, **std_kwargs) as ec:
 
         # run block
         for b_ind in range(len(section[snum])):
+            if (snum == 1):
+                if (bnum != inputBlock):
+                    continue
             bnum = section[snum][b_ind]
             ec.write_data_line('Block: ', str(bnum))
             # show instructions
-            block_key = 's' + str(snum) + '_' + 'start_block_' + str(b_ind)
-            ec.screen_prompt( instr[(block_key)])
+            if (snum != 2):
+                block_key = 's' + str(snum) + '_' + 'start_block_' + str(b_ind)
+                ec.screen_prompt( instr[(block_key)])
             #start a new EDF file only in the middle section 
             if (snum == 1):
                 el.calibrate(prompt=True)
@@ -430,24 +453,26 @@ with ef.ExperimentController(*std_args, **std_kwargs) as ec:
             for tnum in range(len(order[section[snum][b_ind]][0])):
                 ec.write_data_line('Trial: ', tnum)
 
-                if (snum == 0):
+                # introduce the conditions in first/last section
+                if (snum != 1):
                     paradigm = getTrialCondition(block_ind, bnum)
                     cond_dict[paradigm] = tnum
                     condition_no = tnum
-                    # instructions if the first section
-                    trial_key = 's' + str(snum) + '_' + 'start_trial_' \
+                    trial_key = 's' + str(0) + '_' + 'start_trial_' \
                     + str(condition_no)
                     ec.screen_prompt( instr[(trial_key)])
-                if (snum == 2):
-                    paradigm = getTrialCondition(block_ind, bnum)
 
                 # start trial
                 recordTrial( wheel_matrix_info, preblock, block_ind,
                         bnum, instr, ec, stimdir, final_datadir,
                         record_pupil, record_correct, save_correct )
+                # update block_ind
+                blockmat = op.join(edf_outputdir, 'block_ind.obj')
+                blockfile = open(blockmat, 'wr')
+                pck.dump(block_ind, blockfile) # overwrites
                 if (snum == 2):
                     cogLoadSurvey(gen_survey, mid_survey, rel_survey,
-                            paradigm, edf_outputdir, ec)
+                            paradigm, edf_outputdir, bnum, ec)
                 if (snum == 0):
                     # End trial text feedback
                     trial_end_key = 's' + str(snum) + '_' + 'end_trial'
@@ -463,6 +488,7 @@ with ef.ExperimentController(*std_args, **std_kwargs) as ec:
             block_end_key = 's' + str(snum) + '_' + 'end_block'
             if (snum == 1):
                 el.stop() # close edf file for each block in mid section
+            if ((snum != 2) && (bnum != 1))
             ec.screen_prompt( instr[(block_end_key)],
                     max_wait=wait_keys[block_end_key])
 

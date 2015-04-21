@@ -1,4 +1,4 @@
-function [ wheel_matrix ] = assignLetters( ...
+function [ wheel_matrix ] = assignLetters( replacement, ...
 	possibleLetters, wheel_matrix_info, target_letter,... 
 	target_cycles, tot_cyc, rearrangeCycles, ener_mask, ...
 	base_wheel_matrix, target_wheel_index)
@@ -18,14 +18,7 @@ function [ wheel_matrix ] = assignLetters( ...
 % pitch is assign according to the droppedLetter
 
 % GENERAL PARAMETERS
-letterO  = {'O'}; 
 wheel_num = length(wheel_matrix_info);
-
-if strcmp(letterO, target_letter)
-	replacement = {'R'};
-else
-	replacement = {'O'};
-end
 
 % CREATE GENERIC WHEELS, RECORD WHEEL AND LETTER INDEX OF TARGET
 index = 1;

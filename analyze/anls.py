@@ -11,16 +11,18 @@ import pyeparse as pp
 import numpy as np
 import pdb
 import matplotlib.pyplot as plt
+import pickle as pck
 
 from pyeparse.utils import pupil_kernel
 from expyfun import binary_to_decimals  # ,decimals_to_binary
 
-#subjects = ['Karl_2014-12-18 19', 'Karl_2014-12-18 13', 'Karl_2014-11-30']
-subjects = ['Karl_2014-12-18 19', 'Karl_2014-12-18 13']
+#subjects = ['Karl_2014-12-18 19', 'Karl_2014-12-18 13']
+subjects = ['Karl']
 data_dir = op.join(os.pardir, 'Data')
 fs = 1000.0  
-postblock = 5  # time after each trial to record pupil
-session = 3
+# load these in
+postblock = 0  # time after each trial to record pupil
+session = 1
 blocks = 3
 datadir = os.path.abspath(os.path.join(os.pardir, 'Data'))
 
@@ -45,8 +47,7 @@ def getTrialInfo(block_ind, bnum):
 ps = []
 for subj in subjects:
     print('  Subject %s...' % subj)
-    final_datadir = op.join(datadir,'Params', 'Karl', str(session))
-    final_data_dir = op.join(data_dir, 'Params', 'Karl', str(session))
+    final_data_dir = op.join(data_dir, 'Params')
     global_vars = scipy.io.loadmat(op.join(final_data_dir, 'global_vars.mat'))
     condition_uni = global_vars['condition_bin']  # Unicode by default
     order = global_vars['order'][0]

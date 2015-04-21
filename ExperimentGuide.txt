@@ -33,22 +33,36 @@ sometimes helps to give more height by putting big blue blanket under
 them)
 
 # SECTION 1 AND 2 SPIEL
-You need to place your chin on this chin rest during the experiment and
-watch the screen. The chin rest is being used to keep your eye steady to
-record pupil data during the experiment.
 
 the num keys
 any key to 1 or 2
 feedback as in green and red
 make sure that the eyelink is focused
-explain the conditions??
-speaker
 condition orders
 cut down more on the condition explanations
 calibrate more at the beginning
 throw out other edf files
 iswi
 num keys for the new keyboard
+
+In this condition, letters are assigned a spatial location in alphabetic
+order.  You can use the unique speaker and location to help you listen
+for each occurrence of the target letter. 
+
+In this condition, letters are assigned a spatial location in a random
+order.  Throughout the trial, the ordering of the letters will remain
+constant.  You can use the unique speaker and location to help you
+listen for each occurrence of' the target letter in this condition.
+
+In this condition, letters are assigned a spatial location in a random
+order.  Throughout the trial, the ordering of the letters will change
+meaning you will not know when the target letter will occur. You can
+use the unique speaker and location to help you listen for each
+occurrence of the target letter in this condition.
+
+You need to place your chin on this chin rest during the experiment and
+watch the screen. The chin rest is being used to keep your eye steady to
+record pupil data during the experiment.
 
 Each trial in this experiment will begin with a visual representation.
 In these visual representations, you will notice that one of the letters
@@ -93,7 +107,7 @@ you put in, or any frustration you felt. Because workload may be caused
 by any of these factors, we would like you to evaluate several of them.
 
 After performing the task for each condition, you will be asked to rate
-your experience from 0 to 9 for several factors. Please consider each
+your experience from 1 to 9 for several factors. Please consider each
 rating scale and condition type separately when answering the questions.
 Please read the descriptions of the set of six scales carefully.  
 
@@ -106,18 +120,20 @@ achieved.  The evaluation you are about to perform is a technique to
 assess the relative importance of six factors in determining how much
 workload you experienced.
 
-Afterwards, you will be presented with a series of pairs of rating scale
-titles (for example Effort versus Mental Demands) and asked to choose
-which of the items was more important to your experience of workload in
-the task that you just performed.  Indicate the Scale Title that
-represents the more important contributor to workload for the specific
-task you performed in the experiment.  Please consider your choices
-carefully and make them consistent with how you used the rating scales
-during the particular task you were asked to evaluate. There is no
-correct pattern -- we are only interested in your opinion.  If you need
+Afterwards, you will be presented with a series of pairs of rating scale titles (for 
+example Effort versus Mental Demands) and asked to choose which of the items was more 
+important to your experience of workload. 
+Press the number corresponding to the scale title that represents the more important contributor to workload. 
+Remember, you are rating the relative difficulty 
+of the task only for the task of the
+ condition that you just heard independently of the other conditions.
+Please consider your choices carefully and make them consistent with how you used the rating scales
+during the particular task you were asked to evaluate. There is no correct pattern -- we 
+are only interested in your opinion. If you need
 to tell us something or have a question or an issue and don't want to
 take out your earbuds or come outside the booth, just press this button
 (show). Any questions?
+
 
 # CODE
 Location Behavioural Tower C:\Experiments\1v1a\1v1aExp\' beh1v1a_2IFC:

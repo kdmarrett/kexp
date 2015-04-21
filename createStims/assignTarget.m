@@ -1,4 +1,4 @@
-function [target_letter, target_wheel, location_code, block_no, ...
+function [replacement_letter, target_letter, target_wheel, location_code, block_no, ...
 blocktrial, base_wheel_matrix] = assignTarget(trial_no, ...
 possible_letters, wheel_matrix_info, blocktrial, left_ind, mid_ind, ...  
 right_ind, cond_no);
@@ -39,16 +39,31 @@ target_wheel = [];
 if (any(trial_no == left_ind))
 	temp = randi(wheel_matrix_info(1));
 	target_letter = base_wheel_matrix{1}(1, temp);
+	rep_ind = randi(wheel_matrix_info(1));
+    while (rep_ind == temp)
+        rep_ind = randi(wheel_matrix_info(1));
+    end
+	replacement_letter = base_wheel_matrix{1}(1, rep_ind);
 	location_code = 'l';
 	target_wheel = 1;
 elseif (any(trial_no == mid_ind))
 	temp = randi(wheel_matrix_info(2));
 	target_letter = base_wheel_matrix{2}(1, temp);
+	rep_ind = randi(wheel_matrix_info(1));
+    while (rep_ind == temp)
+        rep_ind = randi(wheel_matrix_info(1));
+    end
+	replacement_letter = base_wheel_matrix{1}(1, rep_ind);
 	location_code = 'm';
 	target_wheel = 2;
 else 
 	temp = randi(wheel_matrix_info(3));
 	target_letter = base_wheel_matrix{3}(1, temp);
+	rep_ind = randi(wheel_matrix_info(1));
+    while (rep_ind == temp)
+        rep_ind = randi(wheel_matrix_info(1));
+    end
+	replacement_letter = base_wheel_matrix{1}(1, rep_ind);
 	location_code = 'r';
 	target_wheel = 3;
 end

@@ -36,7 +36,7 @@ tot_cyc = 5;
 max_targets = 2;
 postblock_sec = 1.0; %secs after letterblocks
 preblock_prime_sec = 13; %seconds until letters start playing
-primer_start = 3000; %sample # that primer letter will play in preblock (less than preblock)
+primer_start = 1.5; %sample # that primer letter will play in preblock (less than preblock)
 makeTraining = 0;
 force_recreate = 1; %bool to force recreation of letters or pitches even if dir exists from previous run
 instrument_dynamics = 'mf'; %mezzoforte
@@ -189,13 +189,14 @@ for x = 1:reps
 			%choose 1 or 2 target cycles per block
 			target_cycles = randi(max_targets);
 			% assign target letter
-			[target_letter, target_wheel_index, location_code, block_no, blocktrial ...
+			[replacement_letter, target_letter, target_wheel_index, ...
+            location_code, block_no, blocktrial ...
 			base_wheel_matrix ] = assignTarget( trial_no, possible_letters, ... 
 			wheel_matrix_info, blocktrial, left_ind, mid_ind,...
 			right_ind, y);
 			target_time = []; % also clear target time from last trial
 			% returns cell array of wheel_num elements
-			[ wheel_matrix ] = assignLetters( ...
+			[ wheel_matrix ] = assignLetters( replacement_letter,...
 			possible_letters, wheel_matrix_info, target_letter, ...
 			target_cycles, tot_cyc, rearrangeCycles, ener_mask,...
 			base_wheel_matrix, target_wheel_index); 
@@ -313,7 +314,7 @@ for x = 1:reps
 							% ADD THE PRIMER ONCE
 							if ~primer_added %  primer not  added
 								if strcmp(letter, target_letter) %and is target letter
-									foo = 1; %always add primer at beginning of final track
+									foo = primer_start*fs;
 									for m = 1:(letter_samples - 1)
 										final_sample(foo, 1) = ...
 											final_sample(foo, 1) + combined_sound_proc(m, 1); %add primer
