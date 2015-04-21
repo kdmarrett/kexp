@@ -132,7 +132,8 @@ rating scales during the particular task you were asked to evaluate.
 There is no correct pattern -- we are only interested in your opinion.
 If you need to tell us something or have a question or an issue and
 don't want to take out your earbuds or come outside the booth, just
-press this button (show). Any questions?
+press this button (show). You can also refere to this sheet for
+definition of the terms (hand them cogLoadsheet).  Any questions?
 
 # CODE
 Location Behavioural Tower 

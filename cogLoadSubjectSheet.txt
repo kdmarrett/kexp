@@ -1,0 +1,41 @@
+This is the information sheet for the cognitive load survey.
+
+You will be answering questions on three condition types you were
+tested on.
+
+The order of the blocks in the survey is:
+1. Alphabetic ordering 
+2. Random, constant ordering
+3. Random, changing ordering
+
+Below are the terms defined for reference during the experiment. Give
+your best responses to the questions given these definitions.
+
+Mental Demand:
+How much mental and perceptual activity was required (e.g. thinking,
+deciding, remembering, looking, searching)? Was the task easy or
+demanding, simple or  complex, exacting or forgiving?
+
+Physical Demand:
+How much physical activity was required (e.g. pushing, pulling, turning,
+controlling, activating)?  Was the task easy or demanding, slow or
+brisk, slack or strenuous, restful or laborious? 
+
+Temporal Demand:
+How much time pressure did you feel to keep up with the rate or pace at
+which the task or task elements occurred? Was the pace slow and
+leisurely or rapid and frantic? 
+
+Performance-based Demand:
+How successful do you think you were in accomplishing the goals of the
+task set by the experimenter (or yourself)? How satisfied were you
+with your performance in accomplishing these goals?
+
+Effort-based Demand
+How hard did you have to work overall (both mentally and physically) to
+accomplish your level of performance?
+
+Frustration-based Demand:
+How insecure, discouraged, irritated, stressed and annoyed versus
+secure, gratified, content, relaxed and complacent did you feel
+during the task?

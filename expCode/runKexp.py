@@ -27,6 +27,15 @@ assert ef.__version__ == '2.0.0.dev'
 PATH = os.path.abspath(os.pardir)
 datadir = op.join(PATH, 'Data')
 
+# GLOBAL VARIABLES
+debug = True
+skipTrain = True
+wait_brief = .2
+wait_long = 2
+msg_dur = 3.0
+postblock = 0  # time after each trial to record pupil
+vPrimerLen = 7
+
 # EC PARAMETERS
 total_btns = 10
 gen_survey_btn = range(1, total_btns)
@@ -37,15 +46,6 @@ std_kwargs = dict(screen_num=0, window_size=[800, 600], check_rms=None,
     #session='1',participant='new',  
     suppress_resamp=False, response_device='keyboard',
     output_dir=datadir, stim_fs=24414)  
-
-# GLOBAL VARIABLES
-debug = False
-skipTrain = True
-wait_brief = .2
-wait_long = 2
-msg_dur = 3.0
-postblock = 0  # time after each trial to record pupil
-vPrimerLen = 7
 
 # MAKE CONDITION ORDERING
 np.random.seed
@@ -199,6 +199,11 @@ def recordTrial(wheel_matrix_info, preblock, block_ind, bnum, instr, ec,
     ec.load_buffer(stims[0])
     # draw visual primer
     drawPrimer(wheel_matrix_info, target_letter, possible_letters)
+    #screenshot = ec.screenshot()
+    #screen_obj = op.join(edf_outputdir, str(block_ind[bnum]) +
+            #'screenshot.obj')
+    #screenshot_file = open(screen_obj, 'wr')
+    #pck.dump(screenshot, screenshot_file)
     # edf stamped for epoch starts
     if record_pupil:
         ec.identify_trial(ec_id=id_list, el_id=id_list, ttl_id=id_list)
