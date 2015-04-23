@@ -7,6 +7,7 @@ tic
 
 % version code locks in a version to be used by runKexp.py and
 % anls.py
+rng('shuffle'); 
 version_code = randi(10000);
 fprintf('Stimuli version: %d\n', version_code);
 seed_value = 1;
@@ -399,12 +400,17 @@ for x = 1:reps
 			% 0 indexed block and trial numbers
 			file_name = strcat('b', int2str(block_no - 1), '_', 'tr',...
 			int2str(order{block_no}(blocktrial(block_no))))
-			final_data_dir = fullfile(data_dir, file_name);
-			save(final_data_dir, 'target_letter', 'target_time',...
-			 'tot_wav_time', 'preblock_prime_sec', 'paradigm', ...
+            gen_file_name = strcat(file_name, 'general');
+            trial_file_name = strcat(file_name, 'trial');
+			gen_final_data_dir = fullfile(data_dir, gen_file_name);
+			trial_final_data_dir = fullfile(data_dir, trial_file_name);
+			save(gen_final_data_dir, 'target_letter', 'target_time',...
+			 'tot_wav_time', 'paradigm', ...
 			 'possible_letters', 'target_cycles', 'location_code',...
 			 'wheel_matrix', 'replacement_letter', 'targ_cyc_ind', ...
              'replacement_time', 'trial_id');
+			save(trial_final_data_dir, 'paradigm', 'target_letter', ...
+			 'possible_letters', 'target_cycles', 'trial_id');
 			wav_name = fullfile(final_output_path, strcat(file_name,'.wav'));
 			% accounts for bug: matlab does not overwrite on all systems
 			if exist(wav_name, 'file') 

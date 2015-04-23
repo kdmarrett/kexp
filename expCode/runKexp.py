@@ -166,17 +166,17 @@ def recordTrial(wheel_matrix_info, preblock, block_ind, bnum, instr, ec,
     pupillometry data.  """
 
     # identify paradigm and trial number
-    data_file_name = 'b' + str(bnum) + '_tr' + str(block_ind[bnum])
-    stim_file_name = data_file_name + '.wav'
-    trial_data_path = op.join(final_datadir, data_file_name)
+    trial_vars = getTrialInfo(block_ind, bnum)
+    stim_file_name = 'b' + str(bnum) + '_tr' + str(block_ind[bnum]) + '.wav'
     trial_stim_path = op.join(stimdir, stim_file_name)
 
     # UNLOAD TRIAL VARS (AVOIDS AWKWARD INDEXING)
     # Creates dict of vars: 'target_letter', 'target_time',
     # 'tot_wav_time', 'paradigm', 'possible_letters' 'tot_cyc'
-    trial_vars = sio.loadmat(trial_data_path)
     target_cycles = trial_vars['target_cycles']
     id_list = trial_vars['trial_id'][0].tolist()
+    target_letter = trial_vars['target_letter'][0][0][0].encode('ascii')
+    possible_letters = trial_vars['possible_letters'][0]
     final_vars = dict()
     final_vars['trial_id'] = id_list
     # load WAVs for this block
@@ -338,16 +338,15 @@ def train(order, wheel_matrix_info, preblock, block_ind, instr, ec,
     ec.screen_prompt(instr['end_train'])
     return
 
-def getTrialParadigm(block_ind, bnum):
-    # LOAD IN TRIAL DATA/STIMS
-    data_file_name = 'b' + str(bnum) + '_tr' + str(block_ind[bnum])
-    stim_file_name = data_file_name + '.wav'
+def getTrialInfo(block_ind, bnum):
+    # load in trial data/stims
+    data_file_name = 'b' + str(bnum) + '_tr' + str(block_ind[bnum]) + \
+            'trial'
     trial_data_path = op.join(final_datadir, data_file_name)
     trial_vars = sio.loadmat(trial_data_path)
-    paradigm = trial_vars['paradigm'][0]
-    return paradigm
+    return trial_vars
 
-# RUN EXPERIMENT
+# run experiment
 inputSection = input('Start from section (0,1,2)? ')
 if (inputSection == 1):
     inputBlock = input('Start from block (0,1,2)? ')
@@ -371,17 +370,14 @@ with ef.ExperimentController(*std_args, **std_kwargs) as ec:
 
     folder = ec._exp_info['participant'] + '_' + \
         ec._exp_info['date']
+    startInfo['session'] = ec._exp_info['session']
     edf_outputdir = op.join(datadir, folder)
-    exp_vars = dict()
-    exp_vars['mid_block_order'] = mid_block_order
+    startInfo['mid_block_order'] = mid_block_order
     ec.write_data_line('mid_block_order', mid_block_order);
-    identifier = 'mid_block_order.mat'
-    ordermat = op.join(edf_outputdir, identifier )
     startmat = op.join(edf_outputdir, 'startInfo.mat')
-    #save with rest of the EDF files
-    sio.savemat(ordermat, exp_vars)
+    
     #save start information to data file
-    sio.savemat(startmat, startInfo)
+    sio.savemat(startmat, startInfo)#save with rest of the EDF files
     stimdir = op.join(PATH, 'Stims', str(ec.stim_fs))
     ec.set_visible(True)
     ec.set_background_color([0.1] * 3)
@@ -397,7 +393,7 @@ with ef.ExperimentController(*std_args, **std_kwargs) as ec:
     global_vars = sio.loadmat(op.join(final_datadir, 'global_vars.mat'))
     global_vars['vPrimerLen'] = vPrimerLen
     global_vars['postblock'] = postblock
-    global_vars = sio.savemat(op.join(final_datadir, 'global_vars.mat'))
+    sio.savemat(op.join(final_datadir, 'global_vars.mat'), global_vars)
     version_code = global_vars['version_code'][0][0]
     print "Using stimuli of version_code: " + str(version_code) + "\n"
     assert version_code == stim_version_code, """Version code specified 
@@ -458,7 +454,8 @@ with ef.ExperimentController(*std_args, **std_kwargs) as ec:
 
                 # introduce the conditions in first/last section
                 if (snum != 1):
-                    paradigm = getTrialParadigm(block_ind, bnum)
+                    trial_vars = getTrialInfo(block_ind, bnum)
+                    paradigm = trial_vars['paradigm'][0]
                     condition_no = tnum
                     trial_key = 's' + str(0) + '_' + 'start_trial_' \
                     + str(condition_no)

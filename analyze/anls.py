@@ -29,7 +29,8 @@ blocks = 3
 def getTrialInfo(block_ind, bnum):
     """ Returns generic information about particular trial wav data """
 
-    data_file_name = 'b' + str(bnum) + '_tr' + block_ind[bnum]
+    data_file_name = 'b' + str(bnum) + '_tr' + block_ind[bnum] + \
+    'trial'
     trial_data_path = op.join(param_data_dir, data_file_name)
     trial_vars = sio.loadmat(trial_data_path)
     target_time = trial_vars['target_time']

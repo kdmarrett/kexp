@@ -5,6 +5,8 @@ Letters/Files
 *.pyc
 *.swp
 *.asv
+*.pdf
+*.obj
 expCode/expyfun
 todo.txt
 backupFiles/
