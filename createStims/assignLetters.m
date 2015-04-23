@@ -69,7 +69,9 @@ end
 % CHANGE ORDERING BETWEEN CYCLES
 if rearrangeCycles
     for i = 1:length(wheel_matrix)
-        [wheel_matrix{i}] = reorderDisplaced(wheel_matrix{i});
+        targ_wheel_bool = (i == target_wheel_index);
+        [wheel_matrix{i}] = reorderDisplaced(wheel_matrix{i}, ...
+            targ_cyc_ind, targ_wheel_bool, target_letter_index);
     end
 end
 
