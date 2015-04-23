@@ -24,7 +24,6 @@ else
 end
 
 index = 1;
-target_wheel_index = [];
 wheel_num = length(wheel_matrix_info);
 
 % distribute letters
@@ -37,34 +36,23 @@ end
 
 target_wheel = [];
 if (any(trial_no == left_ind))
-	temp = randi(wheel_matrix_info(1));
-	target_letter = base_wheel_matrix{1}(1, temp);
-	rep_ind = randi(wheel_matrix_info(1));
-    while (rep_ind == temp)
-        rep_ind = randi(wheel_matrix_info(1));
-    end
-	replacement_letter = base_wheel_matrix{1}(1, rep_ind);
 	location_code = 'l';
 	target_wheel = 1;
 elseif (any(trial_no == mid_ind))
-	temp = randi(wheel_matrix_info(2));
-	target_letter = base_wheel_matrix{2}(1, temp);
-	rep_ind = randi(wheel_matrix_info(1));
-    while (rep_ind == temp)
-        rep_ind = randi(wheel_matrix_info(1));
-    end
-	replacement_letter = base_wheel_matrix{1}(1, rep_ind);
 	location_code = 'm';
 	target_wheel = 2;
 else 
-	temp = randi(wheel_matrix_info(3));
-	target_letter = base_wheel_matrix{3}(1, temp);
-	rep_ind = randi(wheel_matrix_info(1));
-    while (rep_ind == temp)
-        rep_ind = randi(wheel_matrix_info(1));
-    end
-	replacement_letter = base_wheel_matrix{1}(1, rep_ind);
 	location_code = 'r';
 	target_wheel = 3;
 end
 
+%choose replacement letter
+temp = randi(wheel_matrix_info(target_wheel));
+target_letter = base_wheel_matrix{target_wheel}(1, temp);
+rep_ind = randi(wheel_matrix_info(target_wheel));
+while (rep_ind == temp)
+    rep_ind = randi(wheel_matrix_info(target_wheel));
+end
+replacement_letter = base_wheel_matrix{target_wheel}(1, rep_ind);
+
+end

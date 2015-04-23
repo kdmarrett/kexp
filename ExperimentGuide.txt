@@ -1,5 +1,5 @@
 # EXPERIMENT NAME
-kexp
+KEXP
 
 # RUN SCRIPT
 C:/Experiments/kdmarrett/kexp/expCode/runKexp.py
@@ -36,7 +36,7 @@ Section 3
 On
 
 # SPECIAL INSTRUCTIONS
-Stimuli has already been generated for all subjects so the run script is
+Stimuli is pre-generated for all subjects. The run script is
 all that is needed for each subject.  Depending on subject's height,
 they might want to sit on cushy stool or in big comfy chair (but
 sometimes helps to give more height by putting big blue blanket under
@@ -45,35 +45,41 @@ them)
 # SECTION 1 AND 2 SPIEL
 # Make sure that the eyelink is focused
 
-In this condition, letters are assigned a spatial location in alphabetic
-order.  You can use the unique speaker and location to help you listen
-for each occurrence of the target letter. 
-
-In this condition, letters are assigned a spatial location in a random
-order.  Throughout the trial, the ordering of the letters will remain
-constant.  You can use the unique speaker and location to help you
-listen for each occurrence of the target letter in this condition.
-
-In this condition, letters are assigned a spatial location in a random
-order.  Throughout the trial, the ordering of the letters will change
-meaning you will not know when the target letter will occur. You can
-use the unique speaker and location to help you listen for each
-occurrence of the target letter in this condition.
-
-You need to place your chin on this chin rest during the experiment and
-watch the screen. The chin rest is being used to keep your eye steady to
-record pupil data during the experiment.
+You need to place your chin on this chin rest during the experiment
+and watch the screen. The chin rest is being used to keep your eye
+steady to record pupil data during the experiment.
 
 Each trial in this experiment will begin with a visual representation.
-In these visual representations, you will notice that one of the letters
-is colored green and spoken, this is the target letter for the trial.
-Count the occurrences of this target letter during the trial.  Press
-button 1 if only one occurence of the target letter occurred in the
-trial and 2 if there were two.  After the visual representation, a small
-fixation dot will appear in the center of screen. Keep your eyes fixated
-on this dot for as long as it remains visible.
+In these visual representations, you will notice that one of the
+letters is colored green and spoken, this is the target letter for the
+trial.  Count the occurrences of this target letter during the trial.
+Press button 1 if only one occurence of the target letter occurred in
+the trial and 2 if there were two.  After the visual representation, a
+small fixation dot will appear in the center of screen. Keep your eyes
+fixated on this dot for as long as it remains visible.
+
+Each trial will be of a certain condition type.  There are three
+conditions in the experiment as shown (hand subjects the three sheets
+of visual primers).
+
+In the alphabetic condition, letters are assigned a spatial location
+in alphabetic order.  You can use the unique speaker and location to
+help you listen for each occurrence of the target letter. 
+
+In the random but constant condition, letters are assigned a spatial
+location in a random order.  Throughout the trial, the ordering of the
+letters will remain constant.  You can use the unique speaker and
+location to help you listen for each occurrence of the target letter
+in this condition.
+
+In the random and changing condition, letters are assigned a spatial
+location in a random order.  Throughout the trial, the ordering of the
+letters will change meaning you will not know when the target letter
+will occur.  You can use the unique speaker and location to help you
+listen for each occurrence of the target letter in this condition.
+
 There will also be written instructions on the screen that walk you
-through this. Press any key to get you to the next screen of
+through this. Press 1 to get you to the next screen of
 instructions.  Some conditions will be easy while others may be hard.
 Please don't give up though; listen carefully and make your best guess
 for each trial.  It's important to press the buttons you intend to
@@ -97,72 +103,71 @@ don't want to take out your earbuds or come outside the booth,
 just press this button (show). Any questions?
 
 # Section 3 Spiel
+# Turn the lights on
+
 In this last section, you will be presented with 1 trial from each
-condition type then asked several questions about its difficulty.  We
-are interested in your experience with the particular condition. In the
-most general sense, we are examining the 'workload' you experienced. The
-factors that influence your experience of workload may come from the
-task itself, your feelings about your own performance, how much effort
-you put in, or any frustration you felt. Because workload may be caused
-by any of these factors, we would like you to evaluate several of them.
+condition type. After performing the task for each condition, you will
+be asked to rate your experience from 1 to 9 for several factors.  We
+are interested in your experience with the particular condition. In
+the most general sense, we are examining the 'workload' you
+experienced.  Throughout this section, the rating scales are used to
+assess your experiences in the different task conditions. People
+interpret these scales in individual ways. For example, some people
+feel that mental or temporal demands are the essential aspects of
+workload regardless of the effort they expended on a given task or the
+level of performance they achieved. Please consider each rating scale
+and condition type separately when answering the questions.  Please
+read the descriptions of the set of six scales carefully.  
 
-After performing the task for each condition, you will be asked to rate
-your experience from 1 to 9 for several factors. Please consider each
-rating scale and condition type separately when answering the questions.
-Please read the descriptions of the set of six scales carefully.  
+You will also be presented with a series of pairs of rating
+scale titles (for example Effort versus Mental Demands) and asked to
+choose which of the items was more important to your experience of
+workload.  Press the number corresponding to the scale title that
+represents the more important contributor to workload.  Remember, you
+are rating the relative difficulty of the task only for the task of
+the condition that you just heard independently of the other
+conditions.  Please consider your choices carefully and make them
+consistent with how you used the rating scales during the particular
+task you were asked to evaluate.  There is no correct pattern -- we
+are only interested in your opinion.  
 
-Throughout this section, the rating scales are used to assess your
-experiences in the different task conditions. People interpret these
-scales in individual ways. For example, some people feel that mental or
-temporal demands are the essential aspects of workload regardless of the
-effort they expended on a given task or the level of performance they
-achieved.  The evaluation you are about to perform is a technique to
-assess the relative importance of six factors in determining how much
-workload you experienced.
-
-Afterwards, you will be presented with a series of pairs of rating scale
-titles (for example Effort versus Mental Demands) and asked to choose
-which of the items was more important to your experience of workload.
-Press the number corresponding to the scale title that represents the
-more important contributor to workload.  Remember, you are rating the
-relative difficulty of the task only for the task of the condition that
-you just heard independently of the other conditions.  Please consider
-your choices carefully and make them consistent with how you used the
-rating scales during the particular task you were asked to evaluate.
-There is no correct pattern -- we are only interested in your opinion.
 If you need to tell us something or have a question or an issue and
 don't want to take out your earbuds or come outside the booth, just
-press this button (show). You can also refere to this sheet for
-definition of the terms (hand them cogLoadsheet).  Any questions?
+press this button (show). You can also refer to this sheet for
+definition of the terms or to take notes (hand them cogLoadsheet).
+Any questions?
 
 # CODE
 Location Behavioural Tower 
 C:/Experiments/kdmarrett/kexp/expCode/runKexp.py :
-the main experimental loop that sets up the experiment, saves data, and
-runs all the other subfunctions.  
+The main experimental loop that sets up the experiment, saves data,
+and runs all the other subfunctions.  
 
 C:/Experiments/kdmarrett/kexp/createStims/runCreateStims.m : 
 generates all the
 stimuli for experiment and saves them in 'Stims/'.  Note this does not
-need to be rerun for each subject.
+need to be rerun for each subject. It will only be run when updates
+have been made to the stimuli code.
 
 C:/Experiments/kdmarrett/kexp/analyze/anls.py  :
-plots the results of a subject.
+Plots the results of a subject.
 
 # TASK
-kexp: Determine the number of target letter presented in a trial 1 or 2.
-Afterwards, rate the difficulty of the three conditions
+kexp: Determine the number of target letter presented in a trial 1 or
+2.  Afterwards, rate the difficulty of the three conditions types.
 
 27 experimental trials per condition, 3 conditions, followed by survey
 questions
 
 # STIMULI
-The auditory stimuli consisted of the target letter spoken followed by 
+Stim Location: Location Behavioural Tower
+C:\Experiments\kdmarrett\kexp\Stims
+The auditory stimuli consisted of the target letter spoken followed by
 silence then 5 cycles of the repeated alphabet plus a few commands.
 In 1 or 2 of these 5 cycles a target letter occurred. The visual
-stimuli draws all possible letters with their relative spatial location.
-The target letter is highlighted green.  Subjects are given,
-green, and red feedback to their input during training.
+stimuli draws all possible letters with their relative spatial
+location.  The target letter is highlighted green.  Subjects are
+given, green, and red feedback to their input during training.
 
 # EXPERIMENTAL CONDITIONS/DATA ORGANIZATION
 Data Location: Location Behavioural Tower

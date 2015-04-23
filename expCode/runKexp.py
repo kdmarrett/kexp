@@ -4,8 +4,9 @@ Script ' Karl's Experiment (Kexp)'
 ================================
     
 This script runs an experiment with spatially distributed letter streams.
+
+Author: Karl Marrett <kdmarret@uw.edu>, <kdmarrett@gmail.com>
 """
-# Author: Karl Marrett <kdmarret@uw.edu>, <kdmarrett@gmail.com>
 
 from scipy import io as sio
 import sys
@@ -23,13 +24,15 @@ from CircularLayout import CircularLayout
 import os
 
 assert ef.__version__ == '2.0.0.dev'
+# assert version of stimuli to use
+stim_version_code = 8148
 
 PATH = os.path.abspath(os.pardir)
 datadir = op.join(PATH, 'Data')
 
 # GLOBAL VARIABLES
-debug = True
-skipTrain = True
+debug = False
+skipTrain = False
 wait_brief = .2
 wait_long = 2
 msg_dur = 3.0
@@ -46,14 +49,6 @@ std_kwargs = dict(screen_num=0, window_size=[800, 600], check_rms=None,
     #session='1',participant='new',  
     suppress_resamp=False, response_device='keyboard',
     output_dir=datadir, stim_fs=24414)  
-
-# MAKE CONDITION ORDERING
-np.random.seed
-mid_block_order = np.random.permutation(range(1,4)).tolist()
-section = []
-section.append([0]) # Make section 1
-section.append(mid_block_order) # Make section 2
-section.append([4]) # Make section 3
 
 def drawPrimer(wheel_matrix_info, target_letter, possible_letters):
     """ Creates the primer letters and draws to visual buffer """
@@ -77,7 +72,6 @@ def drawPrimer(wheel_matrix_info, target_letter, possible_letters):
         ec.screen_text( letter, pos=letter_loc[i], color=color,
                 font_size=30, wrap=False)
 
-
 def cogLoadSurvey(gen_survey, mid_survey, rel_survey, paradigm,
         edf_outputdir, tnum, ec):
     """ Prompt users with cognitive load questions for each condition.
@@ -85,19 +79,17 @@ def cogLoadSurvey(gen_survey, mid_survey, rel_survey, paradigm,
     identified by paradigm and qnum."""
     
     resp_dict = dict()
-    ec.write_data_line('cogLoadSurvey')
-    ec.write_data_line(paradigm)
-    ec.write_data_line('gen_survey')
+    ec.write_data_line('cogLoadSurvey', paradigm)
+    ec.write_data_line('gen_survey', paradigm)
     if (tnum == 0):
         ec.screen_prompt(instr['cog_orient'])
 
     for qnum in dict.keys(gen_survey):
         #key by paradigm for safety
         key = 'gen_' + paradigm + '_qnum_' + str(qnum)
-        ec.write_data_line(key)
         response = getInput(gen_survey_btn, ec, double_check=True,
                 text=gen_survey[qnum])
-        ec.write_data_line(response)
+        ec.write_data_line(key, response)
         resp_dict[key] = response
 
     if (tnum == 0):
@@ -106,13 +98,12 @@ def cogLoadSurvey(gen_survey, mid_survey, rel_survey, paradigm,
     else:
         ec.screen_prompt(instr['cog_mid_abbrev'])
 
-    ec.write_data_line('rel_survey')
+    ec.write_data_line('rel_survey', paradigm)
     for qnum in dict.keys(rel_survey):
         key = 'rel_' + paradigm + '_qnum_' + str(qnum)
-        ec.write_data_line(key)
         response = getInput(rel_survey_btn, ec, double_check=True, 
                 text=rel_survey[qnum])
-        ec.write_data_line(response)
+        ec.write_data_line(key, response)
         resp_dict[key] = response
     identifier = paradigm + '_cog_resp.mat'
     matname = op.join(edf_outputdir, identifier )
@@ -122,18 +113,17 @@ def cogLoadSurvey(gen_survey, mid_survey, rel_survey, paradigm,
 def getInput(response_btns, ec, text, double_check=False,
         cogLoad=True):
     """Handles and directs user input for survey section."""  
-
+    
     while True:
         if cogLoad:
             response = ec.screen_prompt(text, timestamp=False)
         else:
             response = ec.wait_one_press(max_wait=np.inf, min_wait=0,
                     timestamp=False)
-        # check input
         try:
-            assert(int(response) in response_btns)
+            assert(int(response) in response_btns) # check input
         except ValueError:
-            ec.screen_text(gen_survey['ValueError'])
+            ec.screen_text(instr['ValueError'])
             ec.flip()
             ec.wait_secs(wait_long)
             response = ''
@@ -154,7 +144,7 @@ def getInput(response_btns, ec, text, double_check=False,
                 response) + ', if this is the number you want, press it' +
                 ' again key to continue, otherwise press any other key to' +
                 ' redo.', timestamp=False)
-            if (check_response != response):
+            if (str(check_response) != str(response)):
                 response = ''  # clear past response and loop again
         if response:
             break
@@ -162,7 +152,8 @@ def getInput(response_btns, ec, text, double_check=False,
     return int(response)
 
 def getId_list(paradigm):
-    """ Converts a string paradigm to a list for trial stamping """
+    """ Converts the string binary 'paradigm' to an int list for trial
+    stamping to TDT and el"""
     return map(int, list(paradigm))
 
 def recordTrial(wheel_matrix_info, preblock, block_ind, bnum, instr, ec,
@@ -184,13 +175,10 @@ def recordTrial(wheel_matrix_info, preblock, block_ind, bnum, instr, ec,
     # Creates dict of vars: 'target_letter', 'target_time',
     # 'tot_wav_time', 'paradigm', 'possible_letters' 'tot_cyc'
     trial_vars = sio.loadmat(trial_data_path)
-    paradigm = trial_vars['paradigm'][0]
-    target_time = trial_vars['target_time']
     target_cycles = trial_vars['target_cycles']
-    target_letter = trial_vars['target_letter'][0][0][0].encode('ascii')
-    possible_letters = trial_vars['possible_letters'][0]
-    # check loading of correct mat file
-    id_list = getId_list(paradigm)
+    id_list = trial_vars['trial_id'][0].tolist()
+    final_vars = dict()
+    final_vars['trial_id'] = id_list
     # load WAVs for this block
     stims = []
     stims.append(read_wav(trial_stim_path)[0])  # ignore fs
@@ -199,19 +187,23 @@ def recordTrial(wheel_matrix_info, preblock, block_ind, bnum, instr, ec,
     ec.load_buffer(stims[0])
     # draw visual primer
     drawPrimer(wheel_matrix_info, target_letter, possible_letters)
+
+    # make screenshots
     #screenshot = ec.screenshot()
     #screen_obj = op.join(edf_outputdir, str(block_ind[bnum]) +
             #'screenshot.obj')
-    #screenshot_file = open(screen_obj, 'wr')
+    #screenshot_file = open(screen_obj, 'w')
     #pck.dump(screenshot, screenshot_file)
+
     # edf stamped for epoch starts
-    if record_pupil:
-        ec.identify_trial(ec_id=id_list, el_id=id_list, ttl_id=id_list)
-    else:
-        try:
-            ec.identify_trial(ec_id=id_list, ttl_id=id_list)
-        except:
-            ec.identify_trial(ec_id=id_list, el_id=id_list, ttl_id=id_list)
+    ec.identify_trial(ec_id=id_list, el_id=id_list, ttl_id=id_list)
+    #if record_pupil:
+        #ec.identify_trial(ec_id=id_list, el_id=id_list, ttl_id=id_list)
+    #else:
+        #try:
+            #ec.identify_trial(ec_id=id_list, ttl_id=id_list)
+        #except:
+            #ec.identify_trial(ec_id=id_list, el_id=id_list, ttl_id=id_list)
     ec.start_stimulus(flip=True)  # the visual primer is displayed
     if debug:
         ec.wait_secs(2)
@@ -251,8 +243,8 @@ def recordTrial(wheel_matrix_info, preblock, block_ind, bnum, instr, ec,
             # save with other edf files for exp
             out_path = op.join(edf_outputdir, final_dfn)
             # add in an extra 'correct' data field
-            trial_vars['correct'] = correct
-            sio.savemat(out_path, trial_vars)
+            final_vars['correct'] = correct
+            sio.savemat(out_path, final_vars)
 
         return correct
     else:
@@ -262,14 +254,14 @@ def correctFeedback(ec):
         fix = visual.FixationDot(ec, colors=['Lime', 'Lime'])
         fix.draw()
         ec.flip()  # the fixation dot is displayed
-        ec.wait_secs(2)
+        ec.wait_secs(1.2)
         return
 
 def failFeedback(ec):
         fix = visual.FixationDot(ec, colors=['red', 'red'])
         fix.draw()
         ec.flip()  # the fixation dot is displayed
-        ec.wait_secs(2)
+        ec.wait_secs(1.2)
         return
 
 def promptResponse(ec):
@@ -317,7 +309,6 @@ def train(order, wheel_matrix_info, preblock, block_ind, instr, ec,
                     counter = 0
                     lastTry = True
             correct = 0
-            #paradigm = getTrialCondition(block_ind, train_num)
             if (counter == 0):
                 condition_no = i
                 trial_key = 's' + str(0) + '_' + 'start_trial_' \
@@ -347,16 +338,13 @@ def train(order, wheel_matrix_info, preblock, block_ind, instr, ec,
     ec.screen_prompt(instr['end_train'])
     return
 
-def getTrialCondition(block_ind, bnum):
+def getTrialParadigm(block_ind, bnum):
     # LOAD IN TRIAL DATA/STIMS
     data_file_name = 'b' + str(bnum) + '_tr' + str(block_ind[bnum])
     stim_file_name = data_file_name + '.wav'
     trial_data_path = op.join(final_datadir, data_file_name)
     trial_vars = sio.loadmat(trial_data_path)
     paradigm = trial_vars['paradigm'][0]
-    #condition_no = section[snum][bnum][tnum]
-    #id_ = condition_asc[condition_no]
-    # id_ = decimals_to_binary(id_, np.ones(1, len(id_)))
     return paradigm
 
 # RUN EXPERIMENT
@@ -368,13 +356,22 @@ else:
 startInfo = dict()
 startInfo['inputSection'] = inputSection
 startInfo['inputBlock'] = inputBlock
-#save this information into the data file
 with ef.ExperimentController(*std_args, **std_kwargs) as ec:
     el = EyelinkController(ec)  # create el instance
+
+    # make condition ordering
+    # keep the same block ordering for the same subject
+    np.random.seed(np.abs(hash(ec._exp_info['participant'])))
+    mid_block_order = np.random.permutation(range(1,4)).tolist()
+    # all other randomness is determined in runcreatestims.m
+    section = []
+    section.append([0]) # Make section 1
+    section.append(mid_block_order) # Make section 2
+    section.append([4]) # Make section 3
+
     folder = ec._exp_info['participant'] + '_' + \
         ec._exp_info['date']
     edf_outputdir = op.join(datadir, folder)
-    #os.makedirs(edf_outputdir)
     exp_vars = dict()
     exp_vars['mid_block_order'] = mid_block_order
     ec.write_data_line('mid_block_order', mid_block_order);
@@ -383,6 +380,7 @@ with ef.ExperimentController(*std_args, **std_kwargs) as ec:
     startmat = op.join(edf_outputdir, 'startInfo.mat')
     #save with rest of the EDF files
     sio.savemat(ordermat, exp_vars)
+    #save start information to data file
     sio.savemat(startmat, startInfo)
     stimdir = op.join(PATH, 'Stims', str(ec.stim_fs))
     ec.set_visible(True)
@@ -395,14 +393,17 @@ with ef.ExperimentController(*std_args, **std_kwargs) as ec:
     final_datadir = op.join( datadir, 'Params')
     assert os.path.isdir(final_datadir), 'Can not find Data directory. \
     Have you runCreateStims.m yet?'
-
     # read in particpant session variables from mat file
     global_vars = sio.loadmat(op.join(final_datadir, 'global_vars.mat'))
-    condition_uni = global_vars['condition_bin']  # Unicode by default
-    condition_asc = []  # ASCII
-    for i in range(len(condition_uni)):
-        condition_asc.append(condition_uni[i].encode('ascii'))
-    condition_nums = len(condition_asc)
+    global_vars['vPrimerLen'] = vPrimerLen
+    global_vars['postblock'] = postblock
+    global_vars = sio.savemat(op.join(final_datadir, 'global_vars.mat'))
+    version_code = global_vars['version_code'][0][0]
+    print "Using stimuli of version_code: " + str(version_code) + "\n"
+    assert version_code == stim_version_code, """Version code specified 
+            does not match that of the loaded stimuli.  Did you
+            recreate the stimuli?  If so update \'stim_version_code\'
+            in \'runKexp.py\'"""
     wheel_matrix_info = global_vars['wheel_matrix_info'][0]
     order = global_vars['order'][0]
     preblock = global_vars['preblock_prime_sec'][0]
@@ -416,8 +417,6 @@ with ef.ExperimentController(*std_args, **std_kwargs) as ec:
     # keep track which new trial to use with array of ind for each block
     block_ind = dict(
         zip(range(len(order)), np.zeros(len(order), dtype=int).tolist()))
-
-    cond_dict = dict()
 
     ec.screen_prompt(instr['start_exp'])
     for snum in range(len(section)):
@@ -459,8 +458,7 @@ with ef.ExperimentController(*std_args, **std_kwargs) as ec:
 
                 # introduce the conditions in first/last section
                 if (snum != 1):
-                    paradigm = getTrialCondition(block_ind, bnum)
-                    cond_dict[paradigm] = tnum
+                    paradigm = getTrialParadigm(block_ind, bnum)
                     condition_no = tnum
                     trial_key = 's' + str(0) + '_' + 'start_trial_' \
                     + str(condition_no)
@@ -472,7 +470,7 @@ with ef.ExperimentController(*std_args, **std_kwargs) as ec:
                         record_pupil, record_correct, save_correct )
                 # update block_ind
                 blockmat = op.join(edf_outputdir, 'block_ind.obj')
-                blockfile = open(blockmat, 'wr')
+                blockfile = open(blockmat, 'w')
                 pck.dump(block_ind, blockfile) # overwrites
                 if (snum == 2):
                     cogLoadSurvey(gen_survey, mid_survey, rel_survey,

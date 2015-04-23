@@ -4,6 +4,13 @@
 close all
 clear all
 tic
+
+% version code locks in a version to be used by runKexp.py and
+% anls.py
+version_code = randi(10000);
+fprintf('Stimuli version: %d\n', version_code);
+seed_value = 1;
+rng(seed_value); % create all stimuli the same
 	
 % DEFINE PATHS
 cd ..
@@ -34,7 +41,7 @@ distance_sound = 5; %distance for stimuli to be played in HRTF
 scale_type = 'whole'; %string 'whole' or 'diatonic'
 tot_cyc = 5;
 max_targets = 2;
-postblock_sec = 1.0; %secs after letterblocks
+postblock_sec = 1.5; %secs after letterblocks
 preblock_prime_sec = 13; %seconds until letters start playing
 primer_start = 1.5; %sample # that primer letter will play in preblock (less than preblock)
 makeTraining = 0;
@@ -112,7 +119,10 @@ if ~English
 end
 
 [condition_no, bar] = size(condition_type);
-trials_per_condition = 41;
+tr_per_cond_s0 = 13;
+tr_per_cond_s1 = 27;
+tr_per_cond_s2 = 1;
+trials_per_condition = tr_per_cond_s0 + tr_per_cond_s1 + tr_per_cond_s2;
 condition_trials = repmat(trials_per_condition, length(condition_type), 1);
 
 if makeTraining
@@ -141,15 +151,15 @@ for x = 1:reps
 		
 		% ASSIGN PARADIGM TO BLOCK
 		paradigm = condition_type(y, :);
-		if x == 1
-			condition_bin(y, :)  = reshape(dec2bin(paradigm)', [], 1)';
-		end
 
-		[possible_letters, target_letter, rearrangeCycles, tone_constant,...
+		[possible_letters, rearrangeCycles, tone_constant,...
 		  ener_mask, letters_used, token_rate_modulation,  AM_freq, AM_pow,...
 		  shiftedLetters, instrNote_shifted, instrNote, envelope_type,...
-		   letter_fine_structure, sync_cycles  ] = assignParadigm(paradigm,...
+		   letter_fine_structure, sync_cycles, id_code  ] = assignParadigm(paradigm,...
 		    letterArray, env_instrNotes, total_letters, wheel_matrix_info);
+		if x == 1
+			condition_bin(y, :)  = id_code;
+		end
 
 		[pitch_wheel, angle_wheel, total_pitches, list_of_pitches,...
 		 start_semitone_index ] = assignPitch(wheel_matrix_info, tot_cyc, ...
@@ -195,8 +205,9 @@ for x = 1:reps
 			wheel_matrix_info, blocktrial, left_ind, mid_ind,...
 			right_ind, y);
 			target_time = []; % also clear target time from last trial
+            replacement_time = [];
 			% returns cell array of wheel_num elements
-			[ wheel_matrix ] = assignLetters( replacement_letter,...
+			[ wheel_matrix, targ_cyc_ind, target_letter_index ] = assignLetters( replacement_letter,...
 			possible_letters, wheel_matrix_info, target_letter, ...
 			target_cycles, tot_cyc, rearrangeCycles, ener_mask,...
 			base_wheel_matrix, target_wheel_index); 
@@ -286,7 +297,7 @@ for x = 1:reps
 							combined_sound_proc = [L R];
 							%combined_sound_proc = (10 ^(letter_decibel / 20)) * [L R];
 							
-							% % RECORD TARGET TIME
+							% % record target time
 							if strcmp(letter, target_letter)
 							    target_sample_index = wheel_sample_index + ...
 							     track_sample_index;
@@ -298,6 +309,18 @@ for x = 1:reps
 							        end
 							        old_pitch = pitch;
 							    end
+							end
+
+							% % record replacement time
+							if (target_wheel_index == j)
+                                if (~any(k == targ_cyc_ind))
+                                    if (l == target_letter_index)
+                                        replacement_sample_index = wheel_sample_index + ...
+                                         track_sample_index;
+                                        replacment_time = [replacement_time ...
+                                        (replacement_sample_index / fs)];
+                                    end
+                                end
 							end
 							
 							% ADD LETTER TO WHEEL TRACK
@@ -369,8 +392,10 @@ for x = 1:reps
 
 			%STAMP WAV_NAME WITH EACH BLOCK LABELED BY PARADIGM CONDITION
 			% pass strings of binaries to Python for checking
+            trial_no;
+            trial_id = [id_code, de2bi(trial_no, 6)];
 			paradigm = dec2bin(paradigm)'; %cast to bin then to string
-			paradigm_reshape = reshape(paradigm',[],1)';
+			%paradigm_reshape = reshape(paradigm',[],0)';
 			% 0 indexed block and trial numbers
 			file_name = strcat('b', int2str(block_no - 1), '_', 'tr',...
 			int2str(order{block_no}(blocktrial(block_no))))
@@ -378,7 +403,8 @@ for x = 1:reps
 			save(final_data_dir, 'target_letter', 'target_time',...
 			 'tot_wav_time', 'preblock_prime_sec', 'paradigm', ...
 			 'possible_letters', 'target_cycles', 'location_code',...
-			 'wheel_matrix');
+			 'wheel_matrix', 'replacement_letter', 'targ_cyc_ind', ...
+             'replacement_time', 'trial_id');
 			wav_name = fullfile(final_output_path, strcat(file_name,'.wav'));
 			% accounts for bug: matlab does not overwrite on all systems
 			if exist(wav_name, 'file') 
@@ -399,11 +425,13 @@ end
 
 % global variables for each subject and session
 save( fullfile( data_dir, 'global_vars'), 'condition_bin', 'wheel_matrix_info',...
- 'preblock_prime_sec', 'English', 'tot_cyc', 'trials_per_condition',...
- 'order', 'stim_rms', 'new_fs') 
+ 'preblock_prime_sec', 'primer_start', 'postblock_sec',...
+ 'English', 'tot_cyc', 'trials_per_condition',...
+ 'order', 'stim_rms', 'new_fs', 'version_code', 'seed_value') 
 
 for i = 1:length(blocktrial)
 	assert(blocktrial(i) == length(order{i}))
 end
 
+fprintf('Stimuli version: %d\n', version_code);
 toc 

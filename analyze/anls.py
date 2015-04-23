@@ -6,77 +6,84 @@ import os
 import glob
 from os import path as op
 import time
-import scipy 
+from scipy import io as sio 
 import pyeparse as pp 
 import numpy as np
-import pdb
 import matplotlib.pyplot as plt
 import pickle as pck
 
 from pyeparse.utils import pupil_kernel
-from expyfun import binary_to_decimals  # ,decimals_to_binary
+from expyfun import binary_to_decimals, decimals_to_binary
 
-#subjects = ['Karl_2014-12-18 19', 'Karl_2014-12-18 13']
 subjects = ['Karl']
-data_dir = op.join(os.pardir, 'Data')
+
+stim_version_code = 8010
 fs = 1000.0  
+data_dir = os.path.abspath(os.path.join(os.pardir, 'Data'))
 # load these in
 postblock = 0  # time after each trial to record pupil
 session = 1
 blocks = 3
-datadir = os.path.abspath(os.path.join(os.pardir, 'Data'))
 
 # LOAD IN TRIAL DATA/STIMS
 def getTrialInfo(block_ind, bnum):
-    data_file_name = 'b' + str(bnum) + '_tr' + block_ind[bnum] + 'final'
-    trial_data_path = op.join(final_data_dir, data_file_name)
-    trial_vars = scipy.io.loadmat(trial_data_path)
-    condition_no = trial_vars['paradigm'][0]
+    """ Returns generic information about particular trial wav data """
+
+    data_file_name = 'b' + str(bnum) + '_tr' + block_ind[bnum]
+    trial_data_path = op.join(param_data_dir, data_file_name)
+    trial_vars = sio.loadmat(trial_data_path)
     target_time = trial_vars['target_time']
     target_cycles = trial_vars['target_cycles']
     target_letter = trial_vars['target_letter'][0][0][0].encode('ascii')
     location_code = trial_vars['location_code'][0][0][0].encode('ascii')
     possible_letters = trial_vars['possible_letters'][0]
-    #id_ = condition_asc[condition_no]
-    # id_ = decimals_to_binary(id_, np.ones(1, len(id_)))
-    return condition_no, target_time, location_code, correct 
+    id_list = trial_vars['trial_id'][0].tolist()
+    paradigm = trial_vars['paradigm'][0]
+    return target_time, location_code
+
+def getFinalInfo(block_ind, bnum):
+    """Returns final information about the trial (i.e. whether subject
+    response was correct and stamped id_list)"""
+
+    data_file_name = 'b' + str(bnum) + '_tr' + block_ind[bnum] + 'final'
+    trial_data_path = op.join(final_data_dir, data_file_name)
+    trial_vars = sio.loadmat(trial_data_path)
+    correct = trial_vars['correct'][0]
+    id_list = trial_vars['trial_id'][0].tolist()
+    return id_list, correct
 
 # READ IN PARTICPANT SESSION VARIABLES FROM MAT FILE
 # Reads in 'condition_bin', 'wheel_matrix_info', 'preblock_prime_sec'
+param_data_dir = op.join(data_dir, 'Params')
+global_vars = sio.loadmat(op.join(param_data_dir, 'global_vars.mat'))
+condition_uni = global_vars['condition_bin']  # Unicode by default
+order = global_vars['order'][0]
+condition_asc = []  # ASCII
+for i in range(len(condition_uni)):
+    condition_asc.append(condition_uni[i].encode('ascii'))
+condition_nums = len(condition_asc)
+wheel_matrix_info = global_vars['wheel_matrix_info'][0]
+# keep track of which new wav file to use
+block_ind = dict(
+    zip(range(len(order)), np.zeros(len(order), dtype=int)))
+wav_indices = dict(
+    zip(condition_asc, np.zeros(len(condition_asc), dtype=int)))
+preblock = global_vars['preblock_prime_sec'][0]
+# build String condition ids for raw 'messages'
+base = 'TRIALID'
+condition_pattern = [''] * condition_nums;
+for i in range(condition_nums):
+    condition_pattern[i] = base
+    for j in range(len(condition_asc[i])):
+        condition_pattern[i] += ' ' + condition_asc[i][j]
 ps = []
 for subj in subjects:
     print('  Subject %s...' % subj)
-    final_data_dir = op.join(data_dir, 'Params')
-    global_vars = scipy.io.loadmat(op.join(final_data_dir, 'global_vars.mat'))
-    condition_uni = global_vars['condition_bin']  # Unicode by default
-    order = global_vars['order'][0]
-    #trials = global_vars['trials_per_condition'][0]
-    trials = 3; # temp
-    condition_asc = []  # ASCII
-    for i in range(len(condition_uni)):
-        condition_asc.append(condition_uni[i].encode('ascii'))
-    condition_nums = len(condition_asc)
-    wheel_matrix_info = global_vars['wheel_matrix_info'][0]
-    # keep track of which new wav file to use
-    block_ind = dict(
-        zip(range(len(order)), np.zeros(len(order), dtype=int)))
-    wav_indices = dict(
-        zip(condition_asc, np.zeros(len(condition_asc), dtype=int)))
-    preblock = global_vars['preblock_prime_sec'][0]
-    # build String condition ids for raw 'messages'
-    base = 'TRIALID'
-    condition_pattern = [''] * condition_nums;
-    for i in range(condition_nums):
-        condition_pattern[i] = base
-        for j in range(len(condition_asc[i])):
-            condition_pattern[i] += ' ' + condition_asc[i][j]
 
     # return all edfs files for a given subject
     fnames = sorted(glob.glob(op.join(data_dir, '%s_*' % subj, '*.edf')))
     subj_data_dir = sorted(glob.glob(op.join(data_dir, '%s_*' % subj)))
-    trial_mats = sorted(glob.glob(op.join(data_dir, '%s_*' % subj,
-        '*final.mat')))
-    for ti, trial_mat in range(len(trial_mats)):
+    # assert that there aren't two dirs for this subject
 
     # Add assertions to check MATLAB trial parameters with
     # assert len(fnames) == len(params['block_trials'])
@@ -84,18 +91,28 @@ for subj in subjects:
     # assert len(subj_tab) == 1
     # subj_tab = read_tab(subj_tab[0])
 
-    #iterates over each edf file for specified session of subject
+    #iterates over each edf file for each subject session
     #each edf represents one block from runKexp
     epochs = []
-    for ri, fname in enumerate(fnames):
+    for bnum, fname in enumerate(fnames):
         raw = pp.Raw(fname)
         assert raw.info['sfreq'] == fs
         test_events = raw.find_events('SYNCTIME', 1)
-        if (len(test_events) == 0):
+        # find first edf file and discard
+        if (len(test_events) < 4):
             print '\tInvalid edf found, continuing...\n'
             continue
 
         raw.remove_blink_artifacts()
+        trial_mats = sorted(glob.glob(op.join(data_dir, '%s_*' % subj,
+            '*final.mat')))
+        #for ti, trial_mat in range(len(trial_mats)):
+        # for each trial in this block
+        #load trial info
+        #load final info
+        #find the event for this trial
+        #parse ps data and add to dicts/matrices
+
         # extract by condition 
         for i in range(condition_nums):
             id_ = condition_asc[i]
@@ -112,12 +129,12 @@ for subj in subjects:
                 wav_num = wav_indices[id_]
                 wav_indices[id_] += 1
                 data_file_name = id_ + '_tr' + str(wav_num)
-                trial_data_path = op.join(final_data_dir, data_file_name)
+                trial_data_path = op.join(param_data_dir, data_file_name)
 
                 # unload trial vars (avoids awkward indexing) creates dict
                 # of vars: 'target_letter', 'target_time', 'tot_wav_time',
                 # 'paradigm', 'possible_letters' 'tot_cyc'
-                trial_vars = scipy.io.loadmat(trial_data_path)
+                trial_vars = sio.loadmat(trial_data_path)
                 target_time = trial_vars['target_time']
                 trial_len = trial_vars['tot_wav_time'][0][0]
                 target_letter = \
@@ -138,12 +155,9 @@ for subj in subjects:
 
 # arrange it into a 2 dimensional array
 # get mean and variance for array
-# keep in mind that the pupil data goes longer than the trial length
-# draw the arrow object for the start of primer, end of primer, start of
-# stimulus end of stimulus
 # create a way to distinguish sessions and subjects for batch processing
 
-min_len = 9999999;
+min_len = np.inf;
 for i in range(len(ps)):
     temp = len(ps[i])
     if temp < min_len:

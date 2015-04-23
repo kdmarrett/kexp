@@ -196,9 +196,11 @@ instr['s1_end_block'] = ('Good job! Take a break if you like, then press 1 when 
 
 button_keys['s1_end_block'] = [cont_btn]
 
-instr['s1_end_sect'] = ('Good work! You\'re done with the second section of the '
-                        'experiment. Take a break (you can leave the booth if you '
-                        'need to). Press 1 when you\'re ready to resume.'.format(cont_btn_label))
+instr['s1_end_sect'] = ('Good work, you\'re almost done!'
+                        ' Please exit the booth and take a break now. '
+                        ' During your break, the experimenter will give'
+                        ' you the final instructions for the last section.'
+                        ' Press 1 when you\'re ready to resume.'.format(cont_btn_label))
 
 button_keys['s1_end_block'] = [cont_btn]
 
@@ -206,6 +208,9 @@ button_keys['s1_end_block'] = [cont_btn]
 instr['s2_start_sect'] = ('In this last section, you will be presented with 1'
                           ' trial from each condition type then asked'
                           ' several questions about its difficulty.'
+                          ' If you haven\'t exited the booth for a'
+                          ' break and received the final instructions'
+                          ' from the experimenter please do so now.'
                           ' Press 1 to continue.'.format(cont_btn_label))
 
 button_keys['s2_start_sect'] = [cont_btn]
@@ -257,7 +262,7 @@ gen_survey[5] = ('How insecure, discouraged, irritated, stressed and annoyed ver
                  'relaxed and complacent did you feel during the task?'
                  ' Enter a digit value from 1 to 9 on the keyboard with 9 being highly relaxed.'.format(cont_btn_label))
 
-gen_survey['ValueError'] = 'Please enter a single digit value on the keyboard.'
+instr['ValueError'] = 'Please enter a single digit value on the keyboard.'
 
 mid_survey = dict()
 mid_survey[0] = ('Throughout this section, the rating scales are used to assess your experiences in the different task '
@@ -314,7 +319,7 @@ rel_survey[
 rel_survey[
     13] = ' 1. Mental Demand\n2. Performance\nWhich do you consider the larger factor contributing to the workload?'
 rel_survey[
-    14] = ' 1. Mental Demand\nor 2. Physical Demand\nWhich do you consider the larger factor contributing to the workload?'
+    14] = ' 1. Mental Demand\n2. Physical Demand\nWhich do you consider the larger factor contributing to the workload?'
 
 # ASSIGN BUTTON_KEYS AND WAIT TIMES BY GENERAL PATTERN
 template = dict.fromkeys(instr)

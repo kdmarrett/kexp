@@ -1,7 +1,7 @@
-function [possibleLetters, target_letter, rearrangeCycles, ...
+function [possibleLetters, rearrangeCycles, ...
 tone_constant, ener_mask, letters_used, token_rate_modulation,...  
 AM_freq, AM_pow, shiftedLetters, instrNote_shifted, instrNote, ...
-envelope_type, letter_fine_structure, sync_cycles  ] = ...  
+envelope_type, letter_fine_structure, sync_cycles, id_code  ] = ...  
 assignParadigm(paradigm, letterArray, env_instrNotes, total_letters, ...  
 wheel_matrix_info )
 
@@ -49,6 +49,17 @@ wheel_matrix_info )
         rearrangeCycles = 1; %must also have maximally displaced letters
     else
         rearrangeCycles = 0;
+    end
+
+    %  Assign id code for stamping
+    if paradigm(2)
+        if paradigm(4)
+            id_code = de2bi(3, 2);
+        else
+            id_code = de2bi(2, 2);
+        end
+    else
+        id_code = de2bi(1, 2);
     end
     
     % ASSIGN TONE CHARACTERISTICS
