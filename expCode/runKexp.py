@@ -25,7 +25,7 @@ import os
 
 assert ef.__version__ == '2.0.0.dev'
 # assert version of stimuli to use
-stim_version_code = 8148
+stim_version_code = 2373
 
 PATH = os.path.abspath(os.pardir)
 datadir = op.join(PATH, 'Data')
@@ -167,6 +167,7 @@ def recordTrial(wheel_matrix_info, preblock, block_ind, bnum, instr, ec,
 
     # identify paradigm and trial number
     trial_vars = getTrialInfo(block_ind, bnum)
+    data_file_name = 'b' + str(bnum) + '_tr' + str(block_ind[bnum]) 
     stim_file_name = 'b' + str(bnum) + '_tr' + str(block_ind[bnum]) + '.wav'
     trial_stim_path = op.join(stimdir, stim_file_name)
 
@@ -223,7 +224,6 @@ def recordTrial(wheel_matrix_info, preblock, block_ind, bnum, instr, ec,
     ec.flip()
     #write all pertinent data as a safety
     if record_pupil:
-        ec.write_data_line('target_time', target_time)
         ec.write_data_line('target_letter', target_letter)
         ec.write_data_line('target_cycles', target_cycles)
 
