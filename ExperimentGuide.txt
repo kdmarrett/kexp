@@ -1,4 +1,4 @@
-# EXPERIMENT NAME
+﻿# EXPERIMENT NAME
 KEXP
 
 # RUN SCRIPT
@@ -7,6 +7,7 @@ C:/Experiments/kdmarrett/kexp/expCode/runKexp.py
 # SCRIPT PROMPTS
 Will be prompted to enter subject # (sequential kexp subject #) and
 session number. 
+
 default:
 session = 1
 subj = subject code
@@ -16,7 +17,8 @@ If subject had to restart or redo the experiment for some reason the
 session number will be 2 otherwise it will always be one.
 In the case that the subject is restarting the experiment and had
 gotten part way through the experiment, the experimenter can start the
-experiment at the specified section or block.
+experiment at the specified section or block. Note any restarts
+should be recored on the runsheet.
 
 # EXPERIMENT TYPE/EQUIPMENT
 Pupillometry: chin rest, pupillometry computer, etc.
@@ -43,6 +45,7 @@ sometimes helps to give more height by putting big blue blanket under
 them)
 
 # SECTION 1 AND 2 SPIEL
+# Experimenter notes
 # Make sure that the eyelink is focused
 
 You need to place your chin on this chin rest during the experiment
