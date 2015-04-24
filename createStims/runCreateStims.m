@@ -67,14 +67,15 @@ right_ind = [8:10 17:19 26:28 38:41];
 % SET LETTERS
 if English
 	% keep R letter in right wheel always
-	letterArray.alphabetic = {'Space' 'Pause' 'A' 'B' 'C' 'D' 'E' 'F' 'G' 'H' ...
-	  'I' 'J' 'K' 'L' 'M' 'N' 'O' 'P' 'Q' 'R' ...  % middle wheel
-	  'S' 'T' 'U' 'V' 'W' 'X' 'Y' 'Z' 'Read' 'Delete' };  % right wheel
+	letterArray.alphabetic = {'A' 'B' 'C' 'D' 'E' 'F' 'G' 'H' 'I' 'J'... 
+    'K' 'L' 'M' 'N' 'O' 'P' 'Q' 'R' 'S' 'T' ...  % middle wheel
+	  'U' 'V' 'W' 'X' 'Y' 'Z' 'Read' 'Delete' 'Space' 'Pause' };  % right wheel
 	%maximal phoneme separation
-	letterArray.displaced =  {'Space' 'Pause', 'A' 'B' 'F' 'O' 'E' 'M' 'I' 'T' ...
-	'J' 'C' 'H' 'Q' 'G' 'N' 'X' 'V' 'K' 'D' ... % middle wheel
-	'L' 'U' 'P' 'S' 'Z' 'R' 'W' 'Y' 'Read' 'Delete' }; % right wheel
-	speaker_list = {'mjc1', 'female', 'mnre0'};
+	letterArray.displaced =  {'A' 'B' 'F' 'O' 'E' 'M' 'I' 'T' 'J' 'C'... 
+    'H' 'Q' 'G' 'N' 'X' 'V' 'K' 'D' 'L' 'U' ... % middle wheel
+	'P' 'S' 'Z' 'R' 'W' 'Y' 'Read' 'Delete' 'Space' 'Pause' }; % right wheel
+	%speaker_list = {'mjc1', 'female', 'mnre0'};
+	speaker_list = {'mjc1', 'mjc1', 'mjc1'};
 	speaker_amp_weights = [1 1 1];
 else
 	letterArray.alphabetic = {'Leer', 'Paus', 'A' 'B' 'C' 'D' 'E' 'F' 'G' 'H'...
