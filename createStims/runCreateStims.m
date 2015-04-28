@@ -56,10 +56,29 @@ ILIms = repmat(ILImsBase, 3, 1);
 token_rates = [3 5 7];
 English = 1; % English or German
 wheel_matrix_info = [10 10 10];  %how many letters in each wheel
-tot_blocks = 8;
-blocktrial = zeros(tot_blocks,1); % keeps track of indexer into block orders
-% load 'order'
+
+% Conditions and ordering
+% smaller set of conditions for final testing
+condition_type = [0, 0, 0, 0, 0, 0, 0; 0, 1, 0, 0, 0, 0, 0; 0, 1, 0, 1, 0, 0, 0];
+% remove conditions where the letters are displaced for German
+if ~English
+	condition_type = condition_type([1:2, 4, 6:end], :)
+end
+[condition_no, bar] = size(condition_type);
+tr_per_cond_s0 = 13;
+tr_per_cond_s1 = 27;
+tr_per_cond_s2 = 1;
+s2_blocks = 6;
+trials_per_condition = tr_per_cond_s0 + tr_per_cond_s1 + tr_per_cond_s2;
+condition_trials = repmat(trials_per_condition, length(condition_type), 1);
+% load 'order' of conditions of trials in each block
 load order.mat
+tot_blocks = length(order);
+blocktrial = zeros(tot_blocks,1); % keeps track of indexer into block orders
+for i = 1:length(order)
+    trials_in_block(i) = length(order{i});
+end
+%specify location
 left_ind  = [2:4 12:13 20:22 30:33]; 
 mid_ind   = [1 5:7 14:16 23:25 29 34:37];
 right_ind = [8:10 17:19 26:28 38:41];
@@ -113,19 +132,6 @@ pitches.notesWhole = {'C3', 'D3', 'E3', 'Gb3', 'Ab3', 'Bb3', 'C4', 'D4', ...
 assert((length(pitches.notes) == length(pitches.all)),...
  'Error: note names do not cover range of possible pitches')
 
-% smaller set of conditions for final testing
-condition_type = [0, 0, 0, 0, 0, 0, 0; 0, 1, 0, 0, 0, 0, 0; 0, 1, 0, 1, 0, 0, 0];
-% remove conditions where the letters are displaced for German
-if ~English
-	condition_type = condition_type([1:2, 4, 6:end], :)
-end
-
-[condition_no, bar] = size(condition_type);
-tr_per_cond_s0 = 13;
-tr_per_cond_s1 = 27;
-tr_per_cond_s2 = 1;
-trials_per_condition = tr_per_cond_s0 + tr_per_cond_s1 + tr_per_cond_s2;
-condition_trials = repmat(trials_per_condition, length(condition_type), 1);
 
 if makeTraining
 	trials_per_training = 1;
@@ -202,10 +208,10 @@ for x = 1:reps
 			target_cycles = randi(max_targets);
 			% assign target letter
 			[replacement_letter, target_letter, target_wheel_index, ...
-            location_code, block_no, blocktrial ...
+            location_code, block_no, blocktrial, ...
 			base_wheel_matrix ] = assignTarget( trial_no, possible_letters, ... 
 			wheel_matrix_info, blocktrial, left_ind, mid_ind,...
-			right_ind, y);
+			right_ind, y, trials_in_block);
 			target_time = []; % also clear target time from last trial
             replacement_time = [];
 			% returns cell array of wheel_num elements
@@ -433,7 +439,7 @@ end
 % global variables for each subject and session
 save( fullfile( data_dir, 'global_vars'), 'condition_bin', 'wheel_matrix_info',...
  'preblock_prime_sec', 'primer_start', 'postblock_sec',...
- 'English', 'tot_cyc', 'trials_per_condition',...
+ 'English', 'tot_cyc', 'trials_per_condition', 's2_blocks',...
  'order', 'stim_rms', 'new_fs', 'version_code', 'seed_value') 
 
 for i = 1:length(blocktrial)

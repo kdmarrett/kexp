@@ -53,13 +53,16 @@ and watch the screen. The chin rest is being used to keep your eye
 steady to record pupil data during the experiment.
 
 Each trial in this experiment will begin with a visual representation.
-In these visual representations, you will notice that one of the
-letters is colored green and spoken, this is the target letter for the
-trial.  Count the occurrences of this target letter during the trial.
-Press button 1 if only one occurence of the target letter occurred in
-the trial and 2 if there were two.  After the visual representation, a
-small fixation dot will appear in the center of screen. Keep your eyes
-fixated on this dot for as long as it remains visible.
+In these visual representations, you will notice that one of the letters
+is colored green and spoken, this is the target letter for the trial.
+The target letter will always stay in the same location (left, middle,
+or right) during a trial regardless of the condition. 
+
+Count the occurrences of this target letter during the trial.  Press
+button 1 if only one occurence of the target letter occurred in the
+trial and 2 if there were two.  After the visual representation, a small
+fixation dot will appear in the center of screen. Keep your eyes fixated
+on this dot for as long as it remains visible.
 
 Each trial will be of a certain condition type.  There are three
 conditions in the experiment as shown (hand subjects the three sheets

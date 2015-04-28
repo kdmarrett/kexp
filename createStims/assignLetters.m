@@ -68,6 +68,7 @@ end
 
 % CHANGE ORDERING BETWEEN CYCLES
 if rearrangeCycles
+    % for each wheel 
     for i = 1:length(wheel_matrix)
         targ_wheel_bool = (i == target_wheel_index);
         [wheel_matrix{i}] = reorderDisplaced(wheel_matrix{i}, ...

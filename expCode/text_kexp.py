@@ -34,15 +34,20 @@ button_keys['start_exp'] = [cont_btn]
 instr['s0_start_sect'] = ( 
         'In this section, you will be'
         ' introduced to each condition type before beginning the training.'
-        ' Each letter group, left, middle, and right, has a distinct speaker for the letters. To orient you to the layout'
+        ' To orient you to the layout'
       ' and ordering, each trial will begin with a visual' 
       ' representation of the spatial locations of the letters. '
+      'In these visual representations, you will notice that one of the letters is colored green and spoken, this is the target letter for the trial. '
       'Push 1 to continue.'.format(cont_btn_label))
 
 button_keys['s0_start_sect'] = [cont_btn]
 
 instr['s0_start_block_0'] = ( 
-      'In these visual representations, you will notice that one of the letters is colored green and spoken, this is the target letter for the trial. '
+        'The visual representations orient you to the letter and it\'s '
+        'location in the trial. '
+      'The target letter will always stay in the same location (left,'
+      ' middle, or right) during a trial regardless of '
+      'the condition. '
         'Count the occurrences of this target letter during the trial. '
         'After the visual representation, a small fixation dot'
       ' will appear in the center of screen. Keep your eyes fixated on this dot for as long as it remains visible. '
@@ -153,7 +158,7 @@ button_keys['s0_end_sect'] = [cont_btn]
 # SECTION 2 INSTRUCTIONS
 instr['s1_start_sect'] = ('You\'re about to begin the second section of'
                           ' the experiment. There are breaks between'
-                          ' each of the 3 blocks in this section.'
+                          ' each of the 6 blocks in this section.'
                           ' Now the different conditions'
                           ' are interspersed and you will not be given' 
                           ' feedback after each trial.  This means that you must'
@@ -179,7 +184,26 @@ instr['s1_start_block_1'] = ('You\'re about to begin the second block in this se
 
 button_keys['s1_start_block_1'] = [cont_btn]
 
-instr['s1_start_block_2'] = ('You\'re about to begin the last block in this section of '
+instr['s1_start_block_2'] = ('You\'re about to begin the next block in this section of '
+                             'the experiment. During each trial, fixate on the center dot for as long as it'
+                              ' remains visible. When it changes yellow,'
+                              ' enter the number of target occurrences in'
+                              ' the trial 1 or 2. Press 1 to start.')
+
+instr['s1_start_block_3'] = ('You\'re about to begin the next block in this section of '
+                             'the experiment. During each trial, fixate on the center dot for as long as it'
+                              ' remains visible. When it changes yellow,'
+                              ' enter the number of target occurrences in'
+                              ' the trial 1 or 2. Press 1 to start.')
+
+instr['s1_start_block_4'] = ('You\'re about to begin the next block in this section of '
+                             'the experiment. During each trial, fixate on the center dot for as long as it'
+                              ' remains visible. When it changes yellow,'
+                              ' enter the number of target occurrences in'
+                              ' the trial 1 or 2. Press 1 to start.')
+
+
+instr['s1_start_block_5'] = ('You\'re about to begin the last block in this section of '
                              'the experiment. During each trial, fixate on the center dot for as long as it'
                               ' remains visible. When it changes yellow,'
                               ' enter the number of target occurrences in'

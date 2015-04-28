@@ -1,25 +1,19 @@
 function [replacement_letter, target_letter, target_wheel, location_code, block_no, ...
 blocktrial, base_wheel_matrix] = assignTarget(trial_no, ...
 possible_letters, wheel_matrix_info, blocktrial, left_ind, mid_ind, ...  
-right_ind, cond_no);
+right_ind, cond_no, trials_in_block);
 
-if (trial_no <= 1)
-	block_no = 1;
-	blocktrial(1) = blocktrial(1) + 1;
-elseif (trial_no <= 10)
-	block_no = 2;
-	blocktrial(2) = blocktrial(2) + 1;
-elseif (trial_no <= 19)
-	block_no = 3;
-	blocktrial(3) = blocktrial(3) + 1;
-elseif (trial_no <= 28)
-	block_no = 4;
-	blocktrial(4) = blocktrial(4) + 1;
-elseif (trial_no == 29) 
-	block_no = 5;
-	blocktrial(5) = blocktrial(5) + 1;
+if (trial_no < 30)
+    for i= 1:length(blocktrial)
+        cond_full = (trials_in_block(i) / 3) * (cond_no);
+        if (blocktrial(i) < cond_full);
+            block_no = i;
+            blocktrial(i) = blocktrial(i) + 1;
+            break;
+        end
+    end
 else
-	block_no = 5 + cond_no;
+	block_no = 11 + cond_no;
 	blocktrial(block_no) = blocktrial(block_no) + 1;
 end
 
