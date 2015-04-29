@@ -41,12 +41,16 @@ postblock = 0  # time after each trial to record pupil
 vPrimerLen = 7
 
 # EC PARAMETERS
+gen_survey_btn = range(1, total_btns)
+rel_survey_btn = [1, 2]
+#rel_survey_btn = ['num_1', 'num_2']
+#gen_survey_btn = ['num_1', 'num_2', 'num_3', 
+    #'num_4', 'num_5', 'num_6', 'num_7', 'num_8', 'num_9']
 #total_btns = 10
-#gen_survey_btn = range(1, total_btns)
-#rel_survey_btn = [1, 2]
-rel_survey_btn = ['num_1', 'num_2']
-gen_survey_btn = ['num_1', 'num_2', 'num_3', 
-    'num_4', 'num_5', 'num_6', 'num_7', 'num_8', 'num_9']
+#resp_dict = dict()
+#for i in range(1, total_btns):
+    #resp_dict[gen_survey_btn[i]] = i
+
 std_args = ['kexp']
 std_kwargs = dict(screen_num=0, window_size=[800, 600], check_rms=None,
     full_screen=True, stim_db=65, noise_db=40, stim_rms=0.01,
@@ -192,9 +196,10 @@ def recordTrial(wheel_matrix_info, preblock, block_ind, bnum, instr, ec,
     stims = []
     stims.append(read_wav(trial_stim_path)[0])  # ignore fs
     stim_dur = stims[0].shape[-1] / ec.stim_fs
+    elapsed = timeit.default_timer() - start_time
     ec.clear_buffer()
     ec.load_buffer(stims[0])
-    elapsed = timeit.default_timer() - start_time
+    #elapsed = timeit.default_timer() - start_time
     print 'load stimuli ' + str(elapsed) + '\n'
     # draw visual primer
     drawPrimer(wheel_matrix_info, target_letter, possible_letters)
