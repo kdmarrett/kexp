@@ -158,7 +158,7 @@ button_keys['s0_end_sect'] = [cont_btn]
 # SECTION 2 INSTRUCTIONS
 instr['s1_start_sect'] = ('You\'re about to begin the second section of'
                           ' the experiment. There are breaks between'
-                          ' each of the 6 blocks in this section.'
+                          ' each of the 9 blocks in this section.'
                           ' Now the different conditions'
                           ' are interspersed and you will not be given' 
                           ' feedback after each trial.  This means that you must'
@@ -202,8 +202,25 @@ instr['s1_start_block_4'] = ('You\'re about to begin the next block in this sect
                               ' enter the number of target occurrences in'
                               ' the trial 1 or 2. Press 1 to start.')
 
+instr['s1_start_block_5'] = ('You\'re about to begin the next block in this section of '
+                             'the experiment. During each trial, fixate on the center dot for as long as it'
+                              ' remains visible. When it changes yellow,'
+                              ' enter the number of target occurrences in'
+                              ' the trial 1 or 2. Press 1 to start.')
 
-instr['s1_start_block_5'] = ('You\'re about to begin the last block in this section of '
+instr['s1_start_block_6'] = ('You\'re about to begin the next block in this section of '
+                             'the experiment. During each trial, fixate on the center dot for as long as it'
+                              ' remains visible. When it changes yellow,'
+                              ' enter the number of target occurrences in'
+                              ' the trial 1 or 2. Press 1 to start.')
+
+instr['s1_start_block_7'] = ('You\'re about to begin the next block in this section of '
+                             'the experiment. During each trial, fixate on the center dot for as long as it'
+                              ' remains visible. When it changes yellow,'
+                              ' enter the number of target occurrences in'
+                              ' the trial 1 or 2. Press 1 to start.')
+
+instr['s1_start_block_8'] = ('You\'re about to begin the last block in this section of '
                              'the experiment. During each trial, fixate on the center dot for as long as it'
                               ' remains visible. When it changes yellow,'
                               ' enter the number of target occurrences in'

@@ -26,7 +26,7 @@ import os
 
 assert ef.__version__ == '2.0.0.dev'
 # assert version of stimuli to use
-stim_version_code = 8344
+stim_version_code = 5631
 
 PATH = os.path.abspath(os.pardir)
 datadir = op.join(PATH, 'Data')
@@ -368,33 +368,7 @@ startInfo['inputSection'] = inputSection
 startInfo['inputBlock'] = inputBlock
 with ef.ExperimentController(*std_args, **std_kwargs) as ec:
     el = EyelinkController(ec)  # create el instance
-
-    # make condition ordering
-    # keep the same block ordering for the same subject
-    np.random.seed(np.abs(hash(ec._exp_info['participant'])))
-    # ordering of the 6 blocks in section 2
-    mid_block_order = np.random.permutation(range(1,7)).tolist()
-    # all other randomness is determined in runcreatestims.m
-    section = []
-    section.append([0]) # Make section 1
-    section.append(mid_block_order) # Make section 2
-    section.append([4]) # Make section 3
-
-    folder = ec._exp_info['participant'] + '_' + \
-        ec._exp_info['date']
-    startInfo['session'] = ec._exp_info['session']
-    edf_outputdir = op.join(datadir, folder)
-    startInfo['mid_block_order'] = mid_block_order
-    ec.write_data_line('mid_block_order', mid_block_order);
-    startmat = op.join(edf_outputdir, 'startInfo.mat')
-    
-    #save start information to data file
-    sio.savemat(startmat, startInfo)#save with rest of the EDF files
     stimdir = op.join(PATH, 'Stims', str(ec.stim_fs))
-    ec.set_visible(True)
-    ec.set_background_color([0.1] * 3)
-    ec.flip()
-    ec.start_noise()
 
     assert os.path.isdir(stimdir), 'Can not find Stim directory. \
     Have you runCreateStims.m yet?'
@@ -415,6 +389,33 @@ with ef.ExperimentController(*std_args, **std_kwargs) as ec:
     wheel_matrix_info = global_vars['wheel_matrix_info'][0]
     order = global_vars['order'][0]
     preblock = global_vars['preblock_prime_sec'][0]
+    s2_blocks = global_vars['s2_blocks']
+
+    # make condition ordering
+    # keep the same block ordering for the same subject
+    np.random.seed(np.abs(hash(ec._exp_info['participant'])))
+    # ordering of the 6 blocks in section 2
+    mid_block_order = np.random.permutation(range(1,(1 +
+        s2_blocks))).tolist()
+    # all other randomness is determined in runcreatestims.m
+    section = []
+    section.append([0]) # Make section 1
+    section.append(mid_block_order) # Make section 2
+    section.append([4]) # Make section 3
+    folder = ec._exp_info['participant'] + '_' + \
+        ec._exp_info['date']
+    startInfo['session'] = ec._exp_info['session']
+    edf_outputdir = op.join(datadir, folder)
+    startInfo['mid_block_order'] = mid_block_order
+    ec.write_data_line('mid_block_order', mid_block_order);
+    startmat = op.join(edf_outputdir, 'startInfo.mat')
+    
+    #save start information to data file
+    sio.savemat(startmat, startInfo)#save with rest of the EDF files
+    ec.set_visible(True)
+    ec.set_background_color([0.1] * 3)
+    ec.flip()
+    ec.start_noise()
 
     # adjust instruction languages according to runcreatestims
     if global_vars['English']:

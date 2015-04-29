@@ -68,7 +68,7 @@ end
 tr_per_cond_s0 = 13;
 tr_per_cond_s1 = 27;
 tr_per_cond_s2 = 1;
-s2_blocks = 6;
+s2_blocks = 9;
 trials_per_condition = tr_per_cond_s0 + tr_per_cond_s1 + tr_per_cond_s2;
 condition_trials = repmat(trials_per_condition, length(condition_type), 1);
 % load 'order' of conditions of trials in each block
@@ -412,7 +412,7 @@ for x = 1:reps
 			gen_final_data_dir = fullfile(data_dir, gen_file_name);
 			trial_final_data_dir = fullfile(data_dir, trial_file_name);
 			save(gen_final_data_dir, 'target_letter', 'target_time',...
-			 'tot_wav_time', 'paradigm', ...
+			 'paradigm', ...
 			 'possible_letters', 'target_cycles', 'location_code',...
 			 'wheel_matrix', 'replacement_letter', 'targ_cyc_ind', ...
              'replacement_time', 'trial_id');
@@ -440,7 +440,8 @@ end
 save( fullfile( data_dir, 'global_vars'), 'condition_bin', 'wheel_matrix_info',...
  'preblock_prime_sec', 'primer_start', 'postblock_sec',...
  'English', 'tot_cyc', 'trials_per_condition', 's2_blocks',...
- 'order', 'stim_rms', 'new_fs', 'version_code', 'seed_value') 
+ 'order', 'stim_rms', 'new_fs', 'version_code', 'seed_value',
+ 'tot_wav_time') 
 
 for i = 1:length(blocktrial)
 	assert(blocktrial(i) == length(order{i}))
