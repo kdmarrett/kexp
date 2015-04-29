@@ -41,9 +41,12 @@ postblock = 0  # time after each trial to record pupil
 vPrimerLen = 7
 
 # EC PARAMETERS
-total_btns = 10
-gen_survey_btn = range(1, total_btns)
-rel_survey_btn = [1, 2]
+#total_btns = 10
+#gen_survey_btn = range(1, total_btns)
+#rel_survey_btn = [1, 2]
+rel_survey_btn = ['num_1', 'num_2']
+gen_survey_btn = ['num_1', 'num_2', 'num_3', 
+    'num_4', 'num_5', 'num_6', 'num_7', 'num_8', 'num_9']
 std_args = ['kexp']
 std_kwargs = dict(screen_num=0, window_size=[800, 600], check_rms=None,
     full_screen=True, stim_db=65, noise_db=40, stim_rms=0.01,
