@@ -78,10 +78,11 @@ blocktrial = zeros(tot_blocks,1); % keeps track of indexer into block orders
 for i = 1:length(order)
     trials_in_block(i) = length(order{i});
 end
+
 %specify location
-left_ind  = [2:4 12:13 20:22 30:33]; 
-mid_ind   = [1 5:7 14:16 23:25 29 34:37];
-right_ind = [8:10 17:19 26:28 38:41];
+left_ind  = [2 5 8 11 14 17 20 23 26 30:33]; 
+mid_ind   = [1 3 6 9 12 15 18 21 24 27 34:37];
+right_ind = [4 7 10 13 16 19 22 25 28 38:41];
 
 % SET LETTERS
 if English

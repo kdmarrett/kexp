@@ -15,7 +15,7 @@ import pickle as pck
 from pyeparse.utils import pupil_kernel
 from expyfun import binary_to_decimals, decimals_to_binary
 
-subjects = ['Karl']
+subjects = ['testtrialid']
 
 stim_version_code = 8010
 # asserted fs
@@ -97,7 +97,8 @@ preblock = global_vars['preblock_prime_sec'][0]
 vPrimerLen = global_vars['vPrimerLen'] 
 # time after each trial to record pupil
 postblock = global_vars['postblock'] 
-trial_len = global_vars['tot_wav_time'] 
+#trial_len = global_vars['tot_wav_time'] 
+trial_len = 36.0001
 order = global_vars['order'][0]
 s2_blocks = global_vars['s2_blocks']
 # trials_per_block
@@ -200,43 +201,43 @@ for subj in subjects:
 # get mean and variance for array
 # create a way to distinguish sessions and subjects for batch processing
 
-min_len = np.inf;
-for i in range(len(ps)):
-    temp = len(ps[i])
-    if temp < min_len:
-        min_len = temp
+#min_len = np.inf;
+#for i in range(len(ps)):
+    #temp = len(ps[i])
+    #if temp < min_len:
+        #min_len = temp
     
-dat = np.array(np.zeros(min_len*len(ps)))
-dat.shape = (len(ps), min_len)
-for j in range(len(ps)):
-    dat[j,:] = ps[j]
+#dat = np.array(np.zeros(min_len*len(ps)))
+#dat.shape = (len(ps), min_len)
+#for j in range(len(ps)):
+    #dat[j,:] = ps[j]
 
-stdev = np.array(np.zeros(min_len))
-mean = np.array(np.zeros(min_len))
-for i in range(min_len):
-    stdev[i] = np.std(dat[:,i])
-    mean[i] = np.mean(dat[:,i])
+#stdev = np.array(np.zeros(min_len))
+#mean = np.array(np.zeros(min_len))
+#for i in range(min_len):
+    #stdev[i] = np.std(dat[:,i])
+    #mean[i] = np.mean(dat[:,i])
 
-fig = plt.figure()
-x = np.linspace(0, min_len / fs, min_len)
-plt.plot(x, mean, 'r--', linewidth=4, label='mean')
-plt.plot(x, stdev, 'b--', linewidth=2, label='inter-trial std')
-for i in range(len(ps)):
-    plt.plot(x, ps[i], 'k', linewidth=.1)
+#fig = plt.figure()
+#x = np.linspace(0, min_len / fs, min_len)
+#plt.plot(x, mean, 'r--', linewidth=4, label='mean')
+#plt.plot(x, stdev, 'b--', linewidth=2, label='inter-trial std')
+#for i in range(len(ps)):
+    #plt.plot(x, ps[i], 'k', linewidth=.1)
 
-# !!
-end_primer = preblock / 3;
-end_primer_samp = int(end_primer * fs)
-end_stim = int(trial_len * fs)
-plt.annotate('switch primer to dot', xy=(end_primer, 
-    mean[end_primer_samp]), xytext=(5, 6000),
-    arrowprops=dict(facecolor='black', shrink=0.05))
-plt.annotate('end of stimuli', xy=(trial_len, 
-    mean[end_stim]), xytext=(trial_len, 6000),
-    arrowprops=dict(facecolor='black', shrink=0.05))
-plt.legend(loc=9)    
-plt.ylabel('Pupil Size')
-plt.xlabel('Trial Time (s)')
-plt.title('Trial Pupil Size N = ' + str(len(ps)))
-plt.show()
-plt.savefig('trialPS.pdf')
+## !!
+#end_primer = preblock / 3;
+#end_primer_samp = int(end_primer * fs)
+#end_stim = int(trial_len * fs)
+#plt.annotate('switch primer to dot', xy=(end_primer, 
+    #mean[end_primer_samp]), xytext=(5, 6000),
+    #arrowprops=dict(facecolor='black', shrink=0.05))
+#plt.annotate('end of stimuli', xy=(trial_len, 
+    #mean[end_stim]), xytext=(trial_len, 6000),
+    #arrowprops=dict(facecolor='black', shrink=0.05))
+#plt.legend(loc=9)    
+#plt.ylabel('Pupil Size')
+#plt.xlabel('Trial Time (s)')
+#plt.title('Trial Pupil Size N = ' + str(len(ps)))
+#plt.show()
+#plt.savefig('trialPS.pdf')

@@ -26,7 +26,7 @@ import os
 
 assert ef.__version__ == '2.0.0.dev'
 # assert version of stimuli to use
-stim_version_code = 5631
+stim_version_code = 1118
 
 PATH = os.path.abspath(os.pardir)
 datadir = op.join(PATH, 'Data')
@@ -397,7 +397,7 @@ with ef.ExperimentController(*std_args, **std_kwargs) as ec:
     wheel_matrix_info = global_vars['wheel_matrix_info'][0]
     order = global_vars['order'][0]
     preblock = global_vars['preblock_prime_sec'][0]
-    s2_blocks = global_vars['s2_blocks']
+    s2_blocks = global_vars['s2_blocks'][0][0]
 
     # make condition ordering
     # keep the same block ordering for the same subject
@@ -472,6 +472,7 @@ with ef.ExperimentController(*std_args, **std_kwargs) as ec:
                 assert el.recording 
             for tnum in range(len(order[section[snum][b_ind]][0])):
                 if (tnum < inputCondition):
+                    block_ind[bnum] += 1
                     continue
                 ec.write_data_line('Trial: ', tnum)
 
