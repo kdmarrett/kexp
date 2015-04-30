@@ -26,7 +26,7 @@ import os
 
 assert ef.__version__ == '2.0.0.dev'
 # assert version of stimuli to use
-stim_version_code = 1118
+stim_version_code = 7027
 
 PATH = os.path.abspath(os.pardir)
 datadir = op.join(PATH, 'Data')
@@ -467,7 +467,7 @@ with ef.ExperimentController(*std_args, **std_kwargs) as ec:
                 block_key = 's' + str(snum) + '_' + 'start_block_' + str(b_ind)
                 ec.screen_prompt( instr[(block_key)])
             #start a new EDF file only in the middle section 
-            if (snum != 2):
+            if ((snum != 2) and debug):
                 el.calibrate(prompt=True)
                 assert el.recording 
             for tnum in range(len(order[section[snum][b_ind]][0])):
