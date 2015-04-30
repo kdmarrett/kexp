@@ -41,12 +41,12 @@ postblock = 0  # time after each trial to record pupil
 vPrimerLen = 7
 
 # EC PARAMETERS
+total_btns = 10
 gen_survey_btn = range(1, total_btns)
 rel_survey_btn = [1, 2]
 #rel_survey_btn = ['num_1', 'num_2']
 #gen_survey_btn = ['num_1', 'num_2', 'num_3', 
     #'num_4', 'num_5', 'num_6', 'num_7', 'num_8', 'num_9']
-#total_btns = 10
 #resp_dict = dict()
 #for i in range(1, total_btns):
     #resp_dict[gen_survey_btn[i]] = i
@@ -409,7 +409,7 @@ with ef.ExperimentController(*std_args, **std_kwargs) as ec:
     section = []
     section.append([0]) # Make section 1
     section.append(mid_block_order) # Make section 2
-    section.append([4]) # Make section 3
+    section.append([s2_blocks + 2]) # Make section 3
     folder = ec._exp_info['participant'] + '_' + \
         ec._exp_info['date']
     startInfo['session'] = ec._exp_info['session']
