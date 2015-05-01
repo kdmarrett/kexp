@@ -8,7 +8,7 @@ This script runs an experiment with spatially distributed letter streams.
 Author: Karl Marrett <kdmarret@uw.edu>, <kdmarrett@gmail.com>
 """
 
-import timeit
+#import timeit
 from scipy import io as sio
 import sys
 import pyglet
@@ -26,13 +26,13 @@ import os
 
 assert ef.__version__ == '2.0.0.dev'
 # assert version of stimuli to use
-stim_version_code = 7027
+stim_version_code = 1691
 
 PATH = os.path.abspath(os.pardir)
 datadir = op.join(PATH, 'Data')
 
 # GLOBAL VARIABLES
-debug = False
+debug = True
 skipTrain = False
 wait_brief = .2
 wait_long = 2
@@ -174,10 +174,10 @@ def recordTrial(wheel_matrix_info, preblock, block_ind, bnum, instr, ec,
     pupillometry data.  """
 
     # identify paradigm and trial number
-    start_time = timeit.default_timer()
+    #start_time = timeit.default_timer()
     trial_vars = getTrialInfo(block_ind, bnum)
-    elapsed = timeit.default_timer() - start_time
-    print 'load mat ' + str(elapsed) + '\n'
+    #elapsed = timeit.default_timer() - start_time
+    #print 'load mat ' + str(elapsed) + '\n'
     data_file_name = 'b' + str(bnum) + '_tr' + str(block_ind[bnum]) 
     stim_file_name = 'b' + str(bnum) + '_tr' + str(block_ind[bnum]) + '.wav'
     trial_stim_path = op.join(stimdir, stim_file_name)
@@ -192,15 +192,15 @@ def recordTrial(wheel_matrix_info, preblock, block_ind, bnum, instr, ec,
     final_vars = dict()
     final_vars['trial_id'] = id_list
     # load WAVs for this block
-    start_time = timeit.default_timer()
+    #start_time = timeit.default_timer()
     stims = []
     stims.append(read_wav(trial_stim_path)[0])  # ignore fs
     stim_dur = stims[0].shape[-1] / ec.stim_fs
-    elapsed = timeit.default_timer() - start_time
+    #elapsed = timeit.default_timer() - start_time
     ec.clear_buffer()
     ec.load_buffer(stims[0])
     #elapsed = timeit.default_timer() - start_time
-    print 'load stimuli ' + str(elapsed) + '\n'
+    #print 'load stimuli ' + str(elapsed) + '\n'
     # draw visual primer
     drawPrimer(wheel_matrix_info, target_letter, possible_letters)
 
@@ -364,7 +364,7 @@ def getTrialInfo(block_ind, bnum):
 # run experiment
 inputSection = input('Start from section (0,1,2)? ')
 if (inputSection == 1):
-    inputBlock = input('Start from block (0,1, ...5) ')
+    inputBlock = input('Start from block (0,1, ...8) ')
 else:
     inputBlock = 0
 if (inputSection == 2):
@@ -402,14 +402,15 @@ with ef.ExperimentController(*std_args, **std_kwargs) as ec:
     # make condition ordering
     # keep the same block ordering for the same subject
     np.random.seed(np.abs(hash(ec._exp_info['participant'])))
-    # ordering of the 6 blocks in section 2
+    # ordering of the 9 blocks in section 2
     mid_block_order = np.random.permutation(range(1,(1 +
         s2_blocks))).tolist()
     # all other randomness is determined in runcreatestims.m
     section = []
     section.append([0]) # Make section 1
     section.append(mid_block_order) # Make section 2
-    section.append([s2_blocks + 2]) # Make section 3
+    section.append([s2_blocks + 1]) # Make section 3
+    assert (s2_blocks + 1 == 10)
     folder = ec._exp_info['participant'] + '_' + \
         ec._exp_info['date']
     startInfo['session'] = ec._exp_info['session']
