@@ -26,13 +26,13 @@ import os
 
 assert ef.__version__ == '2.0.0.dev'
 # assert version of stimuli to use
-stim_version_code = 1691
+stim_version_code = 7027
 
 PATH = os.path.abspath(os.pardir)
 datadir = op.join(PATH, 'Data')
 
 # GLOBAL VARIABLES
-debug = True
+debug = False
 skipTrain = False
 wait_brief = .2
 wait_long = 2
@@ -295,8 +295,9 @@ def train(order, wheel_matrix_info, preblock, block_ind, instr, ec,
     specified number of tries, experiment exits"""
 
     tot_train_blocks = 3
-    train_num = 5
+    train_num = 11
     trials_per_cond = len(order[train_num][0])
+    assert trials_per_cond == 12
     # instructions
     # for each condition type
     ec.screen_prompt(instr['start_train'])
@@ -468,7 +469,7 @@ with ef.ExperimentController(*std_args, **std_kwargs) as ec:
                 block_key = 's' + str(snum) + '_' + 'start_block_' + str(b_ind)
                 ec.screen_prompt( instr[(block_key)])
             #start a new EDF file only in the middle section 
-            if ((snum != 2) and debug):
+            if (snum != 2):
                 el.calibrate(prompt=True)
                 assert el.recording 
             for tnum in range(len(order[section[snum][b_ind]][0])):
@@ -491,12 +492,12 @@ with ef.ExperimentController(*std_args, **std_kwargs) as ec:
                         bnum, instr, ec, stimdir, final_datadir,
                         record_pupil, record_correct, save_correct )
                 # update block_ind
-                start_time = timeit.default_timer()
+                #start_time = timeit.default_timer()
                 blockmat = op.join(edf_outputdir, 'block_ind.obj')
                 blockfile = open(blockmat, 'w')
                 pck.dump(block_ind, blockfile) # overwrites
-                elapsed_time = timeit.default_timer() - start_time
-                print 'save blockmat for each trial' + str(elapsed_time) + '\n'
+                #elapsed_time = timeit.default_timer() - start_time
+                #print 'save blockmat for each trial' + str(elapsed_time) + '\n'
                 if (snum == 2):
                     cogLoadSurvey(gen_survey, mid_survey, rel_survey,
                             paradigm, edf_outputdir, tnum, ec)
