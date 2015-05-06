@@ -1,6 +1,5 @@
 # author: Karl Marrett
-# processes pupillometry data
-# modified from pupil_deconv.py on voc_meg experiment by Eric Larson
+# driver for processing pupillometry data
 
 import os
 import glob
@@ -11,18 +10,21 @@ import pyeparse as pp
 import numpy as np
 import matplotlib.pyplot as plt
 import pickle as pck
-
 from pyeparse.utils import pupil_kernel
 from expyfun import binary_to_decimals, decimals_to_binary
 
-subjects = ['testtrialid']
+#from anls_func import *
 
+subjects = ['HL', 'HK', 'HJ'] # HK later
+N = len(subjects)
+
+#assert version code
 stim_version_code = 8010
 # asserted fs
 fs = 1000.0  
-data_dir = os.path.abspath(os.path.join(os.pardir, 'Data'))
+#data_dir = os.path.abspath(os.path.join(os.pardir, 'Data'))
+data_dir = '/home/kdmarrett/lab/FilesScript/Data'
 
-# LOAD IN TRIAL DATA/STIMS
 def getTrialInfo(block_ind, bnum, advance=False):
     """ Returns generic information about particular trial wav data """
 
@@ -89,42 +91,6 @@ def getCogResponses(subj_data_dir):
     trial_data_path = op.join(param_data_dir, data_file_name)
     trial_vars = sio.loadmat(trial_data_path)
 
-# read in global stimuli parameters
-param_data_dir = op.join(data_dir, 'Params')
-global_vars = sio.loadmat(op.join(param_data_dir, 'global_vars.mat'))
-preblock = global_vars['preblock_prime_sec'][0]
-# time of visual primer
-vPrimerLen = global_vars['vPrimerLen'] 
-# time after each trial to record pupil
-postblock = global_vars['postblock'] 
-#trial_len = global_vars['tot_wav_time'] 
-trial_len = 36.0001
-order = global_vars['order'][0]
-s2_blocks = global_vars['s2_blocks']
-# trials_per_block
-block_len = len(order[1])
-wheel_matrix_info = global_vars['wheel_matrix_info'][0]
-
-# build condition strings
-condition_uni = global_vars['condition_bin']  # Unicode by default
-condition_asc = []  # ASCII
-for i in range(len(condition_uni)):
-    condition_asc.append(''.join(map(str, condition_uni[i].tolist())))
-#condition_asc.append(condition_uni[i].encode('ascii'))
-condition_nums = len(condition_asc)
-# keep track of which new wav file to use
-block_ind = dict(
-    zip(range(len(order)), np.zeros(len(order), dtype=int)))
-wav_indices = dict(
-    zip(condition_asc, np.zeros(len(condition_asc), dtype=int)))
-# build String condition ids for raw 'messages'
-base = 'TRIALID'
-condition_pattern = [''] * condition_nums;
-for i in range(condition_nums):
-    condition_pattern[i] = base
-    for j in range(len(condition_asc[i])):
-        condition_pattern[i] += ' ' + condition_asc[i][j]
-
 def getConditionEpochs(fnames):
     for ci, pattern in condition_pattern:
         event_id = ci
@@ -139,105 +105,290 @@ def getConditionEpochs(fnames):
         epochs.append(trial_epoch)
         ps.append(trial_epoch.get_data('ps')[0])
 
+def getSubjStats(ps, type='correct'):
+    if type is 'both':
+        types = status
+    else:
+        types = type
+    for i, subj_ps in enumerate(ps):
+        for pattern in condition_pattern:
+            for stat in types:
+                subj_mean = np.mean(subj_ps[pattern + stat])
+                subj_std = np.mean(subj_ps[pattern + stat])
+                cond_num = patternToCond[pattern]
 
+
+def plot_accuracy():
+    mean = dict()
+    std = dict()
+    for cond in condition_pattern:
+        num = int(cond[-3:].replace(" ", ""), 2)
+        mean[num] = np.mean(accuracy_dict[cond])
+        std[num] = np.std(accuracy_dict[cond])
+
+    #for i, subj_ps in enumerate(ps):
+        #for cond in condition_pattern:
+            #num = int(cond[-3:].replace(" ", ""), 2)
+            #mean[num] = np.mean(subj_ps[cond])
+            #std[num] = np.std(subj_ps[cond])
+
+    #order the conditions
+    acc_mean = []
+    acc_std = []
+    for i in range(1, 1+condition_nums):
+        acc_mean.append(mean[i])
+        acc_std.append(std[i])
+       
+    #fig, ax = plt.subplots()
+    fig = plt.figure()
+    index = np.arange(condition_nums)
+    bar_width = .25
+    opacity = .4
+    error_config = {'ecolor': '.3'}
+    rects1 = plt.bar(index, acc_mean, bar_width, alpha=opacity,
+            color='b', yerr=acc_std, error_kw=error_config)
+
+    plt.xlabel('Condition')
+    plt.ylabel('Accuracy')
+    plt.ylim([0, 1.30])
+    plt.minorticks_on()
+    plt.grid(True)
+    #plt.grid(b=True, which='minor', color='k', alpha=.9)
+    #plt.grid(b=False, which='major', color='k', alpha=.9)
+    plt.title('Accuracy by condition')
+    plt.xticks(index + bar_width, ('1', '2', '3'))
+    #plt.legend()
+
+    plt.tight_layout()
+    #plt.show()
+    plt.savefig('conditionAccuracy.png')
+
+def plot_ps(ps, name=''):
+    min_len = np.inf;
+    for i in range(len(ps)):
+        temp = len(ps[i])
+        if temp < min_len:
+            min_len = temp
+        
+    #import pdb; pdb.set_trace()
+    dat = np.array(np.zeros(min_len*len(ps)))
+    dat.shape = (len(ps), min_len)
+    for j in range(len(ps)):
+        dat[j,:] = ps[j]
+
+    stdev = np.array(np.zeros(min_len))
+    mean = np.array(np.zeros(min_len))
+    for i in range(min_len):
+        stdev[i] = np.std(dat[:,i])
+        mean[i] = np.mean(dat[:,i])
+
+    fig = plt.figure()
+    x = np.linspace(0, min_len / fs, min_len)
+    plt.plot(x, mean, 'r', linewidth=3, label='mean', alpha=1)
+    plt.plot(x, stdev, 'b--', linewidth=2, label='inter-trial std')
+    end_primer = vPrimerLen
+    end_primer_samp = int(end_primer * fs)
+    end_stim = int(trial_len * fs)
+    trial_means = []
+    for i in range(len(ps)):
+        plt.plot(x, ps[i], 'k', linewidth=.1, alpha = .4)
+        trial_means.append(ps[i][end_primer_samp:])
+    global_mean = np.mean(trial_means)
+    global_std = np.std(trial_means)
+
+    plt.annotate('switch primer to dot', xy=(end_primer, 
+        mean[end_primer_samp]), xytext=(5, 6000),
+        arrowprops=dict(facecolor='black', shrink=0.05))
+    #plt.annotate('end of stimuli', xy=(trial_len, 
+        #mean[end_stim]), xytext=(trial_len, 6000),
+        #arrowprops=dict(facecolor='black', shrink=0.05))
+    plt.legend(loc=9)    
+    plt.ylabel('Pupil Size')
+    plt.text(2, global_mean, 'trial means = ' + \
+            str(global_mean) + ', std = ' + \
+            str(global_std))
+    plt.xlabel('Trial Time (s)')
+    plt.title(name + ' trial pupil size N = ' + str(len(ps)))
+    #plt.show()
+    name = name.replace(" ", "")
+    fn = name + 'ps.png'
+    plt.savefig(fn)
+
+
+# read in global stimuli parameters
+param_data_dir = op.join(data_dir, 'Params')
+global_vars = sio.loadmat(op.join(param_data_dir, 'global_vars.mat'))
+preblock = global_vars['preblock_prime_sec'][0]
+# time of visual primer
+vPrimerLen = global_vars['vPrimerLen'] 
+# time after each trial to record pupil
+postblock = global_vars['postblock'] 
+#trial_len = global_vars['tot_wav_time'] 
+trial_len = 36.0001
+order = global_vars['order'][0]
+s2_blocks = global_vars['s2_blocks']
+# trials_per_block in middle section
+block_len = len(order[1][0])
+wheel_matrix_info = global_vars['wheel_matrix_info'][0]
+
+# build condition strings
+condition_uni = global_vars['condition_bin']  # Unicode by default
+condition_asc = []  # ASCII
+for i in range(len(condition_uni)):
+    condition_asc.append(''.join(map(str, condition_uni[i].tolist())))
+#condition_asc.append(condition_uni[i].encode('ascii'))
+condition_nums = len(condition_asc)
+wav_indices = dict(
+    zip(condition_asc, np.zeros(len(condition_asc), dtype=int)))
+# build String condition ids for raw 'messages'
+base = 'TRIALID'
+condition_pattern = [''] * condition_nums;
+patternToCond = dict()
+for i in range(condition_nums):
+    condition_pattern[i] = base
+    for j in range(len(condition_asc[i])):
+        condition_pattern[i] += ' ' + condition_asc[i][j]
+    patternToCond[condition_pattern[i]] =  \
+        int(condition_pattern[i][-3:].replace(" ", ""), 2)
+
+#date structures
+#ps_dict = dict()
+#accuracy_dict = dict()
 ps = []
-for subj in subjects:
-    print('  Subject %s...' % subj)
+accuracy = []
+accuracy_dict = dict()
+ps_dict = dict()
+status = ['correct', 'incorrect']
+for pattern in (condition_pattern):
+    accuracy_dict[pattern] = []
+    for stat in (status):
+        ps_dict[pattern + stat] = []
+    
+for s_ind, subj in enumerate(subjects):
+    print('Subject %s...' % subj)
+    #try:
+    fsubj_accuracy = open(subj + '_accuracy.obj', 'r')
+    fsubj_ps = open(subj + '_ps.obj', 'r')
+    subj_accuracy = pck.load(fsubj_accuracy)
+    subj_ps = pck.load(fsubj_ps)
+    accuracy.append(subj_accuracy)
+    ps.append(subj_ps)
+    fsubj_accuracy.close()
+    fsubj_ps.close()
+    continue
+    #except:
+        #pass
+    subj_accuracy = dict()
+    subj_ps = dict()
+    for pattern in (condition_pattern):
+        subj_accuracy[pattern] = []
+        for stat in (status):
+            subj_ps[pattern + stat] = []
 
     # return all edfs files for a given subject
+    # keep track of which new wav file to use
+    block_ind = dict(
+        zip(range(len(order)), np.zeros(len(order), dtype=int)))
     fnames = sorted(glob.glob(op.join(data_dir, '%s_*' % subj, '*.edf')))
     subj_files = sorted(glob.glob(op.join(data_dir, '%s_*' % subj)))
-    for file in subj_files:
-        if op.isdir(file):
-            subj_data_dir = file
+    sessions = len(subj_files) / 3
+    subj_data_dir = []
+    start_path = []
+    startInfo = []
 
-    # check if two dirs for this subject
+    for fi, file in enumerate(subj_files):
+        if op.isdir(file):
+            subj_data_dir.append(file)
+            start_path.append(op.join(subj_data_dir[-1],
+                'startInfo.mat'))
+            startInfo.append(sio.loadmat(start_path[-1]))
+    # check that mid_block order he same for this subject
+    mid_block_order = startInfo[0]['mid_block_order'][0]
+    subj_data_dir = subj_data_dir[0]
 
     # check MATLAB trial parameters with
-    # assert (len(fnames) + 1) == len(params['s2_blocks'])
     # subj_tab = glob.glob(op.join(data_dir, '%s_*.tab' % subj))
-    # assert len(subj_tab) == 1
-    # subj_tab = read_tab(subj_tab[0])
+    #subj_tab = read_tab(subj_tab[0])
 
     #iterates over each edf file for each subject session
     #each edf represents one block from runKexp
-    epochs = []
-    # check that fnames are sorted
-    for bnum, fname in enumerate(fnames):
-        # hack
-        bnum += 1
+    #epochs = []
+    #raws = []
+    # find first edf file by session time and discard 
+    fnames.sort()
+    # don't include training block
+    fnames = fnames[1:]
+    for b_ind, fname in enumerate(fnames):
+        bnum = mid_block_order[b_ind]
+        print '\tProcessing bnum: ' + str(bnum)
         raw = pp.Raw(fname)
-        assert raw.info['sfreq'] == fs
-        #test_events = raw.find_events('SYNCTIME', 1)
-        # find first edf file by session time and discard 
-        #if (len(test_events) < 4):
-            #print '\tInvalid edf found, continuing...\n'
-            #continue
-
         raw.remove_blink_artifacts()
-        #import pdb; pdb.set_trace()
-        trial_mats = sorted(glob.glob(op.join(data_dir, '%s_*' % subj,
-            'b'+ str(bnum) + '.*final.mat')))
+        #raws[bnum] = raw
+        assert raw.info['sfreq'] == fs
+        if (len(fnames) != s2_blocks):
+            print '\t Warning: incorrect edf file count ' + \
+            str(len(fnames))
+
+        #block_final_mats = sorted(glob.glob(op.join(data_dir, '%s_*' %
+            #subj, 'b'+ str(bnum) + '.*final.mat')))
+
         # for each trial in this block
         for tnum in range(block_len):
             #paradigm = getTrialInfo(block_ind, bnum)
-            id_list = getGeneralInfo(block_ind, bnum, advance=True)
-            #id_list, correct = getFinalInfo(block_ind, bnum,
-                    #subj_data_dir)
-            trial_id = base + ' '.join(map(str, id_list))
-            event_id = 0  # categorize event must be int?
+            #id_list = getGeneralInfo(block_ind, bnum, advance=False)
+            event_id = s_ind
+            try:
+                id_list, correct = getFinalInfo(block_ind, bnum,
+                        subj_data_dir, advance=True)
+                trial_id = base + ' ' + ' '.join(map(str, id_list))
+            except:
+                print '\tWarning: trial ' + str(tnum) + \
+                        ' not found for bnum ' + \
+                        str(bnum) + ' in mat files'
+                #advance indexer dict
+                block_ind[bnum] += 1
+                continue
             #find the event for this trial
-            event = raw.find_events(trial_id, event_id)
+            events = raw.find_events(trial_id, event_id)
+            if (len(events) == 0):
+                print '\tWarning: trial ' + str(tnum) + \
+                        ' not found for bnum ' + \
+                        str(bnum) + ' in edf files'
+                continue
+            else:
+                print '\t\tProcessing trial ' + str(tnum)
             #parse ps data and add to dicts/matrices
             tmin = 0.0
             tmax = trial_len + postblock
             trial_epoch = pp.Epochs(raw, events=events, 
                 event_id=event_id, tmin=tmin, tmax=tmax)
-            epochs.append(trial_epoch)
-            ps.append(trial_epoch.get_data('ps')[0])
+            for pattern in condition_pattern:
+                if trial_id.startswith(pattern):
+                    cond = pattern
+            if correct:
+                key = cond + 'correct'
+            else:
+                key = cond + 'incorrect'
+            ps_dict[key].append(trial_epoch.get_data('ps')[0])
+            accuracy_dict[cond].append(correct)
+            subj_ps[key].append(trial_epoch.get_data('ps')[0])
+            subj_accuracy[cond].append(correct)
+    accuracy.append(subj_accuracy)
+    ps.append(subj_ps)
+    fsubj_accuracy = open(subj + '_accuracy.obj', 'w')
+    fsubj_ps = open(subj + '_ps.obj', 'w')
+    pck.dump(subj_ps, fsubj_ps) # overwrites
+    pck.dump(subj_accuracy, fsubj_accuracy) # overwrites
+    fsubj_accuracy.close()
+    fsubj_ps.close()
+        
+plot_accuracy()
+#status = ['correct'] #only consider correct trials
+for pattern in condition_pattern:
+    print 'plotting pattern' + pattern
+    for stat in status:
+        ps = ps_dict[pattern + stat]
+        cond_num = patternToCond[pattern]
+        name = 'Condition ' + str(cond_num) + ' ' + stat
+        plot_ps(ps, name)
 
-
-# arrange it into a 2 dimensional array
-# get mean and variance for array
-# create a way to distinguish sessions and subjects for batch processing
-
-#min_len = np.inf;
-#for i in range(len(ps)):
-    #temp = len(ps[i])
-    #if temp < min_len:
-        #min_len = temp
-    
-#dat = np.array(np.zeros(min_len*len(ps)))
-#dat.shape = (len(ps), min_len)
-#for j in range(len(ps)):
-    #dat[j,:] = ps[j]
-
-#stdev = np.array(np.zeros(min_len))
-#mean = np.array(np.zeros(min_len))
-#for i in range(min_len):
-    #stdev[i] = np.std(dat[:,i])
-    #mean[i] = np.mean(dat[:,i])
-
-#fig = plt.figure()
-#x = np.linspace(0, min_len / fs, min_len)
-#plt.plot(x, mean, 'r--', linewidth=4, label='mean')
-#plt.plot(x, stdev, 'b--', linewidth=2, label='inter-trial std')
-#for i in range(len(ps)):
-    #plt.plot(x, ps[i], 'k', linewidth=.1)
-
-## !!
-#end_primer = preblock / 3;
-#end_primer_samp = int(end_primer * fs)
-#end_stim = int(trial_len * fs)
-#plt.annotate('switch primer to dot', xy=(end_primer, 
-    #mean[end_primer_samp]), xytext=(5, 6000),
-    #arrowprops=dict(facecolor='black', shrink=0.05))
-#plt.annotate('end of stimuli', xy=(trial_len, 
-    #mean[end_stim]), xytext=(trial_len, 6000),
-    #arrowprops=dict(facecolor='black', shrink=0.05))
-#plt.legend(loc=9)    
-#plt.ylabel('Pupil Size')
-#plt.xlabel('Trial Time (s)')
-#plt.title('Trial Pupil Size N = ' + str(len(ps)))
-#plt.show()
-#plt.savefig('trialPS.pdf')
