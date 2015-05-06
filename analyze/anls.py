@@ -105,76 +105,74 @@ def getConditionEpochs(fnames):
         epochs.append(trial_epoch)
         ps.append(trial_epoch.get_data('ps')[0])
 
-def getSubjStats(ps, type='correct'):
-    if type is 'both':
-        types = status
-    else:
-        types = type
-    for i, subj_ps in enumerate(ps):
-        for pattern in condition_pattern:
-            for stat in types:
-                subj_mean = np.mean(subj_ps[pattern + stat])
-                subj_std = np.mean(subj_ps[pattern + stat])
-                cond_num = patternToCond[pattern]
+def subj_accuracy_stats():
+    subj_means = [[],[],[]]
+    subj_stds = [[],[],[]]
+    for i, subj_accuracy in enumerate(accuracy):
+        for cond in condition_pattern:
+            num = int(cond[-3:].replace(" ", ""), 2) - 1
+            subj_means[num].append(np.mean(subj_accuracy[cond]))
+            subj_stds[num].append(np.std(subj_accuracy[cond]))
 
+    global_mean = []
+    global_std = []
+    global_ste = []
+    for i in range(condition_nums):
+        global_mean.append(np.mean(subj_means[i]))
+        global_std.append(np.std(subj_means[i]))
+        global_ste.append(global_std[-1] / np.sqrt(N))
+    return global_mean, global_std, global_ste, subj_means, subj_stds
+
+def subj_ps_stats(type='correct'):
+    pass
+    #if type is 'both':
+        #types = status
+    #else:
+        #types = type
+    #for stat in types:
 
 def plot_accuracy():
-    mean = dict()
-    std = dict()
-    for cond in condition_pattern:
-        num = int(cond[-3:].replace(" ", ""), 2)
-        mean[num] = np.mean(accuracy_dict[cond])
-        std[num] = np.std(accuracy_dict[cond])
-
-    #for i, subj_ps in enumerate(ps):
-        #for cond in condition_pattern:
-            #num = int(cond[-3:].replace(" ", ""), 2)
-            #mean[num] = np.mean(subj_ps[cond])
-            #std[num] = np.std(subj_ps[cond])
-
-    #order the conditions
-    acc_mean = []
-    acc_std = []
-    for i in range(1, 1+condition_nums):
-        acc_mean.append(mean[i])
-        acc_std.append(std[i])
-       
-    #fig, ax = plt.subplots()
-    fig = plt.figure()
+    global_mean, global_std, global_ste, subj_means, subj_stds = \
+        subj_accuracy_stats()
+    #fig = plt.figure()
     index = np.arange(condition_nums)
+    x = [.5, 1.0, 1.5]
     bar_width = .25
     opacity = .4
-    error_config = {'ecolor': '.3'}
-    rects1 = plt.bar(index, acc_mean, bar_width, alpha=opacity,
-            color='b', yerr=acc_std, error_kw=error_config)
+    error_config = {'ecolor': '.6'}
+    rects1 = plt.bar(x, global_mean, bar_width, alpha=opacity,
+            color='w', yerr=global_std, error_kw=error_config)
+    x = x + np.tile(bar_width / 2, condition_nums)
+    for subj_mean in subj_means:
+        plt.plot(x, subj_mean, color='k', alpha=.3, marker='o')
+        
 
-    plt.xlabel('Condition')
+    #import pdb;pdb.set_trace()
+    #plt.xlabel('Condition')
     plt.ylabel('Accuracy')
     plt.ylim([0, 1.30])
     plt.minorticks_on()
-    plt.grid(True)
+    #plt.grid(True)
     #plt.grid(b=True, which='minor', color='k', alpha=.9)
     #plt.grid(b=False, which='major', color='k', alpha=.9)
     plt.title('Accuracy by condition')
-    plt.xticks(index + bar_width, ('1', '2', '3'))
-    #plt.legend()
-
+    plt.xticks(x, ('alpha.', 'order', 'rand.'))
     plt.tight_layout()
-    #plt.show()
+    plt.show()
     plt.savefig('conditionAccuracy.png')
 
-def plot_ps(ps, name=''):
+def plot_ps(ps_type, name=''):
     min_len = np.inf;
-    for i in range(len(ps)):
-        temp = len(ps[i])
+    for i in range(len(ps_type)):
+        temp = len(ps_type[i])
         if temp < min_len:
             min_len = temp
         
     #import pdb; pdb.set_trace()
-    dat = np.array(np.zeros(min_len*len(ps)))
-    dat.shape = (len(ps), min_len)
-    for j in range(len(ps)):
-        dat[j,:] = ps[j]
+    dat = np.array(np.zeros(min_len*len(ps_type)))
+    dat.shape = (len(ps_type), min_len)
+    for j in range(len(ps_type)):
+        dat[j,:] = ps_type[j]
 
     stdev = np.array(np.zeros(min_len))
     mean = np.array(np.zeros(min_len))
@@ -190,9 +188,9 @@ def plot_ps(ps, name=''):
     end_primer_samp = int(end_primer * fs)
     end_stim = int(trial_len * fs)
     trial_means = []
-    for i in range(len(ps)):
-        plt.plot(x, ps[i], 'k', linewidth=.1, alpha = .4)
-        trial_means.append(ps[i][end_primer_samp:])
+    for i in range(len(ps_type)):
+        plt.plot(x, ps_type[i], 'k', linewidth=.1, alpha = .4)
+        trial_means.append(ps_type[i][end_primer_samp:])
     global_mean = np.mean(trial_means)
     global_std = np.std(trial_means)
 
@@ -208,7 +206,7 @@ def plot_ps(ps, name=''):
             str(global_mean) + ', std = ' + \
             str(global_std))
     plt.xlabel('Trial Time (s)')
-    plt.title(name + ' trial pupil size N = ' + str(len(ps)))
+    plt.title(name + ' trial pupil size N = ' + str(len(ps_type)))
     #plt.show()
     name = name.replace(" ", "")
     fn = name + 'ps.png'
@@ -266,18 +264,19 @@ for pattern in (condition_pattern):
     
 for s_ind, subj in enumerate(subjects):
     print('Subject %s...' % subj)
-    #try:
-    fsubj_accuracy = open(subj + '_accuracy.obj', 'r')
-    fsubj_ps = open(subj + '_ps.obj', 'r')
-    subj_accuracy = pck.load(fsubj_accuracy)
-    subj_ps = pck.load(fsubj_ps)
-    accuracy.append(subj_accuracy)
-    ps.append(subj_ps)
-    fsubj_accuracy.close()
-    fsubj_ps.close()
-    continue
-    #except:
-        #pass
+    try:
+        fsubj_accuracy = open(subj + '_accuracy.obj', 'r')
+        fsubj_ps = open(subj + '_ps.obj', 'r')
+        subj_accuracy = pck.load(fsubj_accuracy)
+        subj_ps = pck.load(fsubj_ps)
+        accuracy.append(subj_accuracy)
+        ps.append(subj_ps)
+        fsubj_accuracy.close()
+        fsubj_ps.close()
+        continue
+    except:
+        pass
+    #new data structs
     subj_accuracy = dict()
     subj_ps = dict()
     for pattern in (condition_pattern):
@@ -381,14 +380,14 @@ for s_ind, subj in enumerate(subjects):
     pck.dump(subj_accuracy, fsubj_accuracy) # overwrites
     fsubj_accuracy.close()
     fsubj_ps.close()
-        
+    
 plot_accuracy()
 #status = ['correct'] #only consider correct trials
-for pattern in condition_pattern:
-    print 'plotting pattern' + pattern
-    for stat in status:
-        ps = ps_dict[pattern + stat]
-        cond_num = patternToCond[pattern]
-        name = 'Condition ' + str(cond_num) + ' ' + stat
-        plot_ps(ps, name)
+#for pattern in condition_pattern:
+    #print 'plotting pattern' + pattern
+    #for stat in status:
+        #ps_type = ps_dict[pattern + stat]
+        #cond_num = patternToCond[pattern]
+        #name = 'Condition ' + str(cond_num) + ' ' + stat
+        #plot_ps(ps_type, name)
 
