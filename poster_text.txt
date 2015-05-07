@@ -1,0 +1,88 @@
+
+    The P300 response is an event related potential (ERP) characterized
+    by a positive voltage deflection around 300 ms after a rare or
+    unexpected stimulus typically recorded using electroencephalography
+    (EEG). The classic P300 (also known as oddball) paradigm 1) consists
+    of stimuli representing possible BCI outputs are separated into two
+    categories: target and non-target 2) the stimulus of the target
+    category is sufficiently rare compared to the non-target category
+    and 3) the user attends the target category \cite{Wolpaw2012}.  P300
+    amplitude increases with increased absolute time gaps between
+    oddball presentation \cite{GONSALVEZ2002}, and amplitude is also
+    affected by moment to moment changes in the probability a stimulus
+    will appear, where higher probabilities result in diminished
+    amplitude of responses \cite{Donchin1981}.  Also, when users
+    performed two tasks simultaneously that elicited oddball responses,
+    when one of the tasks increased in difficulty and required more user
+    attention, the P300 amplitude associated with the more difficult
+    task had larger more salient oddball responses. \cite{Sirevaag1989}.
+     Furthermore, an auditory paradigm with an oddball probability of
+    25\% is likely to yield a P300 response \cite{Nijboer2008}. 
+
+Background:
+Auditory Scene Analysis:
+Humans have the ability in a crowded auditory environment to
+selectively listen to different sounds and segregate different
+sources into different 'streams' (i.e. the 'cocktail party effect') 
+\cite{Bregman1994}. 
+These streams can be formed by discriminating
+features such as spatial location, informational content, or temporal coherence.  
+
+P300 response:
+The standard procedure for eliciting a P300 response is as follows:
+A subject is presented with a series of stimuli that fall into one of two classes (i.e. target and non-target)
+One class (the target) must have lower probability of occurring than the other and typically use ¼ to ⅓
+The subject performs a task to classify stimuli into the two classes by (selectively) ATTENDING  the stimuli
+
+Introduction:
+Evoked Related Potentials such as the P300 response are typically used
+for extracting user intent in speller related brain computer interfaces.
+
+Typical spellers present stimuli in the visual domain however, auditory
+stimuli may be a competitive alternative due to several unique features
+of central auditory processing.
+
+Recent developments have shown that discriminative ERP features do not
+have to rely on ‘oddball’ stimuli but can be evoked via
+sequential/alphabetic ordering \cite{Tangermann2014}.
+
+target letters as a proxy for P300 response
+
+Question
+The experiment tests:
+Effects of alphabetic ordering 
+Effects of phonemic similarities in letters
+Effects of dynamic vs. ordering
+
+Which of these features determine listener's ability to discriminate
+target?
+How do these features correlate with cognitive load?
+Can these percepts of cognitive load be corroborated via pupillometry?
+
+Hypothesis:
+Keeping letters in alphabetic order will aid user's accuracy in
+attending a target letter.
+Alphabetic ordering will also lower the cognitive load of listener's
+attending a letter.
+Similarly, fixed order presentation will increase the acurracy and ease
+the cognitive load of the listener.
+Local and steady-state features of pupillometry can be used to assess
+cognitive load.
+
+
+Stimuli:
+
+Procedure:
+Subjects:
+Native English speakers with no hearing difficulties
+
+Conclusion
+Sequential ordering (the charStreamer paradigm) offers a potential to greatly increase the usability of current speller systems
+There are still avenues to increase usability within this new paradigm
+
+Acknowledgments
+We would like to thank the Computational Neuroscience Training Program
+and the Center for Sensorimotor Neural Engineering for funding towards
+the BL- BT summer exchange. We would also like to thank the Levinson
+Emerging Scholarship and the Mary Gates Research Scholarship for support
+during this project.
