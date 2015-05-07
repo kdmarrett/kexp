@@ -6,6 +6,7 @@ import glob
 from os import path as op
 import time
 from scipy import io as sio 
+from scipy import stats
 import pyeparse as pp 
 import numpy as np
 import matplotlib.pyplot as plt
@@ -15,7 +16,7 @@ from expyfun import binary_to_decimals, decimals_to_binary
 
 #from anls_func import *
 
-subjects = ['HL', 'HK', 'HJ'] # HK later
+subjects = ['HN', 'HL', 'HK', 'HJ'] # HK later
 N = len(subjects)
 
 #assert version code
@@ -82,14 +83,14 @@ def getGeneralInfo(block_ind, bnum, advance=False):
         block_ind[bnum] += 1
     return id_list
 
-def getCogResponses(subj_data_dir):
-    # retrieve wav_indices
-    id_ = condition_asc[i]
-    wav_num = wav_indices[id_]
-    wav_indices[id_] += 1
-    data_file_name = id_ + '_tr' + str(wav_num)
-    trial_data_path = op.join(param_data_dir, data_file_name)
-    trial_vars = sio.loadmat(trial_data_path)
+def getCogResponses(cog, subj_data_dir):
+    temp = []
+    for param in para.values():
+        data_file_name = param + '_cog_resp.mat'
+        cog_data_path = op.join(subj_data_dir, data_file_name)
+        temp.append(sio.loadmat(cog_data_path))
+    cog.append(temp)
+    return cog
 
 def getConditionEpochs(fnames):
     for ci, pattern in condition_pattern:
@@ -110,10 +111,12 @@ def subj_accuracy_stats():
     subj_stds = [[],[],[]]
     for i, subj_accuracy in enumerate(accuracy):
         for cond in condition_pattern:
+            # change binary string into index of the condition type
             num = int(cond[-3:].replace(" ", ""), 2) - 1
             subj_means[num].append(np.mean(subj_accuracy[cond]))
             subj_stds[num].append(np.std(subj_accuracy[cond]))
 
+    #import pdb; pdb.set_trace()
     global_mean = []
     global_std = []
     global_ste = []
@@ -139,27 +142,30 @@ def plot_accuracy():
     x = [.5, 1.0, 1.5]
     bar_width = .25
     opacity = .4
-    error_config = {'ecolor': '.6'}
-    rects1 = plt.bar(x, global_mean, bar_width, alpha=opacity,
-            color='w', yerr=global_std, error_kw=error_config)
+    global_mean_pc = global_mean * np.tile(100, len(global_mean))
+    global_std_pc = global_std * np.tile(100, len(global_std))
+    error_config = {'ecolor': 'k', 'elinewidth': 3}
+    rects1 = plt.bar(x, global_mean_pc, bar_width, color='w',
+            yerr=global_std_pc, error_kw=error_config, lw=2)
     x = x + np.tile(bar_width / 2, condition_nums)
     for subj_mean in subj_means:
-        plt.plot(x, subj_mean, color='k', alpha=.3, marker='o')
+        subj_mean_pc = subj_mean * np.tile(100, len(subj_mean))
+        plt.plot(x, subj_mean_pc, color='k', alpha=opacity, marker='o')
         
 
-    #import pdb;pdb.set_trace()
     #plt.xlabel('Condition')
-    plt.ylabel('Accuracy')
-    plt.ylim([0, 1.30])
-    plt.minorticks_on()
+    plt.ylabel('Accuracy (%)')
+    plt.ylim([70, 103])
     #plt.grid(True)
     #plt.grid(b=True, which='minor', color='k', alpha=.9)
     #plt.grid(b=False, which='major', color='k', alpha=.9)
     plt.title('Accuracy by condition')
-    plt.xticks(x, ('alpha.', 'order', 'rand.'))
+    plt.xticks(x, ('Alphabetic', 'Fixed-order', 'Random'))
     plt.tight_layout()
     plt.show()
-    plt.savefig('conditionAccuracy.png')
+    #change facecolor
+    plt.savefig('conditionAccuracy.png', transparent=True,
+    edgecolor='none')
 
 def plot_ps(ps_type, name=''):
     min_len = np.inf;
@@ -197,9 +203,6 @@ def plot_ps(ps_type, name=''):
     plt.annotate('switch primer to dot', xy=(end_primer, 
         mean[end_primer_samp]), xytext=(5, 6000),
         arrowprops=dict(facecolor='black', shrink=0.05))
-    #plt.annotate('end of stimuli', xy=(trial_len, 
-        #mean[end_stim]), xytext=(trial_len, 6000),
-        #arrowprops=dict(facecolor='black', shrink=0.05))
     plt.legend(loc=9)    
     plt.ylabel('Pupil Size')
     plt.text(2, global_mean, 'trial means = ' + \
@@ -235,6 +238,11 @@ condition_asc = []  # ASCII
 for i in range(len(condition_uni)):
     condition_asc.append(''.join(map(str, condition_uni[i].tolist())))
 #condition_asc.append(condition_uni[i].encode('ascii'))
+#old naming habits of paradigm
+para = dict()
+para[0] = '0000000'
+para[1] = '0100000'
+para[2] = '0101000'
 condition_nums = len(condition_asc)
 wav_indices = dict(
     zip(condition_asc, np.zeros(len(condition_asc), dtype=int)))
@@ -254,6 +262,7 @@ for i in range(condition_nums):
 #accuracy_dict = dict()
 ps = []
 accuracy = []
+cog = []
 accuracy_dict = dict()
 ps_dict = dict()
 status = ['correct', 'incorrect']
@@ -264,30 +273,8 @@ for pattern in (condition_pattern):
     
 for s_ind, subj in enumerate(subjects):
     print('Subject %s...' % subj)
-    try:
-        fsubj_accuracy = open(subj + '_accuracy.obj', 'r')
-        fsubj_ps = open(subj + '_ps.obj', 'r')
-        subj_accuracy = pck.load(fsubj_accuracy)
-        subj_ps = pck.load(fsubj_ps)
-        accuracy.append(subj_accuracy)
-        ps.append(subj_ps)
-        fsubj_accuracy.close()
-        fsubj_ps.close()
-        continue
-    except:
-        pass
-    #new data structs
-    subj_accuracy = dict()
-    subj_ps = dict()
-    for pattern in (condition_pattern):
-        subj_accuracy[pattern] = []
-        for stat in (status):
-            subj_ps[pattern + stat] = []
 
     # return all edfs files for a given subject
-    # keep track of which new wav file to use
-    block_ind = dict(
-        zip(range(len(order)), np.zeros(len(order), dtype=int)))
     fnames = sorted(glob.glob(op.join(data_dir, '%s_*' % subj, '*.edf')))
     subj_files = sorted(glob.glob(op.join(data_dir, '%s_*' % subj)))
     sessions = len(subj_files) / 3
@@ -305,14 +292,38 @@ for s_ind, subj in enumerate(subjects):
     mid_block_order = startInfo[0]['mid_block_order'][0]
     subj_data_dir = subj_data_dir[0]
 
-    # check MATLAB trial parameters with
+    cog = getCogResponses(cog, subj_data_dir)
+
+    try:
+        fsubj_accuracy = open(subj + '_accuracy.obj', 'r')
+        fsubj_ps = open(subj + '_ps.obj', 'r')
+        subj_accuracy = pck.load(fsubj_accuracy)
+        subj_ps = pck.load(fsubj_ps)
+        accuracy.append(subj_accuracy)
+        ps.append(subj_ps)
+        fsubj_accuracy.close()
+        fsubj_ps.close()
+        continue
+    except:
+        pass
+
+    #new data structs
+    subj_accuracy = dict()
+    subj_ps = dict()
+    for pattern in (condition_pattern):
+        subj_accuracy[pattern] = []
+        for stat in (status):
+            subj_ps[pattern + stat] = []
+    # keep track of which new wav file to use
+    block_ind = dict(
+        zip(range(len(order)), np.zeros(len(order), dtype=int)))
+
+    # get Tab
     # subj_tab = glob.glob(op.join(data_dir, '%s_*.tab' % subj))
     #subj_tab = read_tab(subj_tab[0])
 
     #iterates over each edf file for each subject session
     #each edf represents one block from runKexp
-    #epochs = []
-    #raws = []
     # find first edf file by session time and discard 
     fnames.sort()
     # don't include training block
@@ -381,6 +392,29 @@ for s_ind, subj in enumerate(subjects):
     fsubj_accuracy.close()
     fsubj_ps.close()
     
+#process cog load data
+gen_qnum = 6
+rel_qnum = 15
+#assert there are no more zeros at the end
+gen = np.zeros((N, condition_nums, gen_qnum))
+rel = np.zeros((N, condition_nums, rel_qnum))
+load_score = np.zeros((N, condition_nums))
+for i in range(N):
+    for j in range(condition_nums):
+        # wait category responses by rel survey
+        for k in range(rel_qnum):
+            rel[i, j, k] = \
+                cog[i][j]['rel_' + para[j] + '_qnum_' + str(k)][0,0]
+        score = 0
+        for k in range(gen_qnum):
+            response =  cog[i][j]['gen_' + para[j] + '_qnum_' + \
+                str(k)][0,0]
+            gen[i, j, k] = response
+            if k in (3, 5):
+                score -= response
+            else:
+                score += response
+
 plot_accuracy()
 #status = ['correct'] #only consider correct trials
 #for pattern in condition_pattern:
