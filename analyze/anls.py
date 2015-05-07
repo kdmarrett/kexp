@@ -14,9 +14,19 @@ import pickle as pck
 from pyeparse.utils import pupil_kernel
 from expyfun import binary_to_decimals, decimals_to_binary
 
+#TODO
 #from anls_func import *
+#double check stats section of accuracy
+#get cog scores settled
+    #add in weighting
+#finish text
+#in general get the mean for each subject
+#std and mean of subject means
+#read statistics section
+#test for significance of results and print to results
+#make ps look better
 
-subjects = ['HN', 'HL', 'HK', 'HJ'] # HK later
+subjects = ['HI', 'HN', 'HL', 'HK', 'HJ'] # HK later
 N = len(subjects)
 
 #assert version code
@@ -148,6 +158,7 @@ def plot_accuracy():
     rects1 = plt.bar(x, global_mean_pc, bar_width, color='w',
             yerr=global_std_pc, error_kw=error_config, lw=2)
     x = x + np.tile(bar_width / 2, condition_nums)
+    import pdb;pdb.set_trace()
     for subj_mean in subj_means:
         subj_mean_pc = subj_mean * np.tile(100, len(subj_mean))
         plt.plot(x, subj_mean_pc, color='k', alpha=opacity, marker='o')
@@ -327,7 +338,8 @@ for s_ind, subj in enumerate(subjects):
     # find first edf file by session time and discard 
     fnames.sort()
     # don't include training block
-    fnames = fnames[1:]
+    if (len(fnames) == 10):
+        fnames = fnames[1:]
     for b_ind, fname in enumerate(fnames):
         bnum = mid_block_order[b_ind]
         print '\tProcessing bnum: ' + str(bnum)
