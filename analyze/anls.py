@@ -15,7 +15,6 @@ from pyeparse.utils import pupil_kernel
 from expyfun import binary_to_decimals, decimals_to_binary
 
 #TODO
-#from anls_func import *
 #double check stats section of accuracy
 #get cog scores settled
     #add in weighting
@@ -27,6 +26,7 @@ from expyfun import binary_to_decimals, decimals_to_binary
 #make ps look better
 
 subjects = ['HI', 'HN', 'HL', 'HK', 'HJ'] # HK later
+subjects = ['HN', 'HL', 'HK', 'HJ'] 
 N = len(subjects)
 
 #assert version code
@@ -117,14 +117,18 @@ def getConditionEpochs(fnames):
         ps.append(trial_epoch.get_data('ps')[0])
 
 def subj_accuracy_stats():
-    subj_means = [[],[],[]]
-    subj_stds = [[],[],[]]
+    #subj_means = [[],[],[]]
+    #subj_stds = [[],[],[]]
+    subj_means = np.zeros(N, condition_nums)
+    subj_stds = np.zeros(N, condition_nums)
     for i, subj_accuracy in enumerate(accuracy):
         for cond in condition_pattern:
             # change binary string into index of the condition type
             num = int(cond[-3:].replace(" ", ""), 2) - 1
-            subj_means[num].append(np.mean(subj_accuracy[cond]))
-            subj_stds[num].append(np.std(subj_accuracy[cond]))
+            #subj_means[num].append(np.mean(subj_accuracy[cond]))
+            #subj_means[num].append(np.mean(subj_accuracy[cond]))
+            subj_means[i][num] = np.std(subj_accuracy[cond])
+            subj_stds[i][num] = np.std(subj_accuracy[cond])
 
     #import pdb; pdb.set_trace()
     global_mean = []
