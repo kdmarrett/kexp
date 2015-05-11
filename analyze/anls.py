@@ -15,6 +15,7 @@ from pyeparse.utils import pupil_kernel
 from expyfun import binary_to_decimals, decimals_to_binary
 
 #TODO
+#why is cond acc overflowing?
 #double check stats section of accuracy
 #get cog scores settled
     #add in weighting
@@ -241,6 +242,7 @@ vPrimerLen = global_vars['vPrimerLen']
 postblock = global_vars['postblock'] 
 #trial_len = global_vars['tot_wav_time'] 
 trial_len = 36.0001
+trial_samp = np.floor(trial_len*fs).astype(int)
 order = global_vars['order'][0]
 s2_blocks = global_vars['s2_blocks']
 # trials_per_block in middle section
@@ -272,11 +274,28 @@ for i in range(condition_nums):
     patternToCond[condition_pattern[i]] =  \
         int(condition_pattern[i][-3:].replace(" ", ""), 2)
 
+def con_2_ind(pattern):
+    return int(pattern[-3:].replace(" ", ""), 2) - 1
+
 #date structures
 #ps_dict = dict()
 #accuracy_dict = dict()
-ps = []
-accuracy = []
+#ps = []
+#accuracy = []
+#cog = []
+#take three
+ps = np.ndarray(shape=(N, condition_nums, s2_blocks, block_len,
+    trial_samp))
+accuracy = np.ndarray(shape=(N, condition_nums, s2_blocks * block_len / \
+        condition_nums))
+#process cog load data
+gen_qnum = 6
+rel_qnum = 15
+#assert there are no more zeros at the end
+gen = np.ndarray(shape=(N, condition_nums, gen_qnum))
+rel = np.ndarray(shape=(N, condition_nums, rel_qnum))
+load_score = np.ndarray(shape=(N, condition_nums))
+
 cog = []
 accuracy_dict = dict()
 ps_dict = dict()
@@ -293,6 +312,7 @@ for s_ind, subj in enumerate(subjects):
     fnames = sorted(glob.glob(op.join(data_dir, '%s_*' % subj, '*.edf')))
     subj_files = sorted(glob.glob(op.join(data_dir, '%s_*' % subj)))
     sessions = len(subj_files) / 3
+    cond_acc_ind = np.zeros(shape=(condition_nums))
     subj_data_dir = []
     start_path = []
     startInfo = []
@@ -306,6 +326,7 @@ for s_ind, subj in enumerate(subjects):
     # check that mid_block order he same for this subject
     mid_block_order = startInfo[0]['mid_block_order'][0]
     subj_data_dir = subj_data_dir[0]
+    #assert it is not empty
 
     cog = getCogResponses(cog, subj_data_dir)
 
@@ -314,8 +335,8 @@ for s_ind, subj in enumerate(subjects):
         fsubj_ps = open(subj + '_ps.obj', 'r')
         subj_accuracy = pck.load(fsubj_accuracy)
         subj_ps = pck.load(fsubj_ps)
-        accuracy.append(subj_accuracy)
-        ps.append(subj_ps)
+        accuracy[s_ind] = subj_accuracy
+        ps[s_ind] = subj_ps
         fsubj_accuracy.close()
         fsubj_ps.close()
         continue
@@ -323,12 +344,12 @@ for s_ind, subj in enumerate(subjects):
         pass
 
     #new data structs
-    subj_accuracy = dict()
-    subj_ps = dict()
-    for pattern in (condition_pattern):
-        subj_accuracy[pattern] = []
-        for stat in (status):
-            subj_ps[pattern + stat] = []
+    subj_accuracy = accuracy[s_ind]
+    subj_ps = ps[s_ind]
+    #for pattern in (condition_pattern):
+        #subj_accuracy[pattern] = []
+        #for stat in (status):
+            #subj_ps[pattern + stat] = []
     # keep track of which new wav file to use
     block_ind = dict(
         zip(range(len(order)), np.zeros(len(order), dtype=int)))
@@ -383,24 +404,27 @@ for s_ind, subj in enumerate(subjects):
                 continue
             else:
                 print '\t\tProcessing trial ' + str(tnum)
-            #parse ps data and add to dicts/matrices
+            #get c_ind
+            for pattern in condition_pattern:
+                if trial_id.startswith(pattern):
+                    cond = pattern
+            c_ind = con_2_ind(cond)
+            #parse ps data and add to matrices
             tmin = 0.0
             tmax = trial_len + postblock
             trial_epoch = pp.Epochs(raw, events=events, 
                 event_id=event_id, tmin=tmin, tmax=tmax)
-            for pattern in condition_pattern:
-                if trial_id.startswith(pattern):
-                    cond = pattern
+            temp = trial_epoch.get_data('ps')[0]
+            for i in range(trial_samp):
+                subj_ps[c_ind, b_ind, tnum, i] = temp[i] 
+            #import pdb; pdb.set_trace()
             if correct:
-                key = cond + 'correct'
+                subj_accuracy[c_ind, cond_acc_ind[c_ind]] = 1
             else:
-                key = cond + 'incorrect'
-            ps_dict[key].append(trial_epoch.get_data('ps')[0])
-            accuracy_dict[cond].append(correct)
-            subj_ps[key].append(trial_epoch.get_data('ps')[0])
-            subj_accuracy[cond].append(correct)
-    accuracy.append(subj_accuracy)
-    ps.append(subj_ps)
+                subj_accuracy[c_ind, cond_acc_ind[c_ind]] = 0
+            cond_acc_ind[c_ind] += 1
+    accuracy[s_ind] = subj_accuracy
+    ps[s_ind] = subj_ps
     fsubj_accuracy = open(subj + '_accuracy.obj', 'w')
     fsubj_ps = open(subj + '_ps.obj', 'w')
     pck.dump(subj_ps, fsubj_ps) # overwrites
@@ -408,13 +432,6 @@ for s_ind, subj in enumerate(subjects):
     fsubj_accuracy.close()
     fsubj_ps.close()
     
-#process cog load data
-gen_qnum = 6
-rel_qnum = 15
-#assert there are no more zeros at the end
-gen = np.zeros((N, condition_nums, gen_qnum))
-rel = np.zeros((N, condition_nums, rel_qnum))
-load_score = np.zeros((N, condition_nums))
 for i in range(N):
     for j in range(condition_nums):
         # wait category responses by rel survey
