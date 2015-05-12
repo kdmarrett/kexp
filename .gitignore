@@ -10,3 +10,6 @@ Letters/Files
 expCode/expyfun
 todo.txt
 backupFiles/
+tags
+analyze/tags
+*.png

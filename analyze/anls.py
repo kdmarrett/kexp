@@ -26,8 +26,8 @@ from expyfun import binary_to_decimals, decimals_to_binary
 #test for significance of results and print to results
 #make ps look better
 
-subjects = ['HI', 'HN', 'HL', 'HK', 'HJ'] # HK later
-subjects = ['HN', 'HL', 'HK', 'HJ'] 
+subjects = ['HI', 'HN', 'HL', 'HK', 'HJ', 'GR'] # HK later
+reprocess_list = ['HI', 'HN', 'HL', 'HK', 'HJ', 'GR'] # HK later
 N = len(subjects)
 
 #assert version code
@@ -118,27 +118,25 @@ def getConditionEpochs(fnames):
         ps.append(trial_epoch.get_data('ps')[0])
 
 def subj_accuracy_stats():
-    #subj_means = [[],[],[]]
-    #subj_stds = [[],[],[]]
-    subj_means = np.zeros(N, condition_nums)
-    subj_stds = np.zeros(N, condition_nums)
+    subj_means = np.zeros((N, condition_nums), dtype=np.double)
+    subj_stds = np.zeros((N, condition_nums), dtype=np.double)
     for i, subj_accuracy in enumerate(accuracy):
-        for cond in condition_pattern:
+        for c_ind in range(condition_nums):
             # change binary string into index of the condition type
-            num = int(cond[-3:].replace(" ", ""), 2) - 1
-            #subj_means[num].append(np.mean(subj_accuracy[cond]))
-            #subj_means[num].append(np.mean(subj_accuracy[cond]))
-            subj_means[i][num] = np.std(subj_accuracy[cond])
-            subj_stds[i][num] = np.std(subj_accuracy[cond])
+            #num = int(cond[-3:].replace(" ", ""), 2) - 1
+            subj_means[i][c_ind] = np.mean(subj_accuracy[c_ind])
+            subj_stds[i][c_ind] = np.std(subj_accuracy[c_ind])
 
-    #import pdb; pdb.set_trace()
     global_mean = []
     global_std = []
     global_ste = []
     for i in range(condition_nums):
-        global_mean.append(np.mean(subj_means[i]))
-        global_std.append(np.std(subj_means[i]))
+        #across all subjects for each condition 
+        global_mean.append(np.mean(subj_means[:, i]))
+        global_std.append(np.std(subj_means[:, i]))
         global_ste.append(global_std[-1] / np.sqrt(N))
+    assert(len(global_mean) == condition_nums)
+    import pdb;pdb.set_trace()
     return global_mean, global_std, global_ste, subj_means, subj_stds
 
 def subj_ps_stats(type='correct'):
@@ -163,11 +161,9 @@ def plot_accuracy():
     rects1 = plt.bar(x, global_mean_pc, bar_width, color='w',
             yerr=global_std_pc, error_kw=error_config, lw=2)
     x = x + np.tile(bar_width / 2, condition_nums)
-    import pdb;pdb.set_trace()
     for subj_mean in subj_means:
         subj_mean_pc = subj_mean * np.tile(100, len(subj_mean))
         plt.plot(x, subj_mean_pc, color='k', alpha=opacity, marker='o')
-        
 
     #plt.xlabel('Condition')
     plt.ylabel('Accuracy (%)')
@@ -189,7 +185,6 @@ def plot_ps(ps_type, name=''):
         temp = len(ps_type[i])
         if temp < min_len:
             min_len = temp
-        
     #import pdb; pdb.set_trace()
     dat = np.array(np.zeros(min_len*len(ps_type)))
     dat.shape = (len(ps_type), min_len)
@@ -331,6 +326,7 @@ for s_ind, subj in enumerate(subjects):
     cog = getCogResponses(cog, subj_data_dir)
 
     try:
+        assert(subj not in reprocess_list)
         fsubj_accuracy = open(subj + '_accuracy.obj', 'r')
         fsubj_ps = open(subj + '_ps.obj', 'r')
         subj_accuracy = pck.load(fsubj_accuracy)
@@ -341,6 +337,7 @@ for s_ind, subj in enumerate(subjects):
         fsubj_ps.close()
         continue
     except:
+        #(re)process subject
         pass
 
     #new data structs
@@ -380,10 +377,13 @@ for s_ind, subj in enumerate(subjects):
             #subj, 'b'+ str(bnum) + '.*final.mat')))
 
         # for each trial in this block
+        remove_trial = []
+        remove_c_ind = []
         for tnum in range(block_len):
             #paradigm = getTrialInfo(block_ind, bnum)
             #id_list = getGeneralInfo(block_ind, bnum, advance=False)
             event_id = s_ind
+            remove_flag = False
             try:
                 id_list, correct = getFinalInfo(block_ind, bnum,
                         subj_data_dir, advance=True)
@@ -393,15 +393,16 @@ for s_ind, subj in enumerate(subjects):
                         ' not found for bnum ' + \
                         str(bnum) + ' in mat files'
                 #advance indexer dict
+                remove_flag = True
                 block_ind[bnum] += 1
-                continue
             #find the event for this trial
             events = raw.find_events(trial_id, event_id)
             if (len(events) == 0):
                 print '\tWarning: trial ' + str(tnum) + \
                         ' not found for bnum ' + \
                         str(bnum) + ' in edf files'
-                continue
+                remove_flag = True
+                block_ind[bnum] += 1
             else:
                 print '\t\tProcessing trial ' + str(tnum)
             #get c_ind
@@ -409,6 +410,11 @@ for s_ind, subj in enumerate(subjects):
                 if trial_id.startswith(pattern):
                     cond = pattern
             c_ind = con_2_ind(cond)
+            if remove_flag:
+                remove_c_ind.append(c_ind)
+                remove_trial.append(tnum)
+                continue
+            #remove null trials from np array
             #parse ps data and add to matrices
             tmin = 0.0
             tmax = trial_len + postblock
@@ -423,6 +429,13 @@ for s_ind, subj in enumerate(subjects):
             else:
                 subj_accuracy[c_ind, cond_acc_ind[c_ind]] = 0
             cond_acc_ind[c_ind] += 1
+
+        for i in range(len(remove_trial)):
+            prior = len(subj_ps[remove_c_ind[i], b_ind])
+            np.delete(subj_ps, subj_ps[remove_c_ind[i], b_ind, remove_trial[i], :])
+            np.delete(subj_accuracy, remove_trial[i], axis=1)
+            assert(len(subj_ps[remove_c_ind[i], b_ind]) == (prior - 1))
+
     accuracy[s_ind] = subj_accuracy
     ps[s_ind] = subj_ps
     fsubj_accuracy = open(subj + '_accuracy.obj', 'w')
