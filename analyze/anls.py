@@ -26,8 +26,9 @@ from expyfun import binary_to_decimals, decimals_to_binary
 #test for significance of results and print to results
 #make ps look better
 
-subjects = ['HI', 'HN', 'HL', 'HK', 'HJ', 'GR'] # HK later
-reprocess_list = ['HI', 'HN', 'HL', 'HK', 'HJ', 'GR'] # HK later
+subjects = ['HL', 'HI', 'HN', 'HK', 'HJ', 'GR'] # HK later
+#reprocess_list = ['HI', 'HN', 'HL', 'HK', 'HJ', 'GR'] # HK later
+reprocess_list = []
 N = len(subjects)
 
 #assert version code
@@ -124,19 +125,19 @@ def subj_accuracy_stats():
         for c_ind in range(condition_nums):
             # change binary string into index of the condition type
             #num = int(cond[-3:].replace(" ", ""), 2) - 1
-            subj_means[i][c_ind] = np.mean(subj_accuracy[c_ind])
-            subj_stds[i][c_ind] = np.std(subj_accuracy[c_ind])
+            subj_means[i][c_ind] = np.nanmean(subj_accuracy[c_ind])
+            subj_stds[i][c_ind] = np.nanstd(subj_accuracy[c_ind])
 
     global_mean = []
     global_std = []
     global_ste = []
     for i in range(condition_nums):
         #across all subjects for each condition 
-        global_mean.append(np.mean(subj_means[:, i]))
-        global_std.append(np.std(subj_means[:, i]))
+        global_mean.append(np.nanmean(subj_means[:, i]))
+        global_std.append(np.nanstd(subj_means[:, i]))
         global_ste.append(global_std[-1] / np.sqrt(N))
     assert(len(global_mean) == condition_nums)
-    import pdb;pdb.set_trace()
+    #import pdb;pdb.set_trace()
     return global_mean, global_std, global_ste, subj_means, subj_stds
 
 def subj_ps_stats(type='correct'):
@@ -167,7 +168,7 @@ def plot_accuracy():
 
     #plt.xlabel('Condition')
     plt.ylabel('Accuracy (%)')
-    plt.ylim([70, 103])
+    plt.ylim([50, 103])
     #plt.grid(True)
     #plt.grid(b=True, which='minor', color='k', alpha=.9)
     #plt.grid(b=False, which='major', color='k', alpha=.9)
@@ -195,7 +196,7 @@ def plot_ps(ps_type, name=''):
     mean = np.array(np.zeros(min_len))
     for i in range(min_len):
         stdev[i] = np.std(dat[:,i])
-        mean[i] = np.mean(dat[:,i])
+        mean[i] = np.nanmean(dat[:,i])
 
     fig = plt.figure()
     x = np.linspace(0, min_len / fs, min_len)
@@ -413,8 +414,10 @@ for s_ind, subj in enumerate(subjects):
             if remove_flag:
                 remove_c_ind.append(c_ind)
                 remove_trial.append(tnum)
+                subj_accuracy[c_ind, cond_acc_ind[c_ind]] = np.nan
+                for i in range(trial_samp):
+                    subj_ps[c_ind, b_ind, tnum, i] = np.nan
                 continue
-            #remove null trials from np array
             #parse ps data and add to matrices
             tmin = 0.0
             tmax = trial_len + postblock
@@ -430,11 +433,16 @@ for s_ind, subj in enumerate(subjects):
                 subj_accuracy[c_ind, cond_acc_ind[c_ind]] = 0
             cond_acc_ind[c_ind] += 1
 
-        for i in range(len(remove_trial)):
-            prior = len(subj_ps[remove_c_ind[i], b_ind])
-            np.delete(subj_ps, subj_ps[remove_c_ind[i], b_ind, remove_trial[i], :])
-            np.delete(subj_accuracy, remove_trial[i], axis=1)
-            assert(len(subj_ps[remove_c_ind[i], b_ind]) == (prior - 1))
+        #must be removed from highest ind to lowest for prop indexing
+        #remove_c_ind.sort(reverse=True)
+        #remove_trial.sort(reverse=True)
+            ##remove null trials from np array
+        #for i in range(len(remove_trial)):
+            #block = subj_ps[remove_c_ind[i], b_ind]
+            #subj_ps[remove_c_ind[i], b_ind]= np.delete(block,
+                    #block[remove_trial[i]], axis=0)
+            #subj_accuracy = np.delete(subj_accuracy, subj_accuracy[
+                #remove_c_ind[i], remove_trial[i]], axis=1)
 
     accuracy[s_ind] = subj_accuracy
     ps[s_ind] = subj_ps
