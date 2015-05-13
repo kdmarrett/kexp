@@ -28,7 +28,7 @@ from expyfun import binary_to_decimals, decimals_to_binary
 #test for significance of results and print to results
 #make ps look better
 
-subjects = ['GU', 'HL', 'HI', 'HN', 'HK', 'HJ', 'GR'] # HK later
+subjects = ['HL', 'HI', 'HN', 'HK', 'HJ', 'GR'] # HK later
 #reprocess_list = ['HI', 'HN', 'HL', 'HK', 'HJ', 'GR'] # HK later
 reprocess_list = []
 N = len(subjects)
@@ -155,7 +155,7 @@ def plot_accuracy():
         subj_accuracy_stats()
 
     #Common sizes: (10, 7.5) and (12, 9)  
-    #plt.figure(figsize=(12, 14))  
+    plt.figure(figsize=(12, 14))  
       
     # Remove the plot frame lines.
     #fig = plt.figure()
@@ -227,7 +227,7 @@ def plot_ps(c_num, name=''):
             alpha=1)
     plt.annotate('End visual primer', xy=(end_primer, 
         mean[c_num, end_primer_samp]), xytext=(5, 2000),
-        arrowprops=dict(facecolor='black', shrink=0.03))
+        arrowprops=dict(facecolor='black', shrink=0.02))
     #plt.legend(loc=9)    
     plt.ylabel('Pupil Size')
     info = r'$\mu$=%.1f, $\sigma$=%.3f, N=%d' % (global_mean,
@@ -488,13 +488,13 @@ for i in range(N):
 
 plot_accuracy()
 status = ['correct'] #only consider correct trials
+names = ['Alphabetic', 'Fixed-Order', 'Random']
 for c_ind, pattern in enumerate(condition_pattern):
     #print 'plotting pattern' + pattern
     for stat in status:
         ps_type = ps_dict[pattern + stat]
         cond_num = patternToCond[pattern]
         #name = 'Condition ' + str(cond_num) + ' ' + stat
-        name = 'Condition ' + str(cond_num)
-        print str(c_ind)
+        name = names[cond_num - 1]
         plot_ps(c_ind, name)
 
