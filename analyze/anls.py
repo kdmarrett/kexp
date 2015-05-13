@@ -15,6 +15,8 @@ from pyeparse.utils import pupil_kernel
 from expyfun import binary_to_decimals, decimals_to_binary
 
 #TODO
+# resegregate correct and incorrect trials
+# take only sections of trial after vprimerlen
 #why is cond acc overflowing?
 #double check stats section of accuracy
 #get cog scores settled
@@ -151,94 +153,109 @@ def subj_ps_stats(type='correct'):
 def plot_accuracy():
     global_mean, global_std, global_ste, subj_means, subj_stds = \
         subj_accuracy_stats()
+
+    #Common sizes: (10, 7.5) and (12, 9)  
+    #plt.figure(figsize=(12, 14))  
+      
+    # Remove the plot frame lines.
     #fig = plt.figure()
-    index = np.arange(condition_nums)
+    #ax = plt.gca()
+    #fig.spines["top"].set_visible(False)  
+    #fig.spines["bottom"].set_visible(False)  
+    #fig.spines["right"].set_visible(False)  
+    #fig.spines["left"].set_visible(False) 
     x = [.5, 1.0, 1.5]
     bar_width = .25
     opacity = .4
     global_mean_pc = global_mean * np.tile(100, len(global_mean))
     global_std_pc = global_std * np.tile(100, len(global_std))
-    error_config = {'ecolor': 'k', 'elinewidth': 3}
+    error_config = {'ecolor': 'k', 'elinewidth': 3, 'ezorder': 5}
     rects1 = plt.bar(x, global_mean_pc, bar_width, color='w',
             yerr=global_std_pc, error_kw=error_config, lw=2)
     x = x + np.tile(bar_width / 2, condition_nums)
     for subj_mean in subj_means:
         subj_mean_pc = subj_mean * np.tile(100, len(subj_mean))
-        plt.plot(x, subj_mean_pc, color='k', alpha=opacity, marker='o')
+        plt.plot(x, subj_mean_pc, color='k', alpha=opacity, 
+                marker='o')
 
     #plt.xlabel('Condition')
     plt.ylabel('Accuracy (%)')
-    plt.ylim([50, 103])
-    #plt.grid(True)
-    #plt.grid(b=True, which='minor', color='k', alpha=.9)
-    #plt.grid(b=False, which='major', color='k', alpha=.9)
+    yrange = (50, 103)
+    plt.ylim(yrange)
+    for y in range(50, 103, 5):  
+        plt.plot(range(0,3), [y] * len(range(0,3)), "--",
+                lw=0.5, color="black", alpha=0.3) 
     plt.title('Accuracy by condition')
     plt.xticks(x, ('Alphabetic', 'Fixed-order', 'Random'))
     plt.tight_layout()
-    plt.show()
+    #plt.show()
     #change facecolor
-    plt.savefig('conditionAccuracy.png', transparent=True,
-    edgecolor='none')
+    #change facecolor
+    plt.savefig('conditionAccuracy.png')
+    plt.close()
+    #plt.savefig('conditionAccuracy.png', transparent=True,
+    #edgecolor='none')
 
-def plot_ps(ps_type, name=''):
-    min_len = np.inf;
-    for i in range(len(ps_type)):
-        temp = len(ps_type[i])
-        if temp < min_len:
-            min_len = temp
-    #import pdb; pdb.set_trace()
-    dat = np.array(np.zeros(min_len*len(ps_type)))
-    dat.shape = (len(ps_type), min_len)
-    for j in range(len(ps_type)):
-        dat[j,:] = ps_type[j]
+def plot_ps(c_ind, name=''):
+    """ ps[subject,cond_ind,block, trial, sample] """
 
-    stdev = np.array(np.zeros(min_len))
-    mean = np.array(np.zeros(min_len))
-    for i in range(min_len):
-        stdev[i] = np.std(dat[:,i])
-        mean[i] = np.nanmean(dat[:,i])
+    mean_dat = np.zeros((N, condition_nums, trial_samp))
+    std_dat = np.zeros((N, condition_nums, trial_samp))
+    for s_ind, subj_ps in enumerate(ps):
+        for c_ind in range(condition_nums):
+            mean_dat[s_ind, c_ind] = np.nanmean(
+                    subj_ps[c_ind].reshape(block_len*s2_blocks[0][0],
+                        trial_samp), axis=0)
+            std_dat[s_ind, c_ind] = np.nanstd(
+                    subj_ps[c_ind].reshape(block_len*s2_blocks[0][0],
+                        trial_samp), axis=0)
+    mean = np.nanmean(mean_dat, axis=0)
+    std = np.nanstd(std_dat, axis=0)
+    assert(len(std) == condition_nums)
+    global_mean = np.nanmean(mean[c_ind])
+    global_std = np.nanstd(std[c_ind])
 
-    fig = plt.figure()
-    x = np.linspace(0, min_len / fs, min_len)
-    plt.plot(x, mean, 'r', linewidth=3, label='mean', alpha=1)
-    plt.plot(x, stdev, 'b--', linewidth=2, label='inter-trial std')
-    end_primer = vPrimerLen
-    end_primer_samp = int(end_primer * fs)
-    end_stim = int(trial_len * fs)
-    trial_means = []
-    for i in range(len(ps_type)):
-        plt.plot(x, ps_type[i], 'k', linewidth=.1, alpha = .4)
-        trial_means.append(ps_type[i][end_primer_samp:])
-    global_mean = np.mean(trial_means)
-    global_std = np.std(trial_means)
+    #import pdb;pdb.set_trace()
+    #fig = plt.figure()
+    window_len = len(mean_dat[0][0]) 
+    x = np.linspace(0, window_len / fs, window_len)
 
-    plt.annotate('switch primer to dot', xy=(end_primer, 
-        mean[end_primer_samp]), xytext=(5, 6000),
-        arrowprops=dict(facecolor='black', shrink=0.05))
-    plt.legend(loc=9)    
+    plt.fill_between(x, mean[c_ind] - std[c_ind],  
+                            mean[c_ind] + std[c_ind],
+                            color="#3F5D7D", alpha=.5)  
+    plt.plot(x, mean[c_ind], color='k', linewidth=3, label='mean',
+            alpha=1)
+    #plt.annotate('switch primer to dot', xy=(end_primer, 
+        #mean[c_ind, end_primer_samp]), xytext=(5, 6000),
+        #arrowprops=dict(facecolor='black', shrink=0.05))
+    #plt.legend(loc=9)    
     plt.ylabel('Pupil Size')
-    plt.text(2, global_mean, 'trial means = ' + \
-            str(global_mean) + ', std = ' + \
-            str(global_std))
+    info = r'$\mu$=%.1f, $\sigma$=%.3f, N=%d' % (global_mean,
+            global_std, N)
+    plt.text(20,global_mean+500,info)
     plt.xlabel('Trial Time (s)')
-    plt.title(name + ' trial pupil size N = ' + str(len(ps_type)))
+    plt.title(name + ' trial pupil size')
     #plt.show()
     name = name.replace(" ", "")
     fn = name + 'ps.png'
     plt.savefig(fn)
+    plt.close()
 
 
 # read in global stimuli parameters
 param_data_dir = op.join(data_dir, 'Params')
 global_vars = sio.loadmat(op.join(param_data_dir, 'global_vars.mat'))
 preblock = global_vars['preblock_prime_sec'][0]
+trial_len = 36.000
+trial_samp = np.floor(trial_len*fs).astype(int)
 # time of visual primer
 vPrimerLen = global_vars['vPrimerLen'] 
+end_primer = vPrimerLen
+end_primer_samp = int(end_primer * fs)
+end_stim = int(trial_len * fs)
 # time after each trial to record pupil
 postblock = global_vars['postblock'] 
 #trial_len = global_vars['tot_wav_time'] 
-trial_len = 36.0001
-trial_samp = np.floor(trial_len*fs).astype(int)
 order = global_vars['order'][0]
 s2_blocks = global_vars['s2_blocks']
 # trials_per_block in middle section
@@ -470,12 +487,13 @@ for i in range(N):
                 score += response
 
 plot_accuracy()
-#status = ['correct'] #only consider correct trials
-#for pattern in condition_pattern:
+status = ['correct'] #only consider correct trials
+for c_ind, pattern in enumerate(condition_pattern):
     #print 'plotting pattern' + pattern
-    #for stat in status:
-        #ps_type = ps_dict[pattern + stat]
-        #cond_num = patternToCond[pattern]
+    for stat in status:
+        ps_type = ps_dict[pattern + stat]
+        cond_num = patternToCond[pattern]
         #name = 'Condition ' + str(cond_num) + ' ' + stat
-        #plot_ps(ps_type, name)
+        name = 'Condition ' + str(cond_num)
+        plot_ps(c_ind, name)
 
