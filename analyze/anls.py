@@ -28,7 +28,7 @@ from expyfun import binary_to_decimals, decimals_to_binary
 #test for significance of results and print to results
 #make ps look better
 
-subjects = ['HL', 'HI', 'HN', 'HK', 'HJ', 'GR'] # HK later
+subjects = ['GU', 'HL', 'HI', 'HN', 'HK', 'HJ', 'GR'] # HK later
 #reprocess_list = ['HI', 'HN', 'HL', 'HK', 'HJ', 'GR'] # HK later
 reprocess_list = []
 N = len(subjects)
@@ -196,7 +196,7 @@ def plot_accuracy():
     #plt.savefig('conditionAccuracy.png', transparent=True,
     #edgecolor='none')
 
-def plot_ps(c_ind, name=''):
+def plot_ps(c_num, name=''):
     """ ps[subject,cond_ind,block, trial, sample] """
 
     mean_dat = np.zeros((N, condition_nums, trial_samp))
@@ -212,22 +212,22 @@ def plot_ps(c_ind, name=''):
     mean = np.nanmean(mean_dat, axis=0)
     std = np.nanstd(std_dat, axis=0)
     assert(len(std) == condition_nums)
-    global_mean = np.nanmean(mean[c_ind])
-    global_std = np.nanstd(std[c_ind])
+    global_mean = np.nanmean(mean[c_num])
+    global_std = np.nanstd(std[c_num])
 
     #import pdb;pdb.set_trace()
     #fig = plt.figure()
     window_len = len(mean_dat[0][0]) 
     x = np.linspace(0, window_len / fs, window_len)
 
-    plt.fill_between(x, mean[c_ind] - std[c_ind],  
-                            mean[c_ind] + std[c_ind],
+    plt.fill_between(x, mean[c_num] - std[c_num],  
+                            mean[c_num] + std[c_num],
                             color="#3F5D7D", alpha=.5)  
-    plt.plot(x, mean[c_ind], color='k', linewidth=3, label='mean',
+    plt.plot(x, mean[c_num], color='k', linewidth=3, label='mean',
             alpha=1)
-    #plt.annotate('switch primer to dot', xy=(end_primer, 
-        #mean[c_ind, end_primer_samp]), xytext=(5, 6000),
-        #arrowprops=dict(facecolor='black', shrink=0.05))
+    plt.annotate('End visual primer', xy=(end_primer, 
+        mean[c_num, end_primer_samp]), xytext=(5, 2000),
+        arrowprops=dict(facecolor='black', shrink=0.03))
     #plt.legend(loc=9)    
     plt.ylabel('Pupil Size')
     info = r'$\mu$=%.1f, $\sigma$=%.3f, N=%d' % (global_mean,
@@ -495,5 +495,6 @@ for c_ind, pattern in enumerate(condition_pattern):
         cond_num = patternToCond[pattern]
         #name = 'Condition ' + str(cond_num) + ' ' + stat
         name = 'Condition ' + str(cond_num)
+        print str(c_ind)
         plot_ps(c_ind, name)
 
