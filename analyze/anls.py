@@ -17,16 +17,13 @@ from expyfun import binary_to_decimals, decimals_to_binary
 #TODO
 # resegregate correct and incorrect trials
 # take only sections of trial after vprimerlen
-#why is cond acc overflowing?
 #double check stats section of accuracy
 #get cog scores settled
     #add in weighting
 #finish text
 #in general get the mean for each subject
 #std and mean of subject means
-#read statistics section
 #test for significance of results and print to results
-#make ps look better
 
 subjects = ['HL', 'HI', 'HN', 'HK', 'HJ', 'GR'] # HK later
 #reprocess_list = ['HI', 'HN', 'HL', 'HK', 'HJ', 'GR'] # HK later
