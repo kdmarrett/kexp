@@ -342,10 +342,8 @@ for s_ind, subj in enumerate(subjects):
 
     try:
         assert(subj not in reprocess_list)
-        fsubj_accuracy = open(subj + '_accuracy.obj', 'r')
-        fsubj_ps = open(subj + '_ps.obj', 'r')
-        subj_accuracy = pck.load(fsubj_accuracy)
-        subj_ps = pck.load(fsubj_ps)
+        fsubj = open(subj + '.obj', 'r')
+        (subj_accuracy, subj_ps, subj_ps_incorrect) = pck.load(fsubj)
         accuracy[s_ind] = subj_accuracy
         ps[s_ind] = subj_ps
         fsubj_accuracy.close()
@@ -358,6 +356,7 @@ for s_ind, subj in enumerate(subjects):
     #new data structs
     subj_accuracy = accuracy[s_ind]
     subj_ps = ps[s_ind]
+    subj_ps_incorrect = ps[s_ind]
     #for pattern in (condition_pattern):
         #subj_accuracy[pattern] = []
         #for stat in (status):
@@ -438,13 +437,15 @@ for s_ind, subj in enumerate(subjects):
             trial_epoch = pp.Epochs(raw, events=events, 
                 event_id=event_id, tmin=tmin, tmax=tmax)
             temp = trial_epoch.get_data('ps')[0]
-            for i in range(trial_samp):
-                subj_ps[c_ind, b_ind, tnum, i] = temp[i] 
             #import pdb; pdb.set_trace()
             if correct:
                 subj_accuracy[c_ind, cond_acc_ind[c_ind]] = 1
+                for i in range(trial_samp):
+                    subj_ps[c_ind, b_ind, tnum, i] = temp[i] 
             else:
                 subj_accuracy[c_ind, cond_acc_ind[c_ind]] = 0
+                for i in range(trial_samp):
+                    subj_ps_incorrect[c_ind, b_ind, tnum, i] = temp[i] 
             cond_acc_ind[c_ind] += 1
 
         #must be removed from highest ind to lowest for prop indexing
