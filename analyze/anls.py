@@ -1,18 +1,18 @@
 # author: Karl Marrett
 # driver for processing pupillometry data
 
-import os
+#import os
 import glob
 from os import path as op
-import time
+#import time
 from scipy import io as sio 
-from scipy import stats
+#from scipy import stats
 import pyeparse as pp 
 import numpy as np
 import matplotlib.pyplot as plt
 import pickle as pck
-from pyeparse.utils import pupil_kernel
-from expyfun import binary_to_decimals, decimals_to_binary
+#from pyeparse.utils import pupil_kernel
+#from expyfun import binary_to_decimals, decimals_to_binary
 
 #TODO
 # resegregate correct and incorrect trials
@@ -296,6 +296,9 @@ def con_2_ind(pattern):
 #take three
 ps = np.ndarray(shape=(N, condition_nums, s2_blocks, block_len,
     trial_samp))
+ps_incorrect = np.ndarray(shape=(N, condition_nums, s2_blocks, block_len,
+    trial_samp))
+ps_incorrect[:] = np.nan
 accuracy = np.ndarray(shape=(N, condition_nums, s2_blocks * block_len / \
         condition_nums))
 #process cog load data
@@ -336,27 +339,28 @@ for s_ind, subj in enumerate(subjects):
     # check that mid_block order he same for this subject
     mid_block_order = startInfo[0]['mid_block_order'][0]
     subj_data_dir = subj_data_dir[0]
+    processed_file = op.join(subj_data_dir, subj + '.obj')
     #assert it is not empty
 
     cog = getCogResponses(cog, subj_data_dir)
 
     try:
         assert(subj not in reprocess_list)
-        fsubj = open(subj + '.obj', 'r')
+        fsubj = open(processed_file, 'r')
         (subj_accuracy, subj_ps, subj_ps_incorrect) = pck.load(fsubj)
         accuracy[s_ind] = subj_accuracy
         ps[s_ind] = subj_ps
-        fsubj_accuracy.close()
-        fsubj_ps.close()
+        ps_incorrect[s_ind] = subj_ps_incorrect
+        fsubj.close()
         continue
     except:
         #(re)process subject
         pass
 
-    #new data structs
+    #new data struct templates
     subj_accuracy = accuracy[s_ind]
     subj_ps = ps[s_ind]
-    subj_ps_incorrect = ps[s_ind]
+    subj_ps_incorrect = ps_incorrect[s_ind]
     #for pattern in (condition_pattern):
         #subj_accuracy[pattern] = []
         #for stat in (status):
@@ -461,12 +465,11 @@ for s_ind, subj in enumerate(subjects):
 
     accuracy[s_ind] = subj_accuracy
     ps[s_ind] = subj_ps
-    fsubj_accuracy = open(subj + '_accuracy.obj', 'w')
-    fsubj_ps = open(subj + '_ps.obj', 'w')
-    pck.dump(subj_ps, fsubj_ps) # overwrites
-    pck.dump(subj_accuracy, fsubj_accuracy) # overwrites
-    fsubj_accuracy.close()
-    fsubj_ps.close()
+    ps_incorrect[s_ind] = subj_ps_incorrect
+    subj_tuple = (subj_accuracy, subj_ps, subj_ps_incorrect)
+    fsubj = open(processed_file, 'w')
+    pck.dump(subj_tuple, fsubj) # overwrites
+    fsubj.close()
     
 for i in range(N):
     for j in range(condition_nums):
