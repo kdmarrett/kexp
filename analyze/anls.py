@@ -15,7 +15,6 @@ import pickle as pck
 #from expyfun import binary_to_decimals, decimals_to_binary
 
 #TODO
-# resegregate correct and incorrect trials
 # take only sections of trial after vprimerlen
 #double check stats section of accuracy
 #get cog scores settled
