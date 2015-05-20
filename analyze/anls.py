@@ -14,25 +14,21 @@ import pickle as pck
 #from pyeparse.utils import pupil_kernel
 #from expyfun import binary_to_decimals, decimals_to_binary
 
-#TODO
-# take only sections of trial after vprimerlen
-#double check stats section of accuracy
-#get cog scores settled
-    #add in weighting
-#finish text
-#in general get the mean for each subject
-#std and mean of subject means
-#test for significance of results and print to results
-
-subjects = ['HL', 'HI', 'HN', 'HK', 'HJ', 'GR'] # HK later
-#reprocess_list = ['HI', 'HN', 'HL', 'HK', 'HJ', 'GR'] # HK later
-reprocess_list = []
+force_reprocess = True
+subjects = ['HL', 'HI', 'HN', 'HK', 'HJ', 'GR'] 
+if force_reprocess:
+    reprocess_list = subjects
+else:
+    reprocess_list = []
 N = len(subjects)
 
 #assert version code
 stim_version_code = 8010
 # asserted fs
 fs = 1000.0  
+#TODO integrate this to hold general information about each subject
+#test for significance of results and print to results
+resultstxt = open('results.txt', 'w')
 #data_dir = os.path.abspath(os.path.join(os.pardir, 'Data'))
 data_dir = '/home/kdmarrett/lab/FilesScript/Data'
 
@@ -135,16 +131,44 @@ def subj_accuracy_stats():
         global_std.append(np.nanstd(subj_means[:, i]))
         global_ste.append(global_std[-1] / np.sqrt(N))
     assert(len(global_mean) == condition_nums)
-    #import pdb;pdb.set_trace()
+    #TODO print to results
     return global_mean, global_std, global_ste, subj_means, subj_stds
 
-def subj_ps_stats(type='correct'):
-    pass
-    #if type is 'both':
-        #types = status
-    #else:
-        #types = type
-    #for stat in types:
+def subj_ps_stats(c_num, type='correct'):
+    """ ps[subject,cond_ind,block, trial, sample] """
+
+    mean_dat = np.zeros((N, condition_nums, trial_samp))
+    mean_dat[:] = np.nan
+    std_dat = mean_dat
+    normalized_mean_dat = mean_dat
+    control_mean = np.zeros(shape=(N, 1))
+    controlmean[:] = np.nan
+    for s_ind, subj_ps in enumerate(ps):
+        for c_ind in range(condition_nums):
+            # raw mean for each subject and condition
+            mean_dat[s_ind, c_ind] = np.nanmean(
+                    subj_ps[c_ind].reshape(block_len*s2_blocks[0][0],
+                        trial_samp), axis=0)
+            std_dat[s_ind, c_ind] = np.nanstd(
+                    subj_ps[c_ind].reshape(block_len*s2_blocks[0][0],
+                        trial_samp), axis=0)
+            #mean for each subject 
+            control_mean[s_ind] = np.nanmean(np.nanmean(
+                ps_control[s_ind, c_ind].reshape(block_len
+                    *s2_blocks[0][0], control_samp), axis=0))
+            normalized_mean_dat[s_ind, c_ind] = 
+                mean_dat[s_ind, c_ind] - control_mean[s_ind]
+    #FIXME check this is working
+    mean_dat = mean_dat[0][0][end_primer_samp:]
+    std_dat = std_dat[0][0][end_primer_samp:]
+    mean = np.nanmean(mean_dat, axis=0)
+    std = np.nanstd(std_dat, axis=0)
+    assert(len(std) == condition_nums)
+    assert(len(mean) == condition_nums)
+    global_mean = np.nanmean(mean[c_num])
+    global_std = np.nanstd(std[c_num])
+    #TODO print to results
+    return mean, std, global_mean, global_std
 
 def plot_accuracy():
     global_mean, global_std, global_ste, subj_means, subj_stds = \
@@ -193,25 +217,10 @@ def plot_accuracy():
     #edgecolor='none')
 
 def plot_ps(c_num, name=''):
-    """ ps[subject,cond_ind,block, trial, sample] """
+    """plot all ps data of a certain condition for each subject"""
 
-    mean_dat = np.zeros((N, condition_nums, trial_samp))
-    std_dat = np.zeros((N, condition_nums, trial_samp))
-    for s_ind, subj_ps in enumerate(ps):
-        for c_ind in range(condition_nums):
-            mean_dat[s_ind, c_ind] = np.nanmean(
-                    subj_ps[c_ind].reshape(block_len*s2_blocks[0][0],
-                        trial_samp), axis=0)
-            std_dat[s_ind, c_ind] = np.nanstd(
-                    subj_ps[c_ind].reshape(block_len*s2_blocks[0][0],
-                        trial_samp), axis=0)
-    mean = np.nanmean(mean_dat, axis=0)
-    std = np.nanstd(std_dat, axis=0)
-    assert(len(std) == condition_nums)
-    global_mean = np.nanmean(mean[c_num])
-    global_std = np.nanstd(std[c_num])
-
-    #import pdb;pdb.set_trace()
+#TODO this should only be called once not each time plot
+    mean, std, global_mean, global_std = subj_ps_stats(c_num)
     #fig = plt.figure()
     window_len = len(mean_dat[0][0]) 
     x = np.linspace(0, window_len / fs, window_len)
@@ -221,9 +230,9 @@ def plot_ps(c_num, name=''):
                             color="#3F5D7D", alpha=.5)  
     plt.plot(x, mean[c_num], color='k', linewidth=3, label='mean',
             alpha=1)
-    plt.annotate('End visual primer', xy=(end_primer, 
-        mean[c_num, end_primer_samp]), xytext=(5, 2000),
-        arrowprops=dict(facecolor='black', shrink=0.02))
+    #plt.annotate('End visual primer', xy=(end_primer, 
+        #mean[c_num, end_primer_samp]), xytext=(5, 2000),
+        #arrowprops=dict(facecolor='black', shrink=0.02))
     #plt.legend(loc=9)    
     plt.ylabel('Pupil Size')
     info = r'$\mu$=%.1f, $\sigma$=%.3f, N=%d' % (global_mean,
@@ -244,7 +253,7 @@ global_vars = sio.loadmat(op.join(param_data_dir, 'global_vars.mat'))
 preblock = global_vars['preblock_prime_sec'][0]
 trial_len = 36.000
 trial_samp = np.floor(trial_len*fs).astype(int)
-# time of visual primer
+# time of visual primer (s)
 vPrimerLen = global_vars['vPrimerLen'] 
 end_primer = vPrimerLen
 end_primer_samp = int(end_primer * fs)
@@ -295,11 +304,21 @@ def con_2_ind(pattern):
 #take three
 ps = np.ndarray(shape=(N, condition_nums, s2_blocks, block_len,
     trial_samp))
-ps_incorrect = np.ndarray(shape=(N, condition_nums, s2_blocks, block_len,
-    trial_samp))
+ps[:] = np.nan
+ps_incorrect = np.ndarray(shape=(N, condition_nums, s2_blocks,
+    block_len, trial_samp))
 ps_incorrect[:] = np.nan
-accuracy = np.ndarray(shape=(N, condition_nums, s2_blocks * block_len / \
-        condition_nums))
+accuracy = np.ndarray(shape=(N, condition_nums, 
+    s2_blocks * block_len \ condition_nums))
+accuracy[:] = np.nan
+control_slice_time = 2
+control_samp = np.ceil(control_slice_time * fs)
+ps_control = np.ndarray(shape=(N, condition_nums, s2_blocks, block_len,
+    control_samp))
+ps_control[:] = np.nan
+usable_trials = p.zeros(shape=(N, 1))
+usable_trials[:] = np.nan
+
 #process cog load data
 gen_qnum = 6
 rel_qnum = 15
@@ -346,10 +365,13 @@ for s_ind, subj in enumerate(subjects):
     try:
         assert(subj not in reprocess_list)
         fsubj = open(processed_file, 'r')
-        (subj_accuracy, subj_ps, subj_ps_incorrect) = pck.load(fsubj)
+        (subj_accuracy, subj_ps, subj_ps_incorrect, subj_ps_control,
+                subj_usable_trials) = pck.load(fsubj)
         accuracy[s_ind] = subj_accuracy
         ps[s_ind] = subj_ps
         ps_incorrect[s_ind] = subj_ps_incorrect
+        ps_control[s_ind] = subj_ps_control
+        usable_trials[s_ind] = subj_usable_trials
         fsubj.close()
         continue
     except:
@@ -360,6 +382,8 @@ for s_ind, subj in enumerate(subjects):
     subj_accuracy = accuracy[s_ind]
     subj_ps = ps[s_ind]
     subj_ps_incorrect = ps_incorrect[s_ind]
+    subj_ps_control = ps_control[s_ind]
+    subj_usable_trials = 0
     #for pattern in (condition_pattern):
         #subj_accuracy[pattern] = []
         #for stat in (status):
@@ -440,7 +464,14 @@ for s_ind, subj in enumerate(subjects):
             trial_epoch = pp.Epochs(raw, events=events, 
                 event_id=event_id, tmin=tmin, tmax=tmax)
             temp = trial_epoch.get_data('ps')[0]
-            #import pdb; pdb.set_trace()
+            #save control ps data for each subject
+            #TODO if doesn't work then just subtract from events
+            control_epoch = pp.Epochs(raw, events=events, 
+                event_id=event_id, tmin=-control_slice_time, tmax=0)
+            ctemp = control_epoch.get_data('ps')[0]
+            for i in range(control_samp):
+                subj_ps_control[c_ind, b_ind, tnum, i] = ctemp[i] 
+            #save all other ps and accuracy info
             if correct:
                 subj_accuracy[c_ind, cond_acc_ind[c_ind]] = 1
                 for i in range(trial_samp):
@@ -449,27 +480,22 @@ for s_ind, subj in enumerate(subjects):
                 subj_accuracy[c_ind, cond_acc_ind[c_ind]] = 0
                 for i in range(trial_samp):
                     subj_ps_incorrect[c_ind, b_ind, tnum, i] = temp[i] 
+            #update indexer
             cond_acc_ind[c_ind] += 1
-
-        #must be removed from highest ind to lowest for prop indexing
-        #remove_c_ind.sort(reverse=True)
-        #remove_trial.sort(reverse=True)
-            ##remove null trials from np array
-        #for i in range(len(remove_trial)):
-            #block = subj_ps[remove_c_ind[i], b_ind]
-            #subj_ps[remove_c_ind[i], b_ind]= np.delete(block,
-                    #block[remove_trial[i]], axis=0)
-            #subj_accuracy = np.delete(subj_accuracy, subj_accuracy[
-                #remove_c_ind[i], remove_trial[i]], axis=1)
-
+            subj_usable_trials += 1
     accuracy[s_ind] = subj_accuracy
+    usable_trials[s_ind] = subj_usable_trials
     ps[s_ind] = subj_ps
     ps_incorrect[s_ind] = subj_ps_incorrect
-    subj_tuple = (subj_accuracy, subj_ps, subj_ps_incorrect)
+    ps_control[s_ind] = subj_ps_control
+    subj_tuple = (subj_accuracy, subj_ps, subj_ps_incorrect,
+            subj_ps_control, subj_usable_trials)
     fsubj = open(processed_file, 'w')
     pck.dump(subj_tuple, fsubj) # overwrites
     fsubj.close()
     
+#TODO way of scoring cog load data, put into method
+    #add in weighting
 for i in range(N):
     for j in range(condition_nums):
         # wait category responses by rel survey
@@ -487,6 +513,7 @@ for i in range(N):
                 score += response
 
 plot_accuracy()
+#plot the specified ps data
 status = ['correct'] #only consider correct trials
 names = ['Alphabetic', 'Fixed-Order', 'Random']
 for c_ind, pattern in enumerate(condition_pattern):
