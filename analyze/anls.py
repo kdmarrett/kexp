@@ -161,7 +161,7 @@ def subj_ps_stats(norm_globally=True, type='correct'):
                 control_mean[s_ind] = np.nanmean(np.nanmean(
                     ps_control[s_ind, c_ind].reshape(block_len
                         * s2_blocks[0][0], control_samp), axis=0))
-                normalized_mean_dat[s_ind, c_ind] = 
+                normalized_mean_dat[s_ind, c_ind] = \
                     mean_dat[s_ind, c_ind] - control_mean[s_ind]
                 #TODO get inter-subject variance
             else:
@@ -173,7 +173,7 @@ def subj_ps_stats(norm_globally=True, type='correct'):
                 normalized_mean_dat[s_ind, c_ind] = np.nanmean(
                         subj_ps[c_ind].reshape(trials_exp,
                             trial_samp) - control_mean, axis=0)
-                #TODO get inter-subject variance
+                #TODO get inter-subject and deal with std in general
                 #std_dat[s_ind, c_ind] = np.nanstd(
                         #subj_ps[c_ind].reshape(trials_exp,
                             #trial_samp), axis=0)
@@ -181,18 +181,23 @@ def subj_ps_stats(norm_globally=True, type='correct'):
     #FIXME check this is working
     mean_dat = mean_dat[0][0][end_primer_samp:]
     std_dat = std_dat[0][0][end_primer_samp:]
+    normalized_mean_dat = normalized_mean_dat[0][0][end_primer_samp:]
     # means across all subjects
     mean = np.nanmean(mean_dat, axis=0)
+    normalized_mean = np.nanmean(normalized_mean_dat, axis=0)
     std = np.nanstd(std_dat, axis=0)
     assert(len(std) == condition_nums)
     assert(len(mean) == condition_nums)
     #single number representing the global average for each condition
     global_mean = np.nanmean(mean, axis=0)
+    global_normalized_mean = np.nanmean(normalized_mean, axis=0)
     global_std = np.nanstd(std, axis=0)
     #FIXME check this is working
     assert(len(global_mean) == condition_nums)
     #TODO print to results
-    return mean, std, global_mean, global_std
+    window_len = len(mean_dat[0][0]) 
+    return mean, normalized_mean, std, global_mean,\
+        global_normalized_mean, global_std, window_len 
 
 def plot_accuracy():
     global_mean, global_std, global_ste, subj_means, subj_stds = \
@@ -245,7 +250,6 @@ def plot_ps(c_num, name=''):
     #TODO create a new function to plot all conditions
 
     #fig = plt.figure()
-    window_len = len(mean_dat[0][0]) 
     x = np.linspace(0, window_len / fs, window_len)
 
     plt.fill_between(x, mean[c_num] - std[c_num],  
@@ -286,9 +290,9 @@ postblock = global_vars['postblock']
 #trial_len = global_vars['tot_wav_time'] 
 order = global_vars['order'][0]
 s2_blocks = global_vars['s2_blocks']
-trials_exp = block_len*s2_blocks[0][0]
 # trials_per_block in middle section
 block_len = len(order[1][0])
+trials_exp = block_len*s2_blocks[0][0]
 wheel_matrix_info = global_vars['wheel_matrix_info'][0]
 
 # build condition strings
@@ -332,15 +336,15 @@ ps[:] = np.nan
 ps_incorrect = np.ndarray(shape=(N, condition_nums, s2_blocks,
     block_len, trial_samp))
 ps_incorrect[:] = np.nan
-accuracy = np.ndarray(shape=(N, condition_nums, 
-    s2_blocks * block_len \ condition_nums))
+accuracy = np.ndarray(shape=(N, condition_nums,
+    s2_blocks * block_len / condition_nums))
 accuracy[:] = np.nan
 control_slice_time = 2
 control_samp = np.ceil(control_slice_time * fs)
 ps_control = np.ndarray(shape=(N, condition_nums, s2_blocks, block_len,
     control_samp))
 ps_control[:] = np.nan
-usable_trials = p.zeros(shape=(N, 1))
+usable_trials = np.zeros(shape=(N, 1))
 usable_trials[:] = np.nan
 
 #process cog load data
@@ -493,7 +497,7 @@ for s_ind, subj in enumerate(subjects):
             control_epoch = pp.Epochs(raw, events=events, 
                 event_id=event_id, tmin=-control_slice_time, tmax=0)
             ctemp = control_epoch.get_data('ps')[0]
-            for i in range(control_samp):
+            for i in range(int(control_samp)):
                 subj_ps_control[c_ind, b_ind, tnum, i] = ctemp[i] 
             #save all other ps and accuracy info
             if correct:
@@ -537,7 +541,8 @@ for i in range(N):
                 score += response
 
 plot_accuracy()
-mean, std, global_mean, global_std = subj_ps_stats()
+mean, normalized_mean, std, global_mean,\
+    global_normalized_mean, global_std, window_len = subj_ps_stats()
 #plot the specified ps data
 status = ['correct'] #only consider correct trials
 names = ['Alphabetic', 'Fixed-Order', 'Random']
