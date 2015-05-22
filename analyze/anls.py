@@ -33,6 +33,9 @@ resultstxt = open('results.txt', 'w')
 #data_dir = os.path.abspath(os.path.join(os.pardir, 'Data'))
 data_dir = '/home/kdmarrett/lab/FilesScript/Data'
 
+def con_2_ind(pattern):
+    return int(pattern[-3:].replace(" ", ""), 2) - 1
+
 def getTrialInfo(block_ind, bnum, advance=False):
     """ Returns generic information about particular trial wav data """
 
@@ -285,6 +288,14 @@ vPrimerLen = global_vars['vPrimerLen']
 end_primer = vPrimerLen
 end_primer_samp = int(end_primer * fs)
 end_stim = int(trial_len * fs)
+target_window = 6000
+usable_criterion = .15
+#accept pupil data within deviations of mean
+deviations = 3
+#TODO get actual screen distance from Marlo
+#TODO convert the physical distances to pixels
+screen_distance = 1
+angle_criterion = 40
 # time after each trial to record pupil
 postblock = global_vars['postblock'] 
 #trial_len = global_vars['tot_wav_time'] 
@@ -319,9 +330,6 @@ for i in range(condition_nums):
         condition_pattern[i] += ' ' + condition_asc[i][j]
     patternToCond[condition_pattern[i]] =  \
         int(condition_pattern[i][-3:].replace(" ", ""), 2)
-
-def con_2_ind(pattern):
-    return int(pattern[-3:].replace(" ", ""), 2) - 1
 
 #date structures
 #ps_dict = dict()
@@ -435,9 +443,10 @@ for s_ind, subj in enumerate(subjects):
         bnum = mid_block_order[b_ind]
         print '\tProcessing bnum: ' + str(bnum)
         raw = pp.Raw(fname)
+        raw_blinks = raw #hold on to blink data
         raw.remove_blink_artifacts()
-        #raws[bnum] = raw
         assert raw.info['sfreq'] == fs
+        screen_coords = raw.info['screen_coords']
         if (len(fnames) != s2_blocks):
             print '\t Warning: incorrect edf file count ' + \
             str(len(fnames))
@@ -453,6 +462,8 @@ for s_ind, subj in enumerate(subjects):
             #id_list = getGeneralInfo(block_ind, bnum, advance=False)
             event_id = s_ind
             remove_flag = False
+
+            #check for a mat file for the trial
             try:
                 id_list, correct = getFinalInfo(block_ind, bnum,
                         subj_data_dir, advance=True)
@@ -464,7 +475,8 @@ for s_ind, subj in enumerate(subjects):
                 #advance indexer dict
                 remove_flag = True
                 block_ind[bnum] += 1
-            #find the event for this trial
+
+            #check the event for this trial
             events = raw.find_events(trial_id, event_id)
             if (len(events) == 0):
                 print '\tWarning: trial ' + str(tnum) + \
@@ -474,11 +486,46 @@ for s_ind, subj in enumerate(subjects):
                 block_ind[bnum] += 1
             else:
                 print '\t\tProcessing trial ' + str(tnum)
-            #get c_ind
+            #TODO target window
+            #TODO get area around targets discard if eyeblink
             for pattern in condition_pattern:
                 if trial_id.startswith(pattern):
                     cond = pattern
             c_ind = con_2_ind(cond)
+
+            #save control ps data for each subject
+            control_epoch = pp.Epochs(raw, events=events, 
+                event_id=event_id, tmin=-control_slice_time, tmax=0)
+            ctemp = control_epoch.get_data('ps')[0]
+            for i in range(int(control_samp)):
+                subj_ps_control[c_ind, b_ind, tnum, i] = ctemp[i] 
+
+            #check for blink criteria
+            control_mean = np.nanmean(subj_ps_control[c_ind, b_ind, tnum])
+            control_std = np.nanstd(subj_ps_control[c_ind, b_ind, tnum])
+            blink_epoch = pp.Epochs(raw_blinks, events=events, 
+                event_id = event_id, tmin=tmin, tmax=tmax)
+            blink_ps = blink_epoch.get_data('ps')[0]
+            valid = len(np.where((blink_ps > (deviations *\
+                control_std + control_mean)) & (blink_ps < \
+                    (control_mean - deviations * control_std)))) /\
+                len(blink_ps)
+            remove_flag = (valid > usable_criterion) or remove_flag
+
+            #check for large eyemovements 
+            blink_xpos = blink_epoch.get_data('xpos')[0]
+            blink_ypos = blink_epoch.get_data('ypos')[0]
+            #center it
+            blink_xpos = blink_xpos - ((int)\
+                screen_coords[0] / 2)
+            blink_ypos = blink_ypos - ((int)\
+                screen_coords[1] / 2)
+            rho = np.sqrt(blink_xpos**2 + blink_ypos**2)
+            eye_angle = np.arctan2(rho / screen_distance)
+            remove_flag = any(eye_angle > angle_criterion) or \
+                remove_flag
+
+            #remove invalid trials
             if remove_flag:
                 remove_c_ind.append(c_ind)
                 remove_trial.append(tnum)
@@ -486,19 +533,15 @@ for s_ind, subj in enumerate(subjects):
                 for i in range(trial_samp):
                     subj_ps[c_ind, b_ind, tnum, i] = np.nan
                 continue
+
+            #otherwise process date normally
             #parse ps data and add to matrices
             tmin = 0.0
             tmax = trial_len + postblock
             trial_epoch = pp.Epochs(raw, events=events, 
-                event_id=event_id, tmin=tmin, tmax=tmax)
+                event_id = event_id, tmin=tmin, tmax=tmax)
             temp = trial_epoch.get_data('ps')[0]
-            #save control ps data for each subject
-            #TODO if doesn't work then just subtract from events
-            control_epoch = pp.Epochs(raw, events=events, 
-                event_id=event_id, tmin=-control_slice_time, tmax=0)
-            ctemp = control_epoch.get_data('ps')[0]
-            for i in range(int(control_samp)):
-                subj_ps_control[c_ind, b_ind, tnum, i] = ctemp[i] 
+
             #save all other ps and accuracy info
             if correct:
                 subj_accuracy[c_ind, cond_acc_ind[c_ind]] = 1
