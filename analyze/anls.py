@@ -15,8 +15,8 @@ import pickle as pck
 #from expyfun import binary_to_decimals, decimals_to_binary
 
 # if something was changed in the file saving process
-force_reprocess = True 
-subjects = ['HL', 'HI', 'HN', 'HK', 'HJ', 'GR'] 
+force_reprocess = False
+subjects = ['HL', 'HI', 'HN', 'HK', 'HJ', 'GR', 'GU', 'HD'] 
 if force_reprocess:
     reprocess_list = subjects
 else:
@@ -27,7 +27,8 @@ N = len(subjects)
 stim_version_code = 8010
 # asserted fs
 fs = 1000.0  
-#TODO integrate this to hold general information about each subject
+#TODO use remove_blink_artifacts to nullify certain target
+#windows
 #test for significance of results and print to results
 resultstxt = open('results.txt', 'w')
 #data_dir = os.path.abspath(os.path.join(os.pardir, 'Data'))
@@ -143,8 +144,10 @@ def subj_ps_stats(norm_globally=True, type='correct'):
 
     mean_dat = np.zeros((N, condition_nums, trial_samp))
     mean_dat[:] = np.nan
-    std_dat = mean_dat
-    normalized_mean_dat = mean_dat
+    std_dat = np.zeros((N, condition_nums, trial_samp))
+    std_dat[:] = np.nan
+    normalized_mean_dat = np.zeros((N, condition_nums, trial_samp))
+    normalized_mean_dat[:] = np.nan
     if norm_globally:
         control_mean = np.zeros(shape=(N, 1))
     else:
@@ -156,6 +159,13 @@ def subj_ps_stats(norm_globally=True, type='correct'):
             mean_dat[s_ind, c_ind] = np.nanmean(
                     subj_ps[c_ind].reshape(trials_exp,
                         trial_samp), axis=0)
+            print str(np.max(mean_dat[s_ind, c_ind]))
+            print str(np.mean(mean_dat[s_ind, c_ind]))
+            #plt.plot(mean_dat[s_ind, c_ind])
+            #plt.show()
+            #print str(np.min(subj_ps[c_ind]))
+            #print str(np.nanmean(subj_ps[c_ind]))
+            #print str(np.max(subj_ps[c_ind]))
             std_dat[s_ind, c_ind] = np.nanstd(
                     subj_ps[c_ind].reshape(trials_exp,
                         trial_samp), axis=0)
@@ -164,8 +174,8 @@ def subj_ps_stats(norm_globally=True, type='correct'):
                 control_mean[s_ind] = np.nanmean(np.nanmean(
                     ps_control[s_ind, c_ind].reshape(block_len
                         * s2_blocks[0][0], control_samp), axis=0))
-                normalized_mean_dat[s_ind, c_ind] = \
-                    mean_dat[s_ind, c_ind] - control_mean[s_ind]
+                normalized_mean_dat[s_ind, c_ind] = mean_dat[s_ind,
+                        c_ind] - control_mean[s_ind]
                 #TODO get inter-subject variance
             else:
                 #for each subject for each trial find a corresponding
@@ -181,24 +191,33 @@ def subj_ps_stats(norm_globally=True, type='correct'):
                         #subj_ps[c_ind].reshape(trials_exp,
                             #trial_samp), axis=0)
                   
-    #FIXME check this is working
-    mean_dat = mean_dat[0][0][end_primer_samp:]
-    std_dat = std_dat[0][0][end_primer_samp:]
-    normalized_mean_dat = normalized_mean_dat[0][0][end_primer_samp:]
+    #trim all data from end of the visual primer on
+    #import pdb; pdb.set_trace()
+    mean_dat = mean_dat[:,:,end_primer_samp:]
+    std_dat = std_dat[:,:,end_primer_samp:]
+    normalized_mean_dat = normalized_mean_dat[:,:,end_primer_samp:]
     # means across all subjects
-    mean = np.nanmean(mean_dat, axis=0)
+    mean = np.nanmean(mean_dat, axis=0) 
+    #TODO use this
+    std_subj_mean = np.nanstd(mean_dat, axis=0)
     normalized_mean = np.nanmean(normalized_mean_dat, axis=0)
     std = np.nanstd(std_dat, axis=0)
     assert(len(std) == condition_nums)
     assert(len(mean) == condition_nums)
+    #TODO get peaks by subject average peak heights each cond
     #single number representing the global average for each condition
-    global_mean = np.nanmean(mean, axis=0)
-    global_normalized_mean = np.nanmean(normalized_mean, axis=0)
-    global_std = np.nanstd(std, axis=0)
-    #FIXME check this is working
+    global_mean = np.nanmean(mean, axis=1)
+    global_normalized_mean = np.nanmean(normalized_mean, axis=1)
+    global_std = np.nanstd(std, axis=1)
+    #FIXME why is it all nan values?
     assert(len(global_mean) == condition_nums)
+    assert(len(global_normalized_mean) == condition_nums)
+    assert(len(global_std) == condition_nums)
     #TODO print to results
-    window_len = len(mean_dat[0][0]) 
+    window_len = trial_samp - end_primer_samp
+    assert(mean.shape[1] == window_len);
+    assert(normalized_mean.shape[1] == window_len)
+    assert(std.shape[1] == window_len)
     return mean, normalized_mean, std, global_mean,\
         global_normalized_mean, global_std, window_len 
 
@@ -249,30 +268,30 @@ def plot_accuracy():
     #edgecolor='none')
 
 def plot_ps(c_num, name=''):
-    """plot all ps data of a certain condition for each subject"""
+    """plot a mean collection of ps data of a certain condition"""
     #TODO create a new function to plot all conditions
 
     #fig = plt.figure()
     x = np.linspace(0, window_len / fs, window_len)
 
-    plt.fill_between(x, mean[c_num] - std[c_num],  
-                            mean[c_num] + std[c_num],
-                            color="#3F5D7D", alpha=.5)  
+    plt.fill_between(x, mean[c_num] - std[c_num],  mean[c_num] +\
+            std[c_num], color="#3F5D7D", alpha=.5)  
     plt.plot(x, mean[c_num], color='k', linewidth=3, label='mean',
             alpha=1)
+    #visual_primer is now cut out
     #plt.annotate('End visual primer', xy=(end_primer, 
         #mean[c_num, end_primer_samp]), xytext=(5, 2000),
         #arrowprops=dict(facecolor='black', shrink=0.02))
     #plt.legend(loc=9)    
     plt.ylabel('Pupil Size')
-    info = r'$\mu$=%.1f, $\sigma$=%.3f, N=%d' % (global_mean,
-            global_std, N)
-    plt.text(20,global_mean+500,info)
+    info = r'$\mu$=%.1f, $\sigma$=%.3f, N=%d' % (global_mean[c_num],\
+            global_std[c_num], N)
+    plt.text(20, global_mean[c_num] + 500, info)
     plt.xlabel('Trial Time (s)')
     plt.title(name + ' trial pupil size')
     #plt.show()
     name = name.replace(" ", "")
-    fn = name + 'ps.png'
+    fn = name + 'ps.pdf'
     plt.savefig(fn)
     plt.close()
 
@@ -349,8 +368,8 @@ accuracy = np.ndarray(shape=(N, condition_nums,
 accuracy[:] = np.nan
 control_slice_time = 2
 control_samp = np.ceil(control_slice_time * fs)
-ps_control = np.ndarray(shape=(N, condition_nums, s2_blocks, block_len,
-    control_samp))
+ps_control = np.ndarray(shape=(N, condition_nums, s2_blocks,
+    block_len, control_samp))
 ps_control[:] = np.nan
 usable_trials = np.zeros(shape=(N, 1))
 usable_trials[:] = np.nan
@@ -447,6 +466,7 @@ for s_ind, subj in enumerate(subjects):
         raw.remove_blink_artifacts()
         assert raw.info['sfreq'] == fs
         screen_coords = raw.info['screen_coords']
+        #import pdb; pdb.set_trace()
         if (len(fnames) != s2_blocks):
             print '\t Warning: incorrect edf file count ' + \
             str(len(fnames))
@@ -503,6 +523,9 @@ for s_ind, subj in enumerate(subjects):
             #check for blink criteria
             control_mean = np.nanmean(subj_ps_control[c_ind, b_ind, tnum])
             control_std = np.nanstd(subj_ps_control[c_ind, b_ind, tnum])
+
+            tmin = 0.0
+            tmax = trial_len + postblock
             blink_epoch = pp.Epochs(raw_blinks, events=events, 
                 event_id = event_id, tmin=tmin, tmax=tmax)
             blink_ps = blink_epoch.get_data('ps')[0]
@@ -516,14 +539,16 @@ for s_ind, subj in enumerate(subjects):
             blink_xpos = blink_epoch.get_data('xpos')[0]
             blink_ypos = blink_epoch.get_data('ypos')[0]
             #center it
-            blink_xpos = blink_xpos - ((int)\
-                screen_coords[0] / 2)
-            blink_ypos = blink_ypos - ((int)\
-                screen_coords[1] / 2)
-            rho = np.sqrt(blink_xpos**2 + blink_ypos**2)
-            eye_angle = np.arctan2(rho / screen_distance)
-            remove_flag = any(eye_angle > angle_criterion) or \
-                remove_flag
+            #blink_xpos = blink_xpos - ((int)\
+                #screen_coords[0] / 2)
+            #blink_ypos = blink_ypos - ((int)\
+                #screen_coords[1] / 2)
+            #TODO get screen distance from Marlo
+            #rho = np.sqrt(blink_xpos**2 + blink_ypos**2)
+            #eye_angle = np.arctan2(rho / screen_distance)
+            #remove_flag = any(eye_angle > angle_criterion) or \
+                #remove_flag
+            remove_flag = False or remove_flag
 
             #remove invalid trials
             if remove_flag:
@@ -536,8 +561,6 @@ for s_ind, subj in enumerate(subjects):
 
             #otherwise process date normally
             #parse ps data and add to matrices
-            tmin = 0.0
-            tmax = trial_len + postblock
             trial_epoch = pp.Epochs(raw, events=events, 
                 event_id = event_id, tmin=tmin, tmax=tmax)
             temp = trial_epoch.get_data('ps')[0]
@@ -596,5 +619,6 @@ for c_ind, pattern in enumerate(condition_pattern):
         cond_num = patternToCond[pattern]
         #name = 'Condition ' + str(cond_num) + ' ' + stat
         name = names[cond_num - 1]
+        #import pdb; pdb.set_trace()
         plot_ps(c_ind, name)
 
