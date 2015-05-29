@@ -399,6 +399,7 @@ with ef.ExperimentController(*std_args, **std_kwargs) as ec:
     order = global_vars['order'][0]
     preblock = global_vars['preblock_prime_sec'][0]
     s2_blocks = global_vars['s2_blocks'][0][0]
+    ec.write_data_line('version_code', version_code)
 
     # make condition ordering
     # keep the same block ordering for the same subject
@@ -417,6 +418,7 @@ with ef.ExperimentController(*std_args, **std_kwargs) as ec:
     startInfo['session'] = ec._exp_info['session']
     edf_outputdir = op.join(datadir, folder)
     startInfo['mid_block_order'] = mid_block_order
+    startInfo['version_code'] = version_code
     ec.write_data_line('mid_block_order', mid_block_order);
     startmat = op.join(edf_outputdir, 'startInfo.mat')
     

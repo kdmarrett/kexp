@@ -13,3 +13,5 @@ backupFiles/
 tags
 analyze/tags
 *.png
+analyze/screenshots/
+analyze/results.txt
