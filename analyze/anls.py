@@ -267,9 +267,8 @@ def plot_accuracy():
     #plt.savefig('conditionAccuracy.png', transparent=True,
     #edgecolor='none')
 
-def plot_ps(c_num, name=''):
+def plot_ps_condition(c_num, name=''):
     """plot a mean collection of ps data of a certain condition"""
-    #TODO create a new function to plot all conditions
 
     #fig = plt.figure()
     x = np.linspace(0, window_len / fs, window_len)
@@ -287,6 +286,37 @@ def plot_ps(c_num, name=''):
     info = r'$\mu$=%.1f, $\sigma$=%.3f, N=%d' % (global_mean[c_num],\
             global_std[c_num], N)
     plt.text(20, global_mean[c_num] + 500, info)
+    plt.xlabel('Trial Time (s)')
+    plt.title(name + ' trial pupil size')
+    #plt.show()
+    name = name.replace(" ", "")
+    fn = name + 'ps.pdf'
+    plt.savefig(fn)
+    plt.close()
+
+def plot_ps(name=''):
+    """plot a stack of subject mean ps data of all conditions"""
+
+    #FIXME 
+    #fig = plt.figure()
+    x = np.linspace(0, window_len / fs, window_len)
+
+    #plt.fill_between(x, mean[c_num] - std[c_num],  mean[c_num] +\
+            #std[c_num], color="#3F5D7D", alpha=.5)  
+    names = ['Alphabetic', 'Fixed-Order', 'Random']
+    colors = ('k', 'c', 'r')
+    for c_num in range(condition_nums):
+        plt.plot(x, mean[c_num], color=colors[c_num], linewidth=1,
+                label=names[c_num], alpha=1)
+    #visual_primer is now cut out
+    #plt.annotate('End visual primer', xy=(end_primer, 
+        #mean[c_num, end_primer_samp]), xytext=(5, 2000),
+        #arrowprops=dict(facecolor='black', shrink=0.02))
+    plt.legend(loc=9)    
+    plt.ylabel('Pupil Size')
+    #info = r'$\mu$=%.1f, $\sigma$=%.3f, N=%d' % (global_mean[c_num],\
+            #global_std[c_num], N)
+    #plt.text(20, global_mean[c_num] + 500, info)
     plt.xlabel('Trial Time (s)')
     plt.title(name + ' trial pupil size')
     #plt.show()
@@ -620,5 +650,5 @@ for c_ind, pattern in enumerate(condition_pattern):
         #name = 'Condition ' + str(cond_num) + ' ' + stat
         name = names[cond_num - 1]
         #import pdb; pdb.set_trace()
-        plot_ps(c_ind, name)
+        plot_ps_condition(c_ind, name)
 
