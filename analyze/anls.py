@@ -16,7 +16,8 @@ import pickle as pck
 
 # if something was changed in the file saving process
 force_reprocess = False
-subjects = ['HL', 'HI', 'HN', 'HK', 'HJ', 'GR', 'GU', 'HD'] 
+subjects = ['HL', 'HP', 'GH', 'GG', 'GN', 'GI', 'HT', 'HI', 'HN', 'HK', 'HJ', 'GR', 'GU', 'HD'] 
+#subjects = ['HL', 'HI', 'HN', 'HK', 'HJ', 'GR', 'GU', 'HD'] 
 if force_reprocess:
     reprocess_list = subjects
 else:
@@ -29,8 +30,6 @@ stim_version_code = 8010
 fs = 1000.0  
 #TODO use remove_blink_artifacts to nullify certain target
 #windows
-#test for significance of results and print to results
-resultstxt = open('results.txt', 'w')
 #data_dir = os.path.abspath(os.path.join(os.pardir, 'Data'))
 data_dir = '/home/kdmarrett/lab/FilesScript/Data'
 
@@ -159,8 +158,8 @@ def subj_ps_stats(norm_globally=True, type='correct'):
             mean_dat[s_ind, c_ind] = np.nanmean(
                     subj_ps[c_ind].reshape(trials_exp,
                         trial_samp), axis=0)
-            print str(np.max(mean_dat[s_ind, c_ind]))
-            print str(np.mean(mean_dat[s_ind, c_ind]))
+            #print str(np.max(mean_dat[s_ind, c_ind]))
+            #print str(np.mean(mean_dat[s_ind, c_ind]))
             #plt.plot(mean_dat[s_ind, c_ind])
             #plt.show()
             #print str(np.min(subj_ps[c_ind]))
@@ -222,8 +221,6 @@ def subj_ps_stats(norm_globally=True, type='correct'):
         global_normalized_mean, global_std, window_len 
 
 def plot_accuracy():
-    global_mean, global_std, global_ste, subj_means, subj_stds = \
-        subj_accuracy_stats()
 
     #Common sizes: (10, 7.5) and (12, 9)  
     plt.figure(figsize=(12, 14))  
@@ -238,14 +235,14 @@ def plot_accuracy():
     x = [.5, 1.0, 1.5]
     bar_width = .25
     opacity = .4
-    global_mean_pc = global_mean * np.tile(100, len(global_mean))
-    global_std_pc = global_std * np.tile(100, len(global_std))
+    global_mean_pc = acc_global_mean * np.tile(100, len(acc_global_mean))
+    global_std_pc = acc_global_std * np.tile(100, len(acc_global_std))
     error_config = {'ecolor': 'k', 'elinewidth': 3, 'ezorder': 5}
     rects1 = plt.bar(x, global_mean_pc, bar_width, color='w',
             yerr=global_std_pc, error_kw=error_config, lw=2)
     x = x + np.tile(bar_width / 2, condition_nums)
-    for subj_mean in subj_means:
-        subj_mean_pc = subj_mean * np.tile(100, len(subj_mean))
+    for acc_subj_mean in acc_subj_means:
+        subj_mean_pc = acc_subj_mean * np.tile(100, len(acc_subj_mean))
         plt.plot(x, subj_mean_pc, color='k', alpha=opacity, 
                 marker='o')
 
@@ -261,8 +258,7 @@ def plot_accuracy():
     plt.tight_layout()
     #plt.show()
     #change facecolor
-    #change facecolor
-    plt.savefig('conditionAccuracy.png')
+    plt.savefig('conditionAccuracy.pdf')
     plt.close()
     #plt.savefig('conditionAccuracy.png', transparent=True,
     #edgecolor='none')
@@ -273,9 +269,9 @@ def plot_ps_condition(c_num, name=''):
     #fig = plt.figure()
     x = np.linspace(0, window_len / fs, window_len)
 
-    plt.fill_between(x, mean[c_num] - std[c_num],  mean[c_num] +\
-            std[c_num], color="#3F5D7D", alpha=.5)  
-    plt.plot(x, mean[c_num], color='k', linewidth=3, label='mean',
+    plt.fill_between(x, ps_mean[c_num] - ps_std[c_num],  ps_mean[c_num] +\
+            ps_std[c_num], color="#3F5D7D", alpha=.5)  
+    plt.plot(x, ps_mean[c_num], color='k', linewidth=3, label='mean',
             alpha=1)
     #visual_primer is now cut out
     #plt.annotate('End visual primer', xy=(end_primer, 
@@ -283,9 +279,9 @@ def plot_ps_condition(c_num, name=''):
         #arrowprops=dict(facecolor='black', shrink=0.02))
     #plt.legend(loc=9)    
     plt.ylabel('Pupil Size')
-    info = r'$\mu$=%.1f, $\sigma$=%.3f, N=%d' % (global_mean[c_num],\
-            global_std[c_num], N)
-    plt.text(20, global_mean[c_num] + 500, info)
+    info = r'$\mu$=%.1f, $\sigma$=%.3f, N=%d' % (ps_global_mean[c_num],\
+            ps_global_std[c_num], N)
+    plt.text(20, ps_global_mean[c_num] + 500, info)
     plt.xlabel('Trial Time (s)')
     plt.title(name + ' trial pupil size')
     #plt.show()
@@ -543,6 +539,15 @@ for s_ind, subj in enumerate(subjects):
                     cond = pattern
             c_ind = con_2_ind(cond)
 
+            #remove invalid trials
+            if remove_flag:
+                remove_c_ind.append(c_ind)
+                remove_trial.append(tnum)
+                subj_accuracy[c_ind, cond_acc_ind[c_ind]] = np.nan
+                for i in range(trial_samp):
+                    subj_ps[c_ind, b_ind, tnum, i] = np.nan
+                continue
+
             #save control ps data for each subject
             control_epoch = pp.Epochs(raw, events=events, 
                 event_id=event_id, tmin=-control_slice_time, tmax=0)
@@ -636,12 +641,41 @@ for i in range(N):
             else:
                 score += response
 
+resultstxt = open('results.txt', 'w')
+#remove past data
+resultstxt.truncate()
+
+#Accuracy
+acc_global_mean, acc_global_std, acc_global_ste, acc_subj_means, acc_subj_stds = subj_accuracy_stats()
+
+#TODO add test for significance
+resultstxt.write('Accuracy global mean:\n')
+np.savetxt(resultstxt, acc_global_mean, delimiter=',')
+resultstxt.write('Accuracy std:\n')
+np.savetxt(resultstxt, acc_global_std, delimiter=',')
+resultstxt.write('Accuracy global standard error:\n')
+np.savetxt(resultstxt, acc_global_ste, delimiter=',')
+
 plot_accuracy()
-mean, normalized_mean, std, global_mean,\
-    global_normalized_mean, global_std, window_len = subj_ps_stats()
+
+#PS
+ps_mean, ps_normalized_mean, ps_std, ps_global_mean,\
+    ps_global_normalized_mean, ps_global_std, window_len = subj_ps_stats()
+#print to results file
+#TODO add test for significance
+resultstxt.write('global means\n')
+np.savetxt(resultstxt, ps_global_mean, delimiter=',')
+resultstxt.write('global std\n')
+np.savetxt(resultstxt, ps_global_std, delimiter=',')
+resultstxt.write('global normalized means\n')
+np.savetxt(resultstxt, ps_global_normalized_mean, delimiter=',')
+#resultstxt.write('global normalized std\n')
+#np.savetxt(resultstxt, ps_global_normalized_std, delimiter=',')
+
 #plot the specified ps data
 status = ['correct'] #only consider correct trials
 names = ['Alphabetic', 'Fixed-Order', 'Random']
+#TODO plot_ps()
 for c_ind, pattern in enumerate(condition_pattern):
     #print 'plotting pattern' + pattern
     for stat in status:
@@ -652,3 +686,4 @@ for c_ind, pattern in enumerate(condition_pattern):
         #import pdb; pdb.set_trace()
         plot_ps_condition(c_ind, name)
 
+resultstxt.close()
