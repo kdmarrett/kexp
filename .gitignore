@@ -8,7 +8,6 @@ Letters/Files
 *.pdf
 *.obj
 expCode/expyfun
-todo.txt
 backupFiles/
 tags
 analyze/tags

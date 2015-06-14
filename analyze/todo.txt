@@ -1,0 +1,41 @@
+paired t-test
+background
+introduction
+hypothesis
+methods
+results
+discussion
+
+next two weeks of testing 
+June 9th 10th analysis done
+scripts and figures
+gives two weeks to write
+how to formalize statistical tests ask KC
+
+subject comments
+    phonemic similarities difficult
+    keeping eye location while listening at different locations is
+    difficult
+        talk about new Maddox paper eye gaze effects on auditory attention
+
+email goals:
+For each subject, individually averaging the "resting state"
+pupil size and normalizing the trials for a subject by it.  I will
+try this by using a global average to normalize or just average each
+trial by the resting state before each trial.  This way we can see
+if there is any large scale fluctuations for a subject throughout
+the experiment that we may need to high pass filter out. Also
+making a plot to average all trials for each subject, and then
+all subjects to see if there is a clean exponential curve that
+can be fit to get a tau for the ramp up times of each trial.
+
+need to get a mean for each subject and condition
+    for accuracy, for score, and for ps
+finish score quickly
+    then read kubler to do it correctly
+
+NEXT STEPS
+average all trials for each subject to look at dynamics
+time trace for each block
+average around target letters and replacments
+
