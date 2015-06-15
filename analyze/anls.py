@@ -339,40 +339,11 @@ def plot_accuracy():
     plt.savefig(fn)
     plt.close()
 
-#def plot_ps_condition(c_num, name=''):
-    #"""plot a mean collection of ps data of a certain condition"""
 
-    ##fig = plt.figure()
-    #if length is 'trim':
-        #x = np.linspace(0, window_samp / fs, window_samp)
-    #x = np.linspace(0, trial_samp / fs, trial_samp)
+def barPlot(title, ylabel, name, subject_data, global_subj_mean,\
+        global_subj_ste):
+    #TODO need to convert percent date before hand
 
-    #plt.fill_between(x, ps_mean[c_num] - ps_std[c_num],  ps_mean[c_num] +\
-            #ps_std[c_num], color="#3F5D7D", alpha=.5)  
-    #plt.plot(x, ps_mean[c_num], color='k', linewidth=3, label='mean',
-            #alpha=1)
-    ##visual_primer is now cut out
-    ##plt.annotate('End visual primer', xy=(end_primer, 
-        ##mean[c_num, end_primer_samp]), xytext=(5, 2000),
-        ##arrowprops=dict(facecolor='black', shrink=0.02))
-    ##plt.legend(loc=9)    
-    #plt.ylabel('Pupil Size')
-    #info = r'$\mu$=%.1f, $\sigma$=%.3f, N=%d' % (ps_global_mean[c_num],\
-            #ps_global_std[c_num], N)
-    #plt.text(20, ps_global_mean[c_num] + 500, info)
-    #plt.xlabel('Trial Time (s)')
-    #plt.title(name + ' trial pupil size')
-    ##plt.show()
-    #name = name.replace(" ", "")
-    #fn = name + 'ps.pdf'
-    #plt.savefig(fn)
-    #plt.close()
-
-def plot_ps_averages(type='mean', name=''):
-    """ Creates a bar graph showing the mean ps size for each
-    condition with standard deviations """
-
-    #TODO solve the name (capitalization) problem
     #Common sizes: (10, 7.5) and (12, 9)  
     plt.figure(figsize=(12, 14))  
       
@@ -384,92 +355,33 @@ def plot_ps_averages(type='mean', name=''):
     #fig.spines["right"].set_visible(False)  
     #fig.spines["left"].set_visible(False) 
     x = [.5, 1.0, 1.5]
+    yrange = (0, 0)
+    yrange[0] = np.nanmin(global_subj_mean) - np.nanmax(global_subj_ste)
+    yrange[1] = np.nanmax(global_subj_mean) + np.nanmax(global_subj_ste)
     bar_width = .25
+    opacity = .4
     error_config = {'ecolor': 'k', 'elinewidth': 3, 'ezorder': 5}
-    if type is 'mean':
-        plt.bar(x, ps_global_mean, bar_width, color='w',
-                yerr=ps_global_std, error_kw=error_config, lw=2)
-        name = 'Mean'
-    elif type is 'bc_mean':
-        plt.bar(x, ps_global_bc_mean, bar_width, color='w',
-                yerr=ps_global_bc_std,
-                error_kw=error_config, lw=2)
-        name = 'bc mean'
-    else:
-        print 'Undefined type'
-        return
+    plt.bar(x, global_subj_mean, bar_width, color='w',
+            yerr=global_subj_ste, error_kw=error_config, lw=2)
+    x = x + np.tile(bar_width / 2, condition_nums)
+    for subj_mean in subject_data:
+        plt.plot(x, subj_mean, color='k', alpha=opacity, 
+                marker='o')
 
-    #yrange = (50, 103)
-    #plt.ylim(yrange)
-    #for y in range(50, 103, 5):  
-        #plt.plot(range(0,3), [y] * len(range(0,3)), "--",
-                #lw=0.5, color="black", alpha=0.3) 
-    plt.title(name + ' pupil size')
+    #plt.xlabel('Condition')
+    plt.ylabel(ylabel)
+    plt.ylim(yrange)
+    for y in range(yrange[0], yrange[1], 5):  
+        plt.plot(range(0,3), [y] * len(range(0,3)), "--",
+                lw=0.5, color="black", alpha=0.3) 
+    plt.title('%s by condition' % title)
     plt.xticks(x, ('Alphabetic', 'Fixed-order', 'Random'))
     plt.tight_layout()
     #plt.show()
-    plt.ylabel('Pupil Size')
-    #info = r'$\mu$=%.1f, $\sigma$=%.3f, N=%d' % (global_mean[c_num],\
-            #global_std[c_num], N)
-    #plt.text(20, global_mean[c_num] + 500, info)
-    #plt.show()
-    name = name.replace(" ", "")
-    fn = name + 'averagePS.pdf'
+    fn = name + '.pdf'
     print 'Saving figure: %s' % fn
     plt.savefig(fn)
     plt.close()
-
-
-#def plot_ps_peaks(type='mean', name=''):
-    #"""Creates a bar graph showing the peak ps size for each
-    #condition with standard deviations """
-
-    ##Common sizes: (10, 7.5) and (12, 9)  
-    #plt.figure(figsize=(12, 14))  
-      
-    ## Remove the plot frame lines.
-    ##fig = plt.figure()
-    ##ax = plt.gca()
-    ##fig.spines["top"].set_visible(False)  
-    ##fig.spines["bottom"].set_visible(False)  
-    ##fig.spines["right"].set_visible(False)  
-    ##fig.spines["left"].set_visible(False) 
-    #x = [.5, 1.0, 1.5]
-    #bar_width = .25
-    #error_config = {'ecolor': 'k', 'elinewidth': 3, 'ezorder': 5}
-    #if type is 'mean':
-        #plt.bar(x, ps_global_peak_mean, bar_width, color='w',
-                #yerr=ps_global_peak_std,
-                #error_kw=error_config, lw=2)
-        #name = 'Mean'
-    #elif type is 'bc_mean':
-        #plt.bar(x, ps_global_bc_peak_mean, bar_width,
-                #color='w', yerr=ps_global_bc_peak_std,
-                #error_kw=error_config, lw=2)
-        #name = 'bc mean'
-    #else:
-        #print 'Undefined type'
-        #return
-
-    ##yrange = (50, 103)
-    ##plt.ylim(yrange)
-    ##for y in range(50, 103, 5):  
-        ##plt.plot(range(0,3), [y] * len(range(0,3)), "--",
-                ##lw=0.5, color="black", alpha=0.3) 
-    #plt.title(name + 'peak pupil size')
-    #plt.xticks(x, ('Alphabetic', 'Fixed-order', 'Random'))
-    #plt.tight_layout()
-    ##plt.show()
-    #plt.ylabel('Pupil Size')
-    ##info = r'$\mu$=%.1f, $\sigma$=%.3f, N=%d' % (global_mean[c_num],\
-            ##global_std[c_num], N)
-    ##plt.text(20, global_mean[c_num] + 500, info)
-    ##plt.show()
-    #name = name.replace(" ", "")
-    #fn = name + 'peakPS.pdf'
-    #print 'Saving figure: %s' % fn
-    #plt.savefig(fn)
-    #plt.close()
 
 def plot_ps(type='mean', length='full', name=''):
     """plot a stack of subject mean ps data of all conditions
@@ -851,27 +763,6 @@ if load_ipython:
         pck.dump(subj_tuple, fsubj) # overwrites
         fsubj.close()
     
-## 
-
-#TODO way of scoring cog load data, put into method
-    #add in weighting
-#TODO copy and paste accuracy plotting method
-for i in range(N):
-    for j in range(condition_nums):
-        # wait category responses by rel survey
-        for k in range(rel_qnum):
-            rel[i, j, k] = \
-                cog[i][j]['rel_' + para[j] + '_qnum_' + str(k)][0,0]
-        score = 0
-        for k in range(gen_qnum):
-            response =  cog[i][j]['gen_' + para[j] + '_qnum_' + \
-                str(k)][0,0]
-            gen[i, j, k] = response
-            if k in (3, 5):
-                score -= response
-            else:
-                score += response
-
 ##
 
 resultstxt = open('results.txt', 'w')
@@ -909,9 +800,33 @@ printSignificant('PS baseline corrected', ps_subj_bc_means)
 plot_ps(type='mean')
 plot_ps(type='bc_mean')
 
-#TODO combine all barplots into 1 function
-#plot_ps_averages(type='mean')
-#plot_ps_averages(type='bc_mean')
+#FIXME what are the units of pupil size?
+barPlot('Mean pupil size', 'Pupil Size', 'PSbarplot',\
+        ps_subj_means, global_mean, global_ste)
+
+#baseline corrected
+barPlot('Mean base corrected pupil size', 'Pupil Size', 'PSbcbarplot',\
+        ps_subj_bc_means, global_bc_mean, global_bc_ste)
+
+#Survey
+#TODO put into method
+cog_subj = np.zeros((N, condition_nums))
+for i in range(N):
+    for j in range(condition_nums):
+        # TODO weight category responses by rel survey
+        for k in range(rel_qnum):
+            rel[i, j, k] = \
+                cog[i][j]['rel_' + para[j] + '_qnum_' + str(k)][0,0]
+        score = 0
+        for k in range(gen_qnum):
+            response =  cog[i][j]['gen_' + para[j] + '_qnum_' + \
+                str(k)][0,0]
+            gen[i, j, k] = response
+            if k in (3, 5):
+                score -= response
+            else:
+                score += response
+        cog_subj[i, j] = score
 
 resultstxt.close()
 
@@ -937,4 +852,136 @@ resultstxt.close()
 #pResults('Pupil global peak std', ps_global_peak_std)
 #plot_ps_peaks(type='mean')
 #plot_ps_peaks(type='bc_mean')
+
+#def plot_ps_condition(c_num, name=''):
+    #"""plot a mean collection of ps data of a certain condition"""
+
+    ##fig = plt.figure()
+    #if length is 'trim':
+        #x = np.linspace(0, window_samp / fs, window_samp)
+    #x = np.linspace(0, trial_samp / fs, trial_samp)
+
+    #plt.fill_between(x, ps_mean[c_num] - ps_std[c_num],  ps_mean[c_num] +\
+            #ps_std[c_num], color="#3F5D7D", alpha=.5)  
+    #plt.plot(x, ps_mean[c_num], color='k', linewidth=3, label='mean',
+            #alpha=1)
+    ##visual_primer is now cut out
+    ##plt.annotate('End visual primer', xy=(end_primer, 
+        ##mean[c_num, end_primer_samp]), xytext=(5, 2000),
+        ##arrowprops=dict(facecolor='black', shrink=0.02))
+    ##plt.legend(loc=9)    
+    #plt.ylabel('Pupil Size')
+    #info = r'$\mu$=%.1f, $\sigma$=%.3f, N=%d' % (ps_global_mean[c_num],\
+            #ps_global_std[c_num], N)
+    #plt.text(20, ps_global_mean[c_num] + 500, info)
+    #plt.xlabel('Trial Time (s)')
+    #plt.title(name + ' trial pupil size')
+    ##plt.show()
+    #name = name.replace(" ", "")
+    #fn = name + 'ps.pdf'
+    #plt.savefig(fn)
+    #plt.close()
+
+#def plot_ps_averages(type='mean', name=''):
+    #""" Creates a bar graph showing the mean ps size for each
+    #condition with standard deviations """
+
+    ##TODO solve the name (capitalization) problem
+    ##Common sizes: (10, 7.5) and (12, 9)  
+    #plt.figure(figsize=(12, 14))  
+      
+    ## Remove the plot frame lines.
+    ##fig = plt.figure()
+    ##ax = plt.gca()
+    ##fig.spines["top"].set_visible(False)  
+    ##fig.spines["bottom"].set_visible(False)  
+    ##fig.spines["right"].set_visible(False)  
+    ##fig.spines["left"].set_visible(False) 
+    #x = [.5, 1.0, 1.5]
+    #bar_width = .25
+    #error_config = {'ecolor': 'k', 'elinewidth': 3, 'ezorder': 5}
+    #if type is 'mean':
+        #plt.bar(x, ps_global_mean, bar_width, color='w',
+                #yerr=ps_global_std, error_kw=error_config, lw=2)
+        #name = 'Mean'
+    #elif type is 'bc_mean':
+        #plt.bar(x, ps_global_bc_mean, bar_width, color='w',
+                #yerr=ps_global_bc_std,
+                #error_kw=error_config, lw=2)
+        #name = 'bc mean'
+    #else:
+        #print 'Undefined type'
+        #return
+
+    ##yrange = (50, 103)
+    ##plt.ylim(yrange)
+    ##for y in range(50, 103, 5):  
+        ##plt.plot(range(0,3), [y] * len(range(0,3)), "--",
+                ##lw=0.5, color="black", alpha=0.3) 
+    #plt.title(name + ' pupil size')
+    #plt.xticks(x, ('Alphabetic', 'Fixed-order', 'Random'))
+    #plt.tight_layout()
+    ##plt.show()
+    #plt.ylabel('Pupil Size')
+    ##info = r'$\mu$=%.1f, $\sigma$=%.3f, N=%d' % (global_mean[c_num],\
+            ##global_std[c_num], N)
+    ##plt.text(20, global_mean[c_num] + 500, info)
+    ##plt.show()
+    #name = name.replace(" ", "")
+    #fn = name + 'averagePS.pdf'
+    #print 'Saving figure: %s' % fn
+    #plt.savefig(fn)
+    #plt.close()
+
+
+#def plot_ps_peaks(type='mean', name=''):
+    #"""Creates a bar graph showing the peak ps size for each
+    #condition with standard deviations """
+
+    ##Common sizes: (10, 7.5) and (12, 9)  
+    #plt.figure(figsize=(12, 14))  
+      
+    ## Remove the plot frame lines.
+    ##fig = plt.figure()
+    ##ax = plt.gca()
+    ##fig.spines["top"].set_visible(False)  
+    ##fig.spines["bottom"].set_visible(False)  
+    ##fig.spines["right"].set_visible(False)  
+    ##fig.spines["left"].set_visible(False) 
+    #x = [.5, 1.0, 1.5]
+    #bar_width = .25
+    #error_config = {'ecolor': 'k', 'elinewidth': 3, 'ezorder': 5}
+    #if type is 'mean':
+        #plt.bar(x, ps_global_peak_mean, bar_width, color='w',
+                #yerr=ps_global_peak_std,
+                #error_kw=error_config, lw=2)
+        #name = 'Mean'
+    #elif type is 'bc_mean':
+        #plt.bar(x, ps_global_bc_peak_mean, bar_width,
+                #color='w', yerr=ps_global_bc_peak_std,
+                #error_kw=error_config, lw=2)
+        #name = 'bc mean'
+    #else:
+        #print 'Undefined type'
+        #return
+
+    ##yrange = (50, 103)
+    ##plt.ylim(yrange)
+    ##for y in range(50, 103, 5):  
+        ##plt.plot(range(0,3), [y] * len(range(0,3)), "--",
+                ##lw=0.5, color="black", alpha=0.3) 
+    #plt.title(name + 'peak pupil size')
+    #plt.xticks(x, ('Alphabetic', 'Fixed-order', 'Random'))
+    #plt.tight_layout()
+    ##plt.show()
+    #plt.ylabel('Pupil Size')
+    ##info = r'$\mu$=%.1f, $\sigma$=%.3f, N=%d' % (global_mean[c_num],\
+            ##global_std[c_num], N)
+    ##plt.text(20, global_mean[c_num] + 500, info)
+    ##plt.show()
+    #name = name.replace(" ", "")
+    #fn = name + 'peakPS.pdf'
+    #print 'Saving figure: %s' % fn
+    #plt.savefig(fn)
+    #plt.close()
 
