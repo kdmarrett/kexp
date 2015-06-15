@@ -55,13 +55,39 @@ def pResults(header, var):
     resultstxt.write('\n')
     return
 
-def printSignificant(name, subject_data):
+def printSignificant(header, subject_data):
     """ Takes a matrix of N subjects by condition nums of 
     some statistic and computes the relative and independent 
     t test scores.  Prints these scores to results.txt, with 
     significant relations with * appended."""
-    #TODO function combinatorial t test and paired t-test
-    pass
+
+    assert(subject_data.shape == (N, condition_nums))
+    resultstxt.write(header + ' sig. testing:\n')
+    combo = (0, 1)
+    trel, prel, significant = testSig(combo,subject_data)
+    combo = (0, 2)
+    trel, prel, significant = testSig(combo,subject_data)
+    combo = (1, 2)
+    trel, prel, significant = testSig(combo,subject_data)
+    resultstxt.write('\n')
+    return
+
+def testSig(combo, subject_data):
+    sig_thresh = .05
+    significant = False
+    #(tind, pind) = stats.ttest_ind(subject_data[:, combo[0]],\
+        #subject_data[:, combo[1]])
+    (trel, prel) = stats.ttest_rel(subject_data[:, combo[0]],\
+        subject_data[:, combo[1]])
+    resultstxt.write(combo[0] + ' and ')
+    resultstxt.write(combo[1] + ':\n')
+    resultstxt.write('%.4f' % prel)
+    if prel < sig_thresh:
+        resultstxt.write('**')
+        significant = True
+    resultstxt.write('\n')
+    return trel, prel, significant
+
 
 def getTrialInfo(block_ind, bnum, advance=False):
     """ Returns generic information about particular trial wav data """
@@ -216,11 +242,16 @@ def subj_ps_stats(global_base_correct=True, type='correct'):
                             #trial_samp), axis=0)
                   
     #trim all data from end of the visual primer on
-    #TODO define an end sample for the trimmed data
     #std_dat_trim = std_dat[:,:,end_primer_samp:]
-    #TODO standardize these variables names and 
+    #TODO define an end sample for the trimmed data
     mean_dat_trim = mean_dat[:,:,end_primer_samp:]
     bc_mean_dat_trim = bc_mean_dat[:,:,end_primer_samp:]
+    #subject means for sig testing and plotting
+    ps_subj_means = np.nanmean(mean_dat_trim, axis=2)
+    ps_subj_std = np.nanstd(mean_dat_trim, axis=2)
+    ps_subj_bc_means = np.nanmean(mean_dat_trim, axis=2)
+    ps_subj_bc_std = np.nanstd(mean_dat_trim, axis=2)
+    assert(ps_subj_means.shape == (N, condition_nums))
     # means across all subjects
     full_mean_trace = np.nanmean(mean_dat, axis=0) 
     full_mean_bc_trace = np.nanmean(bc_mean_dat, axis=0) 
@@ -261,7 +292,10 @@ def subj_ps_stats(global_base_correct=True, type='correct'):
     return full_mean_trace, full_mean_bc_trace, full_ste_trace,\
             full_ste_bc_trace, mean_trace,\
             bc_mean_trace, ste_trace, bc_ste_trace, global_mean,\
-            global_ste, global_bc_mean, global_bc_ste, window_samp
+            global_ste, global_bc_mean, global_bc_ste,\
+            ps_subj_means, ps_subj_std,\
+            ps_subj_bc_means, ps_subj_bc_std,\
+            window_samp
 
 def plot_accuracy():
 
@@ -300,7 +334,9 @@ def plot_accuracy():
     plt.xticks(x, ('Alphabetic', 'Fixed-order', 'Random'))
     plt.tight_layout()
     #plt.show()
-    plt.savefig('conditionAccuracy.pdf')
+    fn = 'conditionAccuracy.pdf'
+    print 'Saving figure: %s' % fn
+    plt.savefig(fn)
     plt.close()
 
 #def plot_ps_condition(c_num, name=''):
@@ -379,59 +415,61 @@ def plot_ps_averages(type='mean', name=''):
     #plt.show()
     name = name.replace(" ", "")
     fn = name + 'averagePS.pdf'
+    print 'Saving figure: %s' % fn
     plt.savefig(fn)
     plt.close()
 
 
-def plot_ps_peaks(type='mean', name=''):
-    """Creates a bar graph showing the peak ps size for each
-    condition with standard deviations """
+#def plot_ps_peaks(type='mean', name=''):
+    #"""Creates a bar graph showing the peak ps size for each
+    #condition with standard deviations """
 
-    #Common sizes: (10, 7.5) and (12, 9)  
-    plt.figure(figsize=(12, 14))  
+    ##Common sizes: (10, 7.5) and (12, 9)  
+    #plt.figure(figsize=(12, 14))  
       
-    # Remove the plot frame lines.
-    #fig = plt.figure()
-    #ax = plt.gca()
-    #fig.spines["top"].set_visible(False)  
-    #fig.spines["bottom"].set_visible(False)  
-    #fig.spines["right"].set_visible(False)  
-    #fig.spines["left"].set_visible(False) 
-    x = [.5, 1.0, 1.5]
-    bar_width = .25
-    error_config = {'ecolor': 'k', 'elinewidth': 3, 'ezorder': 5}
-    if type is 'mean':
-        plt.bar(x, ps_global_peak_mean, bar_width, color='w',
-                yerr=ps_global_peak_std,
-                error_kw=error_config, lw=2)
-        name = 'Mean'
-    elif type is 'bc_mean':
-        plt.bar(x, ps_global_bc_peak_mean, bar_width,
-                color='w', yerr=ps_global_bc_peak_std,
-                error_kw=error_config, lw=2)
-        name = 'bc mean'
-    else:
-        print 'Undefined type'
-        return
+    ## Remove the plot frame lines.
+    ##fig = plt.figure()
+    ##ax = plt.gca()
+    ##fig.spines["top"].set_visible(False)  
+    ##fig.spines["bottom"].set_visible(False)  
+    ##fig.spines["right"].set_visible(False)  
+    ##fig.spines["left"].set_visible(False) 
+    #x = [.5, 1.0, 1.5]
+    #bar_width = .25
+    #error_config = {'ecolor': 'k', 'elinewidth': 3, 'ezorder': 5}
+    #if type is 'mean':
+        #plt.bar(x, ps_global_peak_mean, bar_width, color='w',
+                #yerr=ps_global_peak_std,
+                #error_kw=error_config, lw=2)
+        #name = 'Mean'
+    #elif type is 'bc_mean':
+        #plt.bar(x, ps_global_bc_peak_mean, bar_width,
+                #color='w', yerr=ps_global_bc_peak_std,
+                #error_kw=error_config, lw=2)
+        #name = 'bc mean'
+    #else:
+        #print 'Undefined type'
+        #return
 
-    #yrange = (50, 103)
-    #plt.ylim(yrange)
-    #for y in range(50, 103, 5):  
-        #plt.plot(range(0,3), [y] * len(range(0,3)), "--",
-                #lw=0.5, color="black", alpha=0.3) 
-    plt.title(name + 'peak pupil size')
-    plt.xticks(x, ('Alphabetic', 'Fixed-order', 'Random'))
-    plt.tight_layout()
-    #plt.show()
-    plt.ylabel('Pupil Size')
-    #info = r'$\mu$=%.1f, $\sigma$=%.3f, N=%d' % (global_mean[c_num],\
-            #global_std[c_num], N)
-    #plt.text(20, global_mean[c_num] + 500, info)
-    #plt.show()
-    name = name.replace(" ", "")
-    fn = name + 'peakPS.pdf'
-    plt.savefig(fn)
-    plt.close()
+    ##yrange = (50, 103)
+    ##plt.ylim(yrange)
+    ##for y in range(50, 103, 5):  
+        ##plt.plot(range(0,3), [y] * len(range(0,3)), "--",
+                ##lw=0.5, color="black", alpha=0.3) 
+    #plt.title(name + 'peak pupil size')
+    #plt.xticks(x, ('Alphabetic', 'Fixed-order', 'Random'))
+    #plt.tight_layout()
+    ##plt.show()
+    #plt.ylabel('Pupil Size')
+    ##info = r'$\mu$=%.1f, $\sigma$=%.3f, N=%d' % (global_mean[c_num],\
+            ##global_std[c_num], N)
+    ##plt.text(20, global_mean[c_num] + 500, info)
+    ##plt.show()
+    #name = name.replace(" ", "")
+    #fn = name + 'peakPS.pdf'
+    #print 'Saving figure: %s' % fn
+    #plt.savefig(fn)
+    #plt.close()
 
 def plot_ps(type='mean', length='full', name=''):
     """plot a stack of subject mean ps data of all conditions
@@ -505,6 +543,7 @@ def plot_ps(type='mean', length='full', name=''):
     #plt.show()
     name = name.replace(" ", "")
     fn = name + 'ps.pdf'
+    print 'Saving figure: %s' % fn
     plt.savefig(fn)
     plt.close()
 
@@ -840,40 +879,44 @@ resultstxt = open('results.txt', 'w')
 resultstxt.truncate()
 
 #Accuracy
-#TODO switch to ste
 acc_global_mean, acc_global_ste,\
     acc_subj_means, acc_subj_stds = subj_accuracy_stats()
 
-#TODO add test for significance
 pResults('Accuracy global mean', acc_global_mean)
 pResults('Accuracy global standard error:', acc_global_ste)
+printSignificant('Accuracy', acc_subj_means)
 
 plot_accuracy()
-#TODO combine all barplots into 1 function
+
 
 #PS
 full_mean_trace, full_mean_bc_trace, full_ste_trace,\
         full_ste_bc_trace, mean_trace,\
         bc_mean_trace, ste_trace, bc_ste_trace, global_mean,\
         global_ste, global_bc_mean, global_bc_ste,\
+        ps_subj_means, ps_subj_std,\
+        ps_subj_bc_means, ps_subj_bc_std,\
         window_samp = subj_ps_stats();
 
-#TODO add test for significance
 pResults('Pupil global means', global_mean)
 pResults('Pupil global standard error', global_ste)
 pResults('Pupil global bc means', global_bc_mean)
 pResults('Pupil global bc standard error', global_bc_ste)
+printSignificant('PS', ps_subj_means)
+printSignificant('PS baseline corrected', ps_subj_bc_means)
 
 #plot ps data for all conditions
-status = ['correct'] #only consider correct trials
 plot_ps(type='mean')
 plot_ps(type='bc_mean')
+
+#TODO combine all barplots into 1 function
 #plot_ps_averages(type='mean')
 #plot_ps_averages(type='bc_mean')
 
 resultstxt.close()
 
-# abandoned approaches
+########
+## ABANDONED APPROACHES
 
 ##plot ps for each condition individually
 #status = ['correct'] #only consider correct trials
