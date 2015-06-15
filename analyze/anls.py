@@ -18,6 +18,8 @@ import pickle as pck
 force_reprocess = False
 load_ipython = True
 subjects = ['HL', 'HP', 'GH', 'GG', 'GN', 'GI', 'HT', 'HI', 'HN', 'HK', 'HJ', 'GR', 'GU', 'HD'] 
+#for debugging
+subjects = ['HL', 'HP']
 if force_reprocess:
     reprocess_list = subjects
 else:
@@ -38,7 +40,7 @@ data_dir = '/home/kdmarrett/lab/FilesScript/Data'
 def con_2_ind(pattern):
     return int(pattern[-3:].replace(" ", ""), 2) - 1
  
-pResults(header, var):
+def pResults(header, var):
     """Print some numpy var or vector to results file, 
     if the vector happens to be of condition_nums len
     then preface the output by the condition name"""
@@ -150,18 +152,13 @@ def subj_accuracy_stats():
             #num = int(cond[-3:].replace(" ", ""), 2) - 1
             subj_means[i][c_ind] = np.nanmean(subj_accuracy[c_ind])
             subj_stds[i][c_ind] = np.nanstd(subj_accuracy[c_ind])
-
     global_mean = []
-    global_std = []
     global_ste = []
     for i in range(condition_nums):
         #across all subjects for each condition 
         global_mean.append(np.nanmean(subj_means[:, i]))
-        global_std.append(np.nanstd(subj_means[:, i]))
-        global_ste.append(global_std[-1] / np.sqrt(N))
-    assert(len(global_mean) == condition_nums)
-    #TODO print to results
-    return global_mean, global_std, global_ste, subj_means, subj_stds
+        global_ste.append(stats.sem(subj_means[:, i]))
+    return global_mean, global_ste, subj_means, subj_stds
 
 def subj_ps_stats(global_base_correct=True, type='correct'):
     """ ps[subject,cond_ind,block, trial, sample] 
@@ -228,7 +225,7 @@ def subj_ps_stats(global_base_correct=True, type='correct'):
     full_mean_trace = np.nanmean(mean_dat, axis=0) 
     full_mean_bc_trace = np.nanmean(bc_mean_dat, axis=0) 
     full_ste_trace = stats.sem(mean_dat, axis=0) 
-    full_ste_bc_trace = stats.sestats.sem(bc_mean_dat, axis=0) 
+    full_ste_bc_trace = stats.sem(bc_mean_dat, axis=0) 
     mean_trace = np.nanmean(mean_dat_trim, axis=0) 
     bc_mean_trace = np.nanmean(bc_mean_dat_trim, axis=0)
     #FIXME this may be disrupted by np.nan values
@@ -250,18 +247,17 @@ def subj_ps_stats(global_base_correct=True, type='correct'):
 
     #single number for global average for each condition
     global_mean = np.nanmean(mean_trace, axis=1)
-    global_ste = stats.sem(std, axis=1)
+    global_ste = stats.sem(mean_trace, axis=1)
     global_bc_mean = np.nanmean(bc_mean_trace, axis=1)
     global_bc_ste = stats.sem(bc_mean_trace, axis=1)
 
-    assert(len(ste) == condition_nums)
     assert(len(mean_trace) == condition_nums)
     assert(len(global_mean) == condition_nums)
     assert(len(global_bc_mean) == condition_nums)
     assert(len(global_ste) == condition_nums)
     assert(mean_trace.shape[1] == window_samp);
     assert(bc_mean_trace.shape[1] == window_samp)
-    assert(ste.shape[1] == window_samp)
+    assert(ste_trace.shape[1] == window_samp)
     return full_mean_trace, full_mean_bc_trace, full_ste_trace,\
             full_ste_bc_trace, mean_trace,\
             bc_mean_trace, ste_trace, bc_ste_trace, global_mean,\
@@ -283,10 +279,10 @@ def plot_accuracy():
     bar_width = .25
     opacity = .4
     global_mean_pc = acc_global_mean * np.tile(100, len(acc_global_mean))
-    global_std_pc = acc_global_std * np.tile(100, len(acc_global_std))
+    global_ste_pc = acc_global_ste * np.tile(100, len(acc_global_ste))
     error_config = {'ecolor': 'k', 'elinewidth': 3, 'ezorder': 5}
-    rects1 = plt.bar(x, global_mean_pc, bar_width, color='w',
-            yerr=global_std_pc, error_kw=error_config, lw=2)
+    plt.bar(x, global_mean_pc, bar_width, color='w',
+            yerr=global_ste_pc, error_kw=error_config, lw=2)
     x = x + np.tile(bar_width / 2, condition_nums)
     for acc_subj_mean in acc_subj_means:
         subj_mean_pc = acc_subj_mean * np.tile(100, len(acc_subj_mean))
@@ -304,43 +300,40 @@ def plot_accuracy():
     plt.xticks(x, ('Alphabetic', 'Fixed-order', 'Random'))
     plt.tight_layout()
     #plt.show()
-    #change facecolor
     plt.savefig('conditionAccuracy.pdf')
     plt.close()
-    #plt.savefig('conditionAccuracy.png',transparent=True,
-    #edgecolor='none')
 
-def plot_ps_condition(c_num, name=''):
-    """plot a mean collection of ps data of a certain condition"""
+#def plot_ps_condition(c_num, name=''):
+    #"""plot a mean collection of ps data of a certain condition"""
 
-    #fig = plt.figure()
-    if length is 'trim':
-        x = np.linspace(0, window_samp / fs, window_samp)
-    x = np.linspace(0, trial_samp / fs, trial_samp)
+    ##fig = plt.figure()
+    #if length is 'trim':
+        #x = np.linspace(0, window_samp / fs, window_samp)
+    #x = np.linspace(0, trial_samp / fs, trial_samp)
 
-    plt.fill_between(x, ps_mean[c_num] - ps_std[c_num],  ps_mean[c_num] +\
-            ps_std[c_num], color="#3F5D7D", alpha=.5)  
-    plt.plot(x, ps_mean[c_num], color='k', linewidth=3, label='mean',
-            alpha=1)
-    #visual_primer is now cut out
-    #plt.annotate('End visual primer', xy=(end_primer, 
-        #mean[c_num, end_primer_samp]), xytext=(5, 2000),
-        #arrowprops=dict(facecolor='black', shrink=0.02))
-    #plt.legend(loc=9)    
-    plt.ylabel('Pupil Size')
-    info = r'$\mu$=%.1f, $\sigma$=%.3f, N=%d' % (ps_global_mean[c_num],\
-            ps_global_std[c_num], N)
-    plt.text(20, ps_global_mean[c_num] + 500, info)
-    plt.xlabel('Trial Time (s)')
-    plt.title(name + ' trial pupil size')
-    #plt.show()
-    name = name.replace(" ", "")
-    fn = name + 'ps.pdf'
-    plt.savefig(fn)
-    plt.close()
+    #plt.fill_between(x, ps_mean[c_num] - ps_std[c_num],  ps_mean[c_num] +\
+            #ps_std[c_num], color="#3F5D7D", alpha=.5)  
+    #plt.plot(x, ps_mean[c_num], color='k', linewidth=3, label='mean',
+            #alpha=1)
+    ##visual_primer is now cut out
+    ##plt.annotate('End visual primer', xy=(end_primer, 
+        ##mean[c_num, end_primer_samp]), xytext=(5, 2000),
+        ##arrowprops=dict(facecolor='black', shrink=0.02))
+    ##plt.legend(loc=9)    
+    #plt.ylabel('Pupil Size')
+    #info = r'$\mu$=%.1f, $\sigma$=%.3f, N=%d' % (ps_global_mean[c_num],\
+            #ps_global_std[c_num], N)
+    #plt.text(20, ps_global_mean[c_num] + 500, info)
+    #plt.xlabel('Trial Time (s)')
+    #plt.title(name + ' trial pupil size')
+    ##plt.show()
+    #name = name.replace(" ", "")
+    #fn = name + 'ps.pdf'
+    #plt.savefig(fn)
+    #plt.close()
 
 def plot_ps_averages(type='mean', name=''):
-    """Creates a bar graph showing the mean ps size for each
+    """ Creates a bar graph showing the mean ps size for each
     condition with standard deviations """
 
     #TODO solve the name (capitalization) problem
@@ -440,7 +433,7 @@ def plot_ps_peaks(type='mean', name=''):
     plt.savefig(fn)
     plt.close()
 
-def plot_ps(type='mean', length='full'):
+def plot_ps(type='mean', length='full', name=''):
     """plot a stack of subject mean ps data of all conditions
     Params:   type : can either by a raw mean or a base corrected mean
               length: either trimmed around some window or full
@@ -498,7 +491,7 @@ def plot_ps(type='mean', length='full'):
     #include visual_primer if length is full trial
     if length is 'full':
         plt.annotate('End visual primer', xy=(end_primer, 
-            mean[c_num, end_primer_samp]), xytext=(5, 2000),
+            global_mean[c_num]), xytext=(5, 2000),
             arrowprops=dict(facecolor='black', shrink=0.02))
 
     plt.legend(loc=0)    
@@ -517,6 +510,7 @@ def plot_ps(type='mean', length='full'):
 
 
 if load_ipython:
+    names = ['Alphabetic', 'Fixed-Order', 'Random']
 # read in global stimuli parameters
     param_data_dir = op.join(data_dir, 'Params')
     global_vars = sio.loadmat(op.join(param_data_dir, 'global_vars.mat'))
@@ -818,6 +812,8 @@ if load_ipython:
         pck.dump(subj_tuple, fsubj) # overwrites
         fsubj.close()
     
+## 
+
 #TODO way of scoring cog load data, put into method
     #add in weighting
 #TODO copy and paste accuracy plotting method
@@ -844,15 +840,16 @@ resultstxt = open('results.txt', 'w')
 resultstxt.truncate()
 
 #Accuracy
-acc_global_mean, acc_global_std, acc_global_ste, acc_subj_means,
-acc_subj_stds = subj_accuracy_stats()
+#TODO switch to ste
+acc_global_mean, acc_global_ste,\
+    acc_subj_means, acc_subj_stds = subj_accuracy_stats()
 
 #TODO add test for significance
-pResults.write('Accuracy global mean', acc_global_mean)
-pResults('Accuracy std:', acc_global_std)
+pResults('Accuracy global mean', acc_global_mean)
 pResults('Accuracy global standard error:', acc_global_ste)
 
 plot_accuracy()
+#TODO combine all barplots into 1 function
 
 #PS
 full_mean_trace, full_mean_bc_trace, full_ste_trace,\
@@ -862,27 +859,21 @@ full_mean_trace, full_mean_bc_trace, full_ste_trace,\
         window_samp = subj_ps_stats();
 
 #TODO add test for significance
-pResults('Pupil global means', ps_global_mean)
-pResults('Pupil global std', ps_global_std)
-pResults('Pupil global bc means', ps_global_bc_mean)
-#TODO std for bc
-#pResults('global bc std', ps_global_bc_std)
-
-#ignore peaks
-#pResults('Pupil global peak means', ps_global_peak_mean)
-#pResults('Pupil global bc peak means', ps_global_bc_peak_mean)
-#pResults('Pupil global bc peak std', ps_global_bc_peak_std)
-#pResults('Pupil global peak std', ps_global_peak_std)
-#plot_ps_peaks(type='mean')
-#plot_ps_peaks(type='bc_mean')
+pResults('Pupil global means', global_mean)
+pResults('Pupil global standard error', global_ste)
+pResults('Pupil global bc means', global_bc_mean)
+pResults('Pupil global bc standard error', global_bc_ste)
 
 #plot ps data for all conditions
 status = ['correct'] #only consider correct trials
-names = ['Alphabetic', 'Fixed-Order', 'Random']
 plot_ps(type='mean')
 plot_ps(type='bc_mean')
-plot_ps_averages(type='mean')
-plot_ps_averages(type='bc_mean')
+#plot_ps_averages(type='mean')
+#plot_ps_averages(type='bc_mean')
+
+resultstxt.close()
+
+# abandoned approaches
 
 ##plot ps for each condition individually
 #status = ['correct'] #only consider correct trials
@@ -896,5 +887,11 @@ plot_ps_averages(type='bc_mean')
         ##import pdb; pdb.set_trace()
         #plot_ps_condition(c_ind, name)
 
-resultstxt.close()
+#peaks
+#pResults('Pupil global peak means', ps_global_peak_mean)
+#pResults('Pupil global bc peak means', ps_global_bc_peak_mean)
+#pResults('Pupil global bc peak std', ps_global_bc_peak_std)
+#pResults('Pupil global peak std', ps_global_peak_std)
+#plot_ps_peaks(type='mean')
+#plot_ps_peaks(type='bc_mean')
 
