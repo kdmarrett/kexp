@@ -319,59 +319,22 @@ def subj_ps_stats(global_base_correct=True, type='correct'):
             ps_subj_bc_means, ps_subj_bc_std,\
             window_samp
 
-def plot_accuracy():
+def barPlot(title, ylabel, y_increment, subject_data, global_subj_mean,\
+        global_subj_ste, yrange='default'):
 
-    #Common sizes: (10, 7.5) and (12, 9)  
-    #plt.figure(figsize=(12, 14))  
     fig, ax = plt.subplots(figsize=(12, 14)) 
-      
-    simpleaxis(ax)
-    x = [.5, 1.0, 1.5]
-    bar_width = .25
-    opacity = .4
-    global_mean_pc = acc_global_mean * np.tile(100, len(acc_global_mean))
-    global_ste_pc = acc_global_ste * np.tile(100, len(acc_global_ste))
-    error_config = {'ecolor': 'k', 'elinewidth': 3, 'ezorder': 5}
-    plt.bar(x, global_mean_pc, bar_width, color='w',
-            yerr=global_ste_pc, error_kw=error_config, lw=2)
-    x = x + np.tile(bar_width / 2, condition_nums)
-    for acc_subj_mean in acc_subj_means:
-        subj_mean_pc = acc_subj_mean * np.tile(100, len(acc_subj_mean))
-        plt.plot(x, subj_mean_pc, color='k', alpha=opacity, 
-                marker='o')
-
-    #plt.xlabel('Condition')
-    plt.ylabel('Accuracy (%)')
-    yrange = (50, 103)
-    plt.ylim(yrange)
-    for y in range(50, 103, 5):  
-        plt.plot(range(0,3), [y] * len(range(0,3)), "--",
-                lw=0.5, color="black", alpha=0.3) 
-    plt.title('Accuracy by condition')
-    plt.xticks(x, ('Alphabetic', 'Fixed-order', 'Random'))
-    plt.tight_layout()
-    #plt.show()
-    fn = 'conditionAccuracy.pdf'
-    print 'Saving figure: %s' % fn
-    plt.savefig(fn)
-    plt.close()
-
-
-def barPlot(title, ylabel, name, subject_data, global_subj_mean,\
-        global_subj_ste):
-    #TODO need to convert percent date before hand
-
-    #Common sizes: (10, 7.5) and (12, 9)  
-    plt.figure(figsize=(12, 14))  
-      
     # Remove the plot frame lines.
     simpleaxis(ax)
     x = [.5, 1.0, 1.5]
-    yrange = np.zeros((2,1))
-    yrange[0] = np.nanmin(global_subj_mean) - np.nanmax(global_subj_ste)
-    yrange[1] = np.nanmax(global_subj_mean) + np.nanmax(global_subj_ste)
     bar_width = .25
     opacity = .4
+    buffer = 20
+    if yrange is 'default':
+        yrange = np.zeros((2,1))
+        yrange[0] = np.nanmin(global_subj_mean) -\
+        np.nanmax(global_subj_ste) - buffer
+        yrange[1] = np.nanmax(global_subj_mean) +\
+                np.nanmax(global_subj_ste) + buffer
     error_config = {'ecolor': 'k', 'elinewidth': 3, 'ezorder': 5}
     plt.bar(x, global_subj_mean, bar_width, color='w',
             yerr=global_subj_ste, error_kw=error_config, lw=2)
@@ -390,8 +353,8 @@ def barPlot(title, ylabel, name, subject_data, global_subj_mean,\
     plt.xticks(x, ('Alphabetic', 'Fixed-order', 'Random'))
     plt.tight_layout()
     #plt.show()
-    fn = name + '.pdf'
-    print 'Saving figure: %s' % fn
+    fn = title.replace(" ", "") + '_barplot.pdf'
+    print 'Saving figure:\n%s' % fn
     plt.savefig(fn)
     plt.close()
 
@@ -401,6 +364,7 @@ def plot_ps(type='mean', length='full', name=''):
               length: either trimmed around some window or full
               meaning including the entire trial_samp"""
 
+    fig, ax = plt.subplots()
     opacity = .3
     if length is 'trim':
         local_samp_len = window_samp
@@ -413,15 +377,15 @@ def plot_ps(type='mean', length='full', name=''):
     for c_num in range(condition_nums):
         if type is 'mean':
             if length is 'trim':
-                plt.plot(x, mean_trace[c_num], color=colors[c_num],
+                ax.plot(x, mean_trace[c_num], color=colors[c_num],
                         linewidth=1, label=names[c_num], alpha=1)
-                plt.fill_between(x, mean_trace[c_num] - ste_trace[c_num],\
+                ax.fill_between(x, mean_trace[c_num] - ste_trace[c_num],\
                         mean_trace[c_num] + ste_trace[c_num],\
                         color=colors[c_num], alpha=opacity)  
             elif length is 'full':
-                plt.plot(x, full_mean_trace[c_num], color=colors[c_num],
+                ax.plot(x, full_mean_trace[c_num], color=colors[c_num],
                         linewidth=1, label=names[c_num], alpha=1)
-                plt.fill_between(x, full_mean_trace[c_num] - full_ste_trace[c_num],\
+                ax.fill_between(x, full_mean_trace[c_num] - full_ste_trace[c_num],\
                         full_mean_trace[c_num] + full_ste_trace[c_num],\
                         color=colors[c_num], alpha=opacity)  
             else:
@@ -430,16 +394,16 @@ def plot_ps(type='mean', length='full', name=''):
                 name = 'Raw mean'
         elif type is 'bc_mean':
             if length is 'trim':
-                plt.plot(x, bc_mean_trace[c_num],
+                ax.plot(x, bc_mean_trace[c_num],
                         color=colors[c_num], linewidth=1,
                         label=names[c_num], alpha=1)
-                plt.fill_between(x, bc_mean_trace[c_num] - bc_ste_trace[c_num],\
+                ax.fill_between(x, bc_mean_trace[c_num] - bc_ste_trace[c_num],\
                         bc_mean_trace[c_num] + bc_ste_trace[c_num],\
                         color=colors[c_num], alpha=opacity)  
             elif length is 'full':
-                plt.plot(x, full_mean_bc_trace[c_num], color=colors[c_num],
+                ax.plot(x, full_mean_bc_trace[c_num], color=colors[c_num],
                         linewidth=1, label=names[c_num], alpha=1)
-                plt.fill_between(x, full_mean_bc_trace[c_num] -
+                ax.fill_between(x, full_mean_bc_trace[c_num] -
                         full_ste_bc_trace[c_num],\
                         full_mean_bc_trace[c_num] + full_ste_bc_trace[c_num],\
                         color=colors[c_num], alpha=opacity)  
@@ -453,27 +417,27 @@ def plot_ps(type='mean', length='full', name=''):
 
     #include visual_primer if length is full trial
     if length is 'full':
-        plt.axvspan(0, end_primer, color='k', alpha=.15)
-        #plt.annotate('End visual primer', xy=(end_primer, 
+        ax.axvspan(0, end_primer, color='k', alpha=.15)
+        #ax.annotate('End visual primer', xy=(end_primer, 
             #global_mean[c_num]), xytext=(5, 2000),
             #arrowprops=dict(facecolor='black', shrink=0.02))
 
-    plt.legend(loc='best')    
-    plt.ylabel('Pupil Size')
+    ax.legend(loc='best')    
+    ax.set_ylabel('Pupil Size')
     #Render stats to plot
     #info = r'$\mu$=%.1f, $\sigma$=%.3f, N=%d' % (global_mean[c_num],\
             #global_std[c_num], N)
     #plt.text(20, global_mean[c_num] + 500, info)
-    plt.xlabel('Trial Time (s)')
-    plt.xlim((0, local_samp_len))
-    plt.title(name + ' trial pupil size')
-    #plt.show()
+    ax.set_xlabel('Trial Time (s)')
+    ax.set_xlim((0, local_samp_len))
+    ax.set_title(name + ' trial pupil size')
+    plt.show()
+    import pdb; pdb.set_trace() 
     name = name.replace(" ", "")
     fn = name + 'ps.pdf'
-    print 'Saving figure: %s' % fn
-    plt.savefig(fn)
+    print 'Saving figure:\n%s' % fn
+    fig.savefig(fn)
     plt.close()
-
 
 if load_ipython:
     names = ['Alphabetic', 'Fixed-Order', 'Random']
@@ -794,7 +758,14 @@ pResults('Accuracy global mean', acc_global_mean)
 pResults('Accuracy global standard error', acc_global_ste)
 printSignificant('Accuracy', acc_subj_means)
 
-plot_accuracy()
+#convert to percent
+global_mean_pc = acc_global_mean * np.tile(100, len(acc_global_mean))
+global_ste_pc = acc_global_ste * np.tile(100, len(acc_global_ste))
+#plot
+#barPlot('Accuracy', 'Accuracy (%)', 5, acc_subj_means, global_mean_pc,
+        #global_ste_pc, yrange=(50, 105))
+
+#plot_accuracy()
 
 #PS
 full_mean_trace, full_mean_bc_trace, full_ste_trace,\
@@ -817,11 +788,11 @@ printSignificant('PS baseline corrected', ps_subj_bc_means)
 plot_ps(type='bc_mean')
 
 #FIXME what are the units of pupil size?
-barPlot('Mean pupil size', 'Pupil Size', 'PSbarplot',\
+barPlot('Mean pupil size', 'Pupil Size', 50,\
         ps_subj_means, global_mean, global_ste)
 
 #baseline corrected
-barPlot('Mean base corrected pupil size', 'Pupil Size', 'PSbcbarplot',\
+barPlot('Mean base corrected pupil size', 'Pupil Size', 50,\
         ps_subj_bc_means, global_bc_mean, global_bc_ste)
 
 #Survey
@@ -946,7 +917,7 @@ print 'results text file closed\n'
     ##plt.show()
     #name = name.replace(" ", "")
     #fn = name + 'averagePS.pdf'
-    #print 'Saving figure: %s' % fn
+    #print 'Saving figure:\n %s' % fn
     #plt.savefig(fn)
     #plt.close()
 
