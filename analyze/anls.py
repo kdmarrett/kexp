@@ -34,8 +34,19 @@ fs = 1000.0
 #windows use position of eye to clean the results later
 #TODO accuracy in first three blocks vs last three blocks
 #TODO think about degrees of freedom
+#TODO revamp plots to be oo 
+#TODO add inc to plotting
 #data_dir = os.path.abspath(os.path.join(os.pardir, 'Data'))
 data_dir = '/home/kdmarrett/lab/FilesScript/Data'
+
+def simpleaxis(ax):
+    """Taken from timday on S.O.,
+     Remove the plot frame lines."""
+    ax.spines['top'].set_visible(False)
+    ax.spines['right'].set_visible(False)
+    #ax.spines["bottom"].set_visible(False)  
+    #ax.get_xaxis().tick_bottom()
+    ax.get_yaxis().tick_left()
 
 def con_2_ind(pattern):
     return int(pattern[-3:].replace(" ", ""), 2) - 1
@@ -49,7 +60,7 @@ def pResults(header, var):
     if len(var) == condition_nums:
         for nind, name in enumerate(names):
             resultstxt.write(name + ': ')
-            resultstxt.write('%.2f' % var[nind])
+            resultstxt.write('%.4f\n' % var[nind])
     else:
         np.savetxt(resultstxt, var, delimiter=', ', fmt='%.2f')
     resultstxt.write('\n')
@@ -79,8 +90,8 @@ def testSig(combo, subject_data):
         #subject_data[:, combo[1]])
     (trel, prel) = stats.ttest_rel(subject_data[:, combo[0]],\
         subject_data[:, combo[1]])
-    resultstxt.write(combo[0] + ' and ')
-    resultstxt.write(combo[1] + ':\n')
+    resultstxt.write(names[combo[0]] + ' and ')
+    resultstxt.write(names[combo[1]] + ':\n')
     resultstxt.write('%.4f' % prel)
     if prel < sig_thresh:
         resultstxt.write('**')
@@ -195,6 +206,9 @@ def subj_ps_stats(global_base_correct=True, type='correct'):
         type : if correct only consider ps data from trials where
         the subject entered correct num of targets"""
 
+    #length of trimmed window
+    window_seconds = 10
+    window_samp = window_seconds * fs
     # dat holds each time trace
     mean_dat = np.zeros((N, condition_nums, trial_samp))
     mean_dat[:] = np.nan
@@ -242,10 +256,10 @@ def subj_ps_stats(global_base_correct=True, type='correct'):
                             #trial_samp), axis=0)
                   
     #trim all data from end of the visual primer on
-    #std_dat_trim = std_dat[:,:,end_primer_samp:]
-    #TODO define an end sample for the trimmed data
-    mean_dat_trim = mean_dat[:,:,end_primer_samp:]
-    bc_mean_dat_trim = bc_mean_dat[:,:,end_primer_samp:]
+    #std_dat_trim = std_dat[:,:,end_primer_samp:(end_primer_samp+ window_samp)]
+    #TODO make a way to include end sample for the trimmed data
+    mean_dat_trim = mean_dat[:,:,end_primer_samp:(end_primer_samp+ window_samp)]
+    bc_mean_dat_trim = bc_mean_dat[:,:,end_primer_samp:(end_primer_samp+ window_samp)]
     #subject means for sig testing and plotting
     ps_subj_means = np.nanmean(mean_dat_trim, axis=2)
     ps_subj_std = np.nanstd(mean_dat_trim, axis=2)
@@ -253,6 +267,9 @@ def subj_ps_stats(global_base_correct=True, type='correct'):
     ps_subj_bc_std = np.nanstd(mean_dat_trim, axis=2)
     assert(ps_subj_means.shape == (N, condition_nums))
     # means across all subjects
+    #TODO make sure that you have a mean trace for
+    #each subject then stats.sem stats.s for each
+    #point along that trace across the subjects
     full_mean_trace = np.nanmean(mean_dat, axis=0) 
     full_mean_bc_trace = np.nanmean(bc_mean_dat, axis=0) 
     full_ste_trace = stats.sem(mean_dat, axis=0) 
@@ -262,7 +279,12 @@ def subj_ps_stats(global_base_correct=True, type='correct'):
     #FIXME this may be disrupted by np.nan values
     ste_trace = stats.sem(mean_dat_trim, axis=0)
     bc_ste_trace = stats.sem(bc_mean_dat_trim, axis=0)
-    window_samp = trial_samp - end_primer_samp
+    full_ste_test = np.zeros(shape=(condition_nums, trial_samp))
+    #testing
+    #for c_ind in range(condition_nums):
+        #for sample in range(trial_samp):
+            #full_ste_test[c_ind, sample] =\
+            #stats.sem(mean_dat[:, c_ind, sample])
 
     #find peak for each subject (abandoned)
     #TODO clean peaks by subject average peak heights each cond
@@ -300,15 +322,10 @@ def subj_ps_stats(global_base_correct=True, type='correct'):
 def plot_accuracy():
 
     #Common sizes: (10, 7.5) and (12, 9)  
-    plt.figure(figsize=(12, 14))  
+    #plt.figure(figsize=(12, 14))  
+    fig, ax = plt.subplots(figsize=(12, 14)) 
       
-    # Remove the plot frame lines.
-    #fig = plt.figure()
-    #ax = plt.gca()
-    #fig.spines["top"].set_visible(False)  
-    #fig.spines["bottom"].set_visible(False)  
-    #fig.spines["right"].set_visible(False)  
-    #fig.spines["left"].set_visible(False) 
+    simpleaxis(ax)
     x = [.5, 1.0, 1.5]
     bar_width = .25
     opacity = .4
@@ -348,14 +365,9 @@ def barPlot(title, ylabel, name, subject_data, global_subj_mean,\
     plt.figure(figsize=(12, 14))  
       
     # Remove the plot frame lines.
-    #fig = plt.figure()
-    #ax = plt.gca()
-    #fig.spines["top"].set_visible(False)  
-    #fig.spines["bottom"].set_visible(False)  
-    #fig.spines["right"].set_visible(False)  
-    #fig.spines["left"].set_visible(False) 
+    simpleaxis(ax)
     x = [.5, 1.0, 1.5]
-    yrange = (0, 0)
+    yrange = np.zeros((2,1))
     yrange[0] = np.nanmin(global_subj_mean) - np.nanmax(global_subj_ste)
     yrange[1] = np.nanmax(global_subj_mean) + np.nanmax(global_subj_ste)
     bar_width = .25
@@ -391,12 +403,13 @@ def plot_ps(type='mean', length='full', name=''):
 
     opacity = .3
     if length is 'trim':
-        x = np.linspace(0, window_samp / fs, window_samp)
+        local_samp_len = window_samp
     elif length is 'full':
-        x = np.linspace(0, trial_samp / fs, trial_samp)
+        local_samp_len = trial_samp
     else:
         print 'Error in plot_ps incorrect length'
-    colors = ('k', 'c', 'r')
+    x = np.linspace(0, local_samp_len / fs, local_samp_len)
+    colors = ('r', 'c', 'b')
     for c_num in range(condition_nums):
         if type is 'mean':
             if length is 'trim':
@@ -440,17 +453,19 @@ def plot_ps(type='mean', length='full', name=''):
 
     #include visual_primer if length is full trial
     if length is 'full':
-        plt.annotate('End visual primer', xy=(end_primer, 
-            global_mean[c_num]), xytext=(5, 2000),
-            arrowprops=dict(facecolor='black', shrink=0.02))
+        plt.axvspan(0, end_primer, color='k', alpha=.15)
+        #plt.annotate('End visual primer', xy=(end_primer, 
+            #global_mean[c_num]), xytext=(5, 2000),
+            #arrowprops=dict(facecolor='black', shrink=0.02))
 
-    plt.legend(loc=0)    
+    plt.legend(loc='best')    
     plt.ylabel('Pupil Size')
     #Render stats to plot
     #info = r'$\mu$=%.1f, $\sigma$=%.3f, N=%d' % (global_mean[c_num],\
             #global_std[c_num], N)
     #plt.text(20, global_mean[c_num] + 500, info)
     plt.xlabel('Trial Time (s)')
+    plt.xlim((0, local_samp_len))
     plt.title(name + ' trial pupil size')
     #plt.show()
     name = name.replace(" ", "")
@@ -768,17 +783,18 @@ if load_ipython:
 resultstxt = open('results.txt', 'w')
 #remove past data
 resultstxt.truncate()
+resultstxt.write('Text file for KEXP stats\n')
+resultstxt.write('# of Subjects: %d\n' % N)
 
 #Accuracy
 acc_global_mean, acc_global_ste,\
     acc_subj_means, acc_subj_stds = subj_accuracy_stats()
 
 pResults('Accuracy global mean', acc_global_mean)
-pResults('Accuracy global standard error:', acc_global_ste)
+pResults('Accuracy global standard error', acc_global_ste)
 printSignificant('Accuracy', acc_subj_means)
 
 plot_accuracy()
-
 
 #PS
 full_mean_trace, full_mean_bc_trace, full_ste_trace,\
@@ -793,11 +809,11 @@ pResults('Pupil global means', global_mean)
 pResults('Pupil global standard error', global_ste)
 pResults('Pupil global bc means', global_bc_mean)
 pResults('Pupil global bc standard error', global_bc_ste)
-printSignificant('PS', ps_subj_means)
+#printSignificant('PS', ps_subj_means)
 printSignificant('PS baseline corrected', ps_subj_bc_means)
 
 #plot ps data for all conditions
-plot_ps(type='mean')
+#plot_ps(type='mean')
 plot_ps(type='bc_mean')
 
 #FIXME what are the units of pupil size?
@@ -829,6 +845,7 @@ for i in range(N):
         cog_subj[i, j] = score
 
 resultstxt.close()
+print 'results text file closed\n'
 
 ########
 ## ABANDONED APPROACHES
