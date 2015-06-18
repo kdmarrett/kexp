@@ -17,9 +17,12 @@ import pickle as pck
 # if something was changed in the file saving process
 force_reprocess = False
 load_ipython = True
-subjects = ['HL', 'HP', 'GH', 'GG', 'GN', 'GI', 'HT', 'HI', 'HN', 'HK', 'HJ', 'GR', 'GU', 'HD'] 
-#for debugging
-subjects = ['HL', 'HP']
+#HD misunderstood directions ommitted as subject
+subjects = ['HL', 'HP', 'GH', 'GG', 'GN', 'GI', 'HT', 'HI', 'HN', 'HK', 'HJ', 'GR', 'GU'] 
+
+#shorten for debugging
+#subjects = ['HD', 'HP']
+
 if force_reprocess:
     reprocess_list = subjects
 else:
@@ -33,20 +36,48 @@ fs = 1000.0
 #TODO use remove_blink_artifacts to nullify certain target
 #windows use position of eye to clean the results later
 #TODO accuracy in first three blocks vs last three blocks
+#TODO plot around target windows
 #TODO think about degrees of freedom
-#TODO revamp plots to be oo 
-#TODO add inc to plotting
+#TODO units of pupil size
+#TODO weight cog load
+
 #data_dir = os.path.abspath(os.path.join(os.pardir, 'Data'))
 data_dir = '/home/kdmarrett/lab/FilesScript/Data'
+
+def cleanCogData():
+    """ Return formatted cognitive load survey
+    data"""
+    cog_subj = np.zeros((N, condition_nums))
+    for i in range(N):
+        for j in range(condition_nums):
+            # TODO weight category responses by rel survey
+            #for k in range(rel_qnum):
+                #rel[i, j, k] = \
+                    #cog[i][j]['rel_' + para[j] + '_qnum_' + str(k)][0,0]
+            score = 0
+            for k in range(gen_qnum):
+                response =  cog[i][j]['gen_' + para[j] + '_qnum_' + \
+                    str(k)][0,0]
+                gen[i, j, k] = response
+                if k in (3, 5):
+                    score -= response
+                else:
+                    score += response
+            cog_subj[i, j] = score
+    cog_mean = np.nanmean(cog_subj, axis=0)
+    cog_ste = stats.sem(cog_subj, axis=0)
+    return cog_subj, cog_mean, cog_ste
+
 
 def simpleaxis(ax):
     """Taken from timday on S.O.,
      Remove the plot frame lines."""
     ax.spines['top'].set_visible(False)
     ax.spines['right'].set_visible(False)
-    #ax.spines["bottom"].set_visible(False)  
+    ax.xaxis.set_ticks_position('bottom')
+    ax.yaxis.set_ticks_position('left')
     #ax.get_xaxis().tick_bottom()
-    ax.get_yaxis().tick_left()
+    #ax.get_yaxis().tick_left()
 
 def con_2_ind(pattern):
     return int(pattern[-3:].replace(" ", ""), 2) - 1
@@ -319,122 +350,103 @@ def subj_ps_stats(global_base_correct=True, type='correct'):
             ps_subj_bc_means, ps_subj_bc_std,\
             window_samp
 
+def roundToIncrement(y, y_increment):
+    return round(float(y) / y_increment) * y_increment
+
 def barPlot(title, ylabel, y_increment, subject_data, global_subj_mean,\
         global_subj_ste, yrange='default'):
 
-    fig, ax = plt.subplots(figsize=(12, 14)) 
+    #fig, ax = plt.subplots(figsize=(12, 14)) 
+    fig, ax = plt.subplots() 
     # Remove the plot frame lines.
     simpleaxis(ax)
     x = [.5, 1.0, 1.5]
+    ax.set_xlim((.3, 2))
     bar_width = .25
     opacity = .4
-    buffer = 20
+    #find range
     if yrange is 'default':
+        lim_buffer = y_increment
         yrange = np.zeros((2,1))
-        yrange[0] = np.nanmin(global_subj_mean) -\
-        np.nanmax(global_subj_ste) - buffer
-        yrange[1] = np.nanmax(global_subj_mean) +\
-                np.nanmax(global_subj_ste) + buffer
-    error_config = {'ecolor': 'k', 'elinewidth': 3, 'ezorder': 5}
-    plt.bar(x, global_subj_mean, bar_width, color='w',
-            yerr=global_subj_ste, error_kw=error_config, lw=2)
-    x = x + np.tile(bar_width / 2, condition_nums)
-    for subj_mean in subject_data:
-        plt.plot(x, subj_mean, color='k', alpha=opacity, 
-                marker='o')
+        yrange[0] = roundToIncrement(np.nanmin(global_subj_mean) -\
+        np.nanmax(global_subj_ste) - lim_buffer, y_increment)
+        yrange[1] = roundToIncrement(np.nanmax(global_subj_mean) +\
+                np.nanmax(global_subj_ste) + lim_buffer, y_increment)
 
-    #plt.xlabel('Condition')
-    plt.ylabel(ylabel)
-    plt.ylim(yrange)
-    for y in range(yrange[0], yrange[1], 5):  
-        plt.plot(range(0,3), [y] * len(range(0,3)), "--",
-                lw=0.5, color="black", alpha=0.3) 
-    plt.title('%s by condition' % title)
+    #plot yaxis lines
+    for y in range(yrange[0], yrange[1], y_increment):  
+        ax.plot(range(0,3), [y] * len(range(0,3)), "--",
+                lw=0.5, color="black", alpha=0.3, zorder=1) 
+
+    #plot global data
+    error_config = {'ecolor': 'k', 'elinewidth': 2, 'ezorder': 5}
+    ax.bar(x, global_subj_mean, bar_width, color='w', zorder=3,
+            yerr=global_subj_ste, error_kw=error_config, lw=1)
+    #shift x to be in center of bars
+    x = x + np.tile(bar_width / 2, condition_nums)
+
+    #import pdb; pdb.set_trace()
+    #plot individual subjects
+    for subj_mean in subject_data:
+        ax.plot(x, subj_mean, color='k', alpha=opacity, 
+                marker='o', zorder=10)
+
+    ax.set_ylabel(ylabel)
+    ax.set_ylim(yrange)
+    ax.set_title('%s by condition' % title)
     plt.xticks(x, ('Alphabetic', 'Fixed-order', 'Random'))
-    plt.tight_layout()
-    #plt.show()
+    #plt.tight_layout()
+    plt.show()
     fn = title.replace(" ", "") + '_barplot.pdf'
     print 'Saving figure:\n%s' % fn
-    plt.savefig(fn)
+    fig.savefig(fn)
     plt.close()
 
-def plot_ps(type='mean', length='full', name=''):
+def plot_ps(trace, ste_trace, name):
     """plot a stack of subject mean ps data of all conditions
-    Params:   type : can either by a raw mean or a base corrected mean
-              length: either trimmed around some window or full
-              meaning including the entire trial_samp"""
+    Params:   type : can either by a raw mean or a base 
+        corrected mean
+          length: either trimmed around some window or full
+          meaning including the entire trial_samp"""
 
     fig, ax = plt.subplots()
-    opacity = .3
-    if length is 'trim':
-        local_samp_len = window_samp
-    elif length is 'full':
-        local_samp_len = trial_samp
-    else:
-        print 'Error in plot_ps incorrect length'
+    #clean the ticks
+    ax.xaxis.set_ticks_position('bottom')
+    ax.yaxis.set_ticks_position('left')
+    opacity = .10
+    local_samp_len = trace.shape[1]
     x = np.linspace(0, local_samp_len / fs, local_samp_len)
-    colors = ('r', 'c', 'b')
+    colors = ('r', 'g', 'b')
     for c_num in range(condition_nums):
-        if type is 'mean':
-            if length is 'trim':
-                ax.plot(x, mean_trace[c_num], color=colors[c_num],
-                        linewidth=1, label=names[c_num], alpha=1)
-                ax.fill_between(x, mean_trace[c_num] - ste_trace[c_num],\
-                        mean_trace[c_num] + ste_trace[c_num],\
-                        color=colors[c_num], alpha=opacity)  
-            elif length is 'full':
-                ax.plot(x, full_mean_trace[c_num], color=colors[c_num],
-                        linewidth=1, label=names[c_num], alpha=1)
-                ax.fill_between(x, full_mean_trace[c_num] - full_ste_trace[c_num],\
-                        full_mean_trace[c_num] + full_ste_trace[c_num],\
-                        color=colors[c_num], alpha=opacity)  
-            else:
-                print 'Error in plot_ps incorrect length'
-            if name is '':
-                name = 'Raw mean'
-        elif type is 'bc_mean':
-            if length is 'trim':
-                ax.plot(x, bc_mean_trace[c_num],
-                        color=colors[c_num], linewidth=1,
-                        label=names[c_num], alpha=1)
-                ax.fill_between(x, bc_mean_trace[c_num] - bc_ste_trace[c_num],\
-                        bc_mean_trace[c_num] + bc_ste_trace[c_num],\
-                        color=colors[c_num], alpha=opacity)  
-            elif length is 'full':
-                ax.plot(x, full_mean_bc_trace[c_num], color=colors[c_num],
-                        linewidth=1, label=names[c_num], alpha=1)
-                ax.fill_between(x, full_mean_bc_trace[c_num] -
-                        full_ste_bc_trace[c_num],\
-                        full_mean_bc_trace[c_num] + full_ste_bc_trace[c_num],\
-                        color=colors[c_num], alpha=opacity)  
-            else:
-                print 'Error in plot_ps incorrect type'
-            if name is '':
-                name = 'Base corrected mean'
-        else:
-            print 'Error in plot_ps incorrect type'
-            return
+        ax.plot(x, trace[c_num], color=colors[c_num],
+                linewidth=1, label=names[c_num], alpha=1)
+        ax.fill_between(x, trace[c_num] - ste_trace[c_num],\
+                trace[c_num] + ste_trace[c_num],\
+                color=colors[c_num], alpha=opacity)  
 
-    #include visual_primer if length is full trial
-    if length is 'full':
-        ax.axvspan(0, end_primer, color='k', alpha=.15)
+    #mark visual_primer if length is full trial
+    if local_samp_len == trial_samp:
+        ax.axvspan(0, end_primer, color='k', alpha=.08)
+        ax.text(end_primer / 3, 1900, 'Visual\nprimer',\
+                size=10) 
+        #indicate with arrow
         #ax.annotate('End visual primer', xy=(end_primer, 
             #global_mean[c_num]), xytext=(5, 2000),
             #arrowprops=dict(facecolor='black', shrink=0.02))
 
-    ax.legend(loc='best')    
+    ax.legend(loc=4, prop={'size':12})
     ax.set_ylabel('Pupil Size')
     #Render stats to plot
-    #info = r'$\mu$=%.1f, $\sigma$=%.3f, N=%d' % (global_mean[c_num],\
+    #info = r'$\mu$=%.1f, $\sigma$=%.3f, N=%d' % \
+            #(global_mean[c_num],\
             #global_std[c_num], N)
     #plt.text(20, global_mean[c_num] + 500, info)
     ax.set_xlabel('Trial Time (s)')
-    ax.set_xlim((0, local_samp_len))
+    ax.set_xlim((0, local_samp_len / fs))
     ax.set_title(name + ' trial pupil size')
     plt.show()
-    import pdb; pdb.set_trace() 
     name = name.replace(" ", "")
-    fn = name + 'ps.pdf'
+    fn = name + '_trace.pdf'
     print 'Saving figure:\n%s' % fn
     fig.savefig(fn)
     plt.close()
@@ -761,11 +773,10 @@ printSignificant('Accuracy', acc_subj_means)
 #convert to percent
 global_mean_pc = acc_global_mean * np.tile(100, len(acc_global_mean))
 global_ste_pc = acc_global_ste * np.tile(100, len(acc_global_ste))
+acc_subj_means_pc = acc_subj_means * 100
 #plot
-#barPlot('Accuracy', 'Accuracy (%)', 5, acc_subj_means, global_mean_pc,
-        #global_ste_pc, yrange=(50, 105))
-
-#plot_accuracy()
+barPlot('Accuracy', 'Accuracy (%)', 5, acc_subj_means_pc, global_mean_pc,
+        global_ste_pc, yrange=(50, 105))
 
 #PS
 full_mean_trace, full_mean_bc_trace, full_ste_trace,\
@@ -784,8 +795,7 @@ pResults('Pupil global bc standard error', global_bc_ste)
 printSignificant('PS baseline corrected', ps_subj_bc_means)
 
 #plot ps data for all conditions
-#plot_ps(type='mean')
-plot_ps(type='bc_mean')
+plot_ps(full_mean_bc_trace, full_ste_bc_trace, 'Base corrected')
 
 #FIXME what are the units of pupil size?
 barPlot('Mean pupil size', 'Pupil Size', 50,\
@@ -796,24 +806,16 @@ barPlot('Mean base corrected pupil size', 'Pupil Size', 50,\
         ps_subj_bc_means, global_bc_mean, global_bc_ste)
 
 #Survey
-#TODO put into method
-cog_subj = np.zeros((N, condition_nums))
-for i in range(N):
-    for j in range(condition_nums):
-        # TODO weight category responses by rel survey
-        for k in range(rel_qnum):
-            rel[i, j, k] = \
-                cog[i][j]['rel_' + para[j] + '_qnum_' + str(k)][0,0]
-        score = 0
-        for k in range(gen_qnum):
-            response =  cog[i][j]['gen_' + para[j] + '_qnum_' + \
-                str(k)][0,0]
-            gen[i, j, k] = response
-            if k in (3, 5):
-                score -= response
-            else:
-                score += response
-        cog_subj[i, j] = score
+#TODO check that high is high demanding
+cog_subj, cog_mean, cog_ste = cleanCogData()
+
+pResults('Cognitive load means', cog_mean)
+pResults('Cognitive load standard error', cog_ste)
+printSignificant('Cognitive load unweighted', cog_subj)
+
+barPlot('Unweighted cognitive load survey', 'Relative demand\n'+\
+r'low $\hspace{8} \rightarrow \hspace{8}$high', 5,\
+        cog_subj, cog_mean, cog_ste)
 
 resultstxt.close()
 print 'results text file closed\n'
