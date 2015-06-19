@@ -43,26 +43,44 @@ fs = 1000.0
 
 #data_dir = os.path.abspath(os.path.join(os.pardir, 'Data'))
 data_dir = '/home/kdmarrett/lab/FilesScript/Data'
-rel_survey_dict = dict()
 
 def cleanCogData(weighted=False):
     """ Return formatted cognitive load survey
     data"""
+    gen_qnum = 6 #factors 
+    rel_qnum = 15
+    dicts = [ 
+            {1 : 2, 4 : 1, 7 : 2, 13: 1, 14 : 1},#Mental
+            {0 : 1, 2 : 2, 5 : 1, 12: 2, 14 : 2},#Physical
+            {0 : 2, 4 : 2, 6 : 1, 8 : 1, 10 : 2}, #temporal
+            {6 : 2, 9 : 1, 11: 2, 12: 1, 13 : 2},#performance
+            {1 : 1, 3 : 1, 5 : 2, 9 : 2, 10 : 1}, #effort
+            {2 : 1, 3 : 2, 7 : 1, 8 : 2, 11 : 1}  #frustration
+            ]
     cog_subj = np.zeros((N, condition_nums))
-    rel = np.zeros((N, condition_nums))
+    rel = np.zeros((N, condition_nums, gen_qnum))
+    gen = np.ndarray(shape=(N, condition_nums, gen_qnum))
     for i in range(N):
         for j in range(condition_nums):
-            #TODO weight cog load
+            total_relative_responses = 0
             if weighted:
-                pass
-                #for k in range(rel_qnum):
-                    #rel[i, j, k] = \
-                        #cog[i][j]['rel_' + para[j] + '_qnum_' + str(k)][0,0]
+                for k in range(rel_qnum):
+                   response = \
+                        cog[i][j]['rel_' + para[j] + '_qnum_' + str(k)][0,0]
+                   for dind, survey_dict in enumerate(dicts):
+                       if survey_dict.has_key(k):
+                           if survey_dict[k] == response:
+                                rel[i, j, dind] += 1
+                                total_relative_responses += 1
+                                break
             score = 0
             for k in range(gen_qnum):
                 response =  cog[i][j]['gen_' + para[j] + '_qnum_' + \
                     str(k)][0,0]
                 gen[i, j, k] = response
+                if weighted:
+                    weight = float(rel[i, j, k]) / total_relative_responses
+                    response *= weight
                 if k in (3, 5):
                     score -= response
                 else:
@@ -576,14 +594,6 @@ ps_base[:] = np.nan
 usable_trials = np.zeros(shape=(N, 1))
 usable_trials[:] = np.nan
 
-#process cog load data
-gen_qnum = 6
-rel_qnum = 15
-#assert there are no more zeros at the end
-gen = np.ndarray(shape=(N, condition_nums, gen_qnum))
-rel = np.ndarray(shape=(N, condition_nums, rel_qnum))
-load_score = np.ndarray(shape=(N, condition_nums))
-
 cog = []
 accuracy_dict = dict()
 ps_dict = dict()
@@ -902,6 +912,18 @@ printSignificant('Cognitive load unweighted', cog_subj)
 barplot('Unweighted cognitive load survey', 'Relative demand\n'+\
 r'low $\hspace{8} \rightarrow \hspace{8}$high', 5,\
         cog_subj, cog_mean, cog_ste)
+
+#weighted
+cog_subj_weighted, cog_mean_weighted, cog_ste_weighted = cleanCogData(weighted=True)
+
+pResults('Cognitive load weighted means', cog_mean_weighted)
+pResults('Cognitive load weighted standard error',
+        cog_ste_weighted)
+printSignificant('Cognitive load weighted', cog_subj_weighted)
+
+barplot('Weighted cognitive load survey', 'Relative demand\n'+\
+r'low $\hspace{8} \rightarrow \hspace{8}$high', 5,\
+        cog_subj_weighted, cog_mean_weighted, cog_ste_weighted)
 
 resultstxt.close()
 print 'results text file closed\n'
