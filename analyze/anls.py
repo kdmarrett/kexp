@@ -1,10 +1,14 @@
 # author: Karl Marrett
-# driver for processing pupillometry data
+# analyze pupillometry data
 
-#import os
+#TODO whole block plot, stats 
+#TODO use remove_blink_artifacts to nullify certain target
+#windows use position of eye to clean the results later
+#TODO think about degrees of freedom
+#TODO think about subtracting by condition
+
 import glob
 from os import path as op
-#import time
 from scipy import io as sio 
 from scipy import stats
 import pyeparse as pp 
@@ -12,17 +16,16 @@ import numpy as np
 import matplotlib.pyplot as plt
 import pickle as pck
 #from pyeparse.utils import pupil_kernel
-#from expyfun import binary_to_decimals, decimals_to_binary
 
 # if something was changed in the file saving process
-force_reprocess = False
+force_reprocess = True
 #HD misunderstood directions ommitted as subject
 #HP substantially corrupted
 subjects = ['HL', 'GH', 'GG', 'GN', 'GI', 'HT', 'HI', 'HN', 'HK', 'HJ', 'GR', 'GU'] 
 
 
 #shorten for debugging
-#subjects = ['HD', 'HP']
+subjects = ['HD']
 
 if force_reprocess:
     reprocess_list = subjects
@@ -34,12 +37,6 @@ N = len(subjects)
 stim_version_code = 8010
 # asserted fs
 fs = 1000.0  
-#TODO use remove_blink_artifacts to nullify certain target
-#windows use position of eye to clean the results later
-#TODO accuracy in first three blocks vs last three blocks
-#TODO plot around target windows
-#TODO think about degrees of freedom
-#TODO units of pupil size
 
 #data_dir = os.path.abspath(os.path.join(os.pardir, 'Data'))
 data_dir = '/home/kdmarrett/lab/FilesScript/Data'
@@ -73,6 +70,16 @@ def cleanCogData(weighted=False):
                                 rel[i, j, dind] += 1
                                 total_relative_responses += 1
                                 break
+               
+                #give all factors at least some partial weighting
+                one_modified = False
+                for dind, survey_dict in enumerate(dicts):
+                   if rel[i, j, dind] == 0:
+                       rel[i, j, dind] += 1
+                       total_relative_responses += 1
+                       #if two have 0 there must be a bug
+                       assert(one_modified == False)
+                       one_modified = True
             score = 0
             for k in range(gen_qnum):
                 response =  cog[i][j]['gen_' + para[j] + '_qnum_' + \
@@ -224,8 +231,12 @@ def getGeneralInfo(block_ind, bnum, advance=False):
     'general'
     trial_data_path = op.join(param_data_dir, data_file_name)
     trial_vars = sio.loadmat(trial_data_path)
-    replacement_time = trial_vars['replacement_time']
-    target_time = trial_vars['target_time']
+    #try:
+        #replacement_time = trial_vars['replacement_time'][0]
+    #except:
+        #print 'replacement time not found'
+        #replacement_time = None
+    target_time = trial_vars['target_time'][0]
     location_code = trial_vars['location_code'][0][0][0].encode('ascii')
     id_list = trial_vars['trial_id'][0].tolist()
     target_letter = \
@@ -236,7 +247,7 @@ def getGeneralInfo(block_ind, bnum, advance=False):
     #"Error: id_ and paradigm from mat file do not match"
     if advance:
         block_ind[bnum] += 1
-    return id_list
+    return target_time
 
 def getCogResponses(cog, subj_data_dir):
     temp = []
@@ -276,28 +287,42 @@ def subj_accuracy_stats(accuracy_data):
         global_ste.append(stats.sem(subj_means[:, i]))
     return global_mean, global_ste, subj_means, subj_stds
 
-def subj_ps_stats(global_base_correct=True, type='correct',\
+def subj_ps_stats(ps_data, global_base_correct=True, type='trial',\
         window_seconds='default'):
     """ ps[subject,cond_ind,block, trial, sample] 
     Params:
         global_base_correct : whether to mean all baseline ps data
         across the whole experiment or to baseline correct based
         individually by trial  
-        type : if correct only consider ps data from trials where
-        the subject entered correct num of targets"""
+        type : if trial only consider ps data from the window of
+        the task if window use all of the window passed
+        window_seconds trim the end of trial ps data to be of 
+        window_seconds long.  currently not implemented for window
+        type"""
 
+    # get the samples (last dim) of the ps data
+    local_samp_len = ps_data.shape[-1]
+
+    #end of trial for trial type
     if window_seconds is 'default':
         #include all of task as window
         window_samp = trial_samp - end_primer_samp
     else:
         #only analyze trimmed window
         window_samp = window_seconds * fs
+
+    if type is 'window':
+        window_samp = target_samp
+        assert(local_samp_len == target_samp)
+    elif type is 'trial':
+        assert(local_samp_len == trial_samp)
+
     # dat holds each time trace
-    mean_dat = np.zeros((N, condition_nums, trial_samp))
+    mean_dat = np.zeros((N, condition_nums, local_samp_len))
     mean_dat[:] = np.nan
-    std_dat = np.zeros((N, condition_nums, trial_samp))
+    std_dat = np.zeros((N, condition_nums, local_samp_len))
     std_dat[:] = np.nan
-    bc_mean_dat = np.zeros((N, condition_nums, trial_samp))
+    bc_mean_dat = np.zeros((N, condition_nums, local_samp_len))
     bc_mean_dat[:] = np.nan
 
     if global_base_correct:
@@ -306,43 +331,62 @@ def subj_ps_stats(global_base_correct=True, type='correct',\
         base_mean = np.zeros(shape=(N, trials_exp))
 
     base_mean[:] = np.nan
-    for s_ind, subj_ps in enumerate(ps):
+    for s_ind, subj_ps in enumerate(ps_data):
         for c_ind in range(condition_nums):
-            # raw mean stack for each subject and condition
-            mean_dat[s_ind, c_ind] = np.nanmean(
-                    subj_ps[c_ind].reshape(trials_exp,
-                        trial_samp), axis=0)
-            #std_dat[s_ind, c_ind] = np.nanstd(
-                    #subj_ps[c_ind].reshape(trials_exp,
-                        #trial_samp), axis=0)
-            #for each subject baseline correct by the pretrial
-            #dark period
-            #TODO consider the visual primer time as a baseline correction
-            if global_base_correct:
-                # mean across all trials then subtract that value
-                base_mean[s_ind] = np.nanmean(np.nanmean(
-                    ps_base[s_ind, c_ind].reshape(block_len
-                        * s2_blocks[0][0], base_samp), axis=0))
-                bc_mean_dat[s_ind, c_ind] = mean_dat[s_ind,
-                        c_ind] - base_mean[s_ind]
-            else:
-                #for each subject for each trial find the corresponding
-                    #baseline to subtract
-                base_mean[s_ind, :] = np.nanmean(ps_base[s_ind,
-                        c_ind].reshape(block_len
-                        * s2_blocks[0][0], base_samp), axis=0)
-                bc_mean_dat[s_ind, c_ind] = np.nanmean(
+            if type is 'window':
+                mean_dat[s_ind, c_ind] = np.nanmean(
+                        subj_ps[c_ind].reshape(trials_exp * max_targets,
+                            int(target_samp)), axis=0)
+                #for each subject baseline correct by the pretrial
+                #dark period
+                if global_base_correct:
+                    #FIXME check this
+                    # mean across all trials then subtract that value
+                    base_mean[s_ind] = np.nanmean(np.nanmean(
+                        ps_base[s_ind, c_ind].reshape(block_len
+                            * s2_blocks[0][0], int(base_samp)), axis=0))
+                    bc_mean_dat[s_ind, c_ind] = mean_dat[s_ind,
+                            c_ind] - base_mean[s_ind]
+
+            elif type is 'trial':
+                # raw mean stack for each subject and condition
+                mean_dat[s_ind, c_ind] = np.nanmean(
                         subj_ps[c_ind].reshape(trials_exp,
-                            trial_samp) - base_mean, axis=0)
+                            local_samp_len), axis=0)
                 #std_dat[s_ind, c_ind] = np.nanstd(
                         #subj_ps[c_ind].reshape(trials_exp,
-                            #trial_samp), axis=0)
+                            #local_samp_len), axis=0)
+                #for each subject baseline correct by the pretrial
+                #dark period
+                if global_base_correct:
+                    # mean across all trials then subtract that value
+                    base_mean[s_ind] = np.nanmean(np.nanmean(
+                        ps_base[s_ind, c_ind].reshape(block_len
+                            * s2_blocks[0][0], int(base_samp)), axis=0))
+                    bc_mean_dat[s_ind, c_ind] = mean_dat[s_ind,
+                            c_ind] - base_mean[s_ind]
+                else:
+                    #for each subject for each trial find the corresponding
+                        #baseline to subtract
+                    #FIXME
+                    base_mean[s_ind, :] = np.nanmean(ps_base[s_ind,
+                            c_ind].reshape(block_len
+                            * s2_blocks[0][0], base_samp), axis=0)
+                    bc_mean_dat[s_ind, c_ind] = np.nanmean(
+                            subj_ps[c_ind].reshape(trials_exp,
+                                local_samp_len) - base_mean, axis=0)
                   
     #trim all data from end of the visual primer on
-    #std_dat_trim = std_dat[:,:,end_primer_samp:(end_primer_samp+ window_samp)]
-    #TODO make a way to include end sample for the trimmed data
-    mean_dat_trim = mean_dat[:,:,end_primer_samp:(end_primer_samp+ window_samp)]
-    bc_mean_dat_trim = bc_mean_dat[:,:,end_primer_samp:(end_primer_samp+ window_samp)]
+    if type is 'trial':
+        #std_dat_trim = std_dat[:,:,end_primer_samp:(end_primer_samp+ window_samp)]
+        mean_dat_trim =\
+            mean_dat[:,:,end_primer_samp:(end_primer_samp+ window_samp)]
+        bc_mean_dat_trim =\
+        bc_mean_dat[:,:,end_primer_samp:(end_primer_samp+ window_samp)]
+    else:
+        #keep all of window for type 'window'
+        mean_dat_trim = mean_dat
+        bc_mean_dat_trim = bc_mean_dat
     #subject means for sig testing and plotting
     ps_subj_means = np.nanmean(mean_dat_trim, axis=2)
     ps_subj_std = np.nanstd(mean_dat_trim, axis=2)
@@ -350,24 +394,15 @@ def subj_ps_stats(global_base_correct=True, type='correct',\
     ps_subj_bc_std = np.nanstd(bc_mean_dat_trim, axis=2)
     assert(ps_subj_means.shape == (N, condition_nums))
     # means across all subjects
-    #TODO make sure that you have a mean trace for
-    #each subject then stats.sem stats.s for each
-    #point along that trace across the subjects
     full_mean_trace = np.nanmean(mean_dat, axis=0) 
     full_mean_bc_trace = np.nanmean(bc_mean_dat, axis=0) 
     full_ste_trace = stats.sem(mean_dat, axis=0) 
     full_ste_bc_trace = stats.sem(bc_mean_dat, axis=0) 
     mean_trace = np.nanmean(mean_dat_trim, axis=0) 
     bc_mean_trace = np.nanmean(bc_mean_dat_trim, axis=0)
-    #FIXME this may be disrupted by np.nan values
+    #sem is sensitive to np.nan values
     ste_trace = stats.sem(mean_dat_trim, axis=0)
     bc_ste_trace = stats.sem(bc_mean_dat_trim, axis=0)
-    full_ste_test = np.zeros(shape=(condition_nums, trial_samp))
-    #testing
-    #for c_ind in range(condition_nums):
-        #for sample in range(trial_samp):
-            #full_ste_test[c_ind, sample] =\
-            #stats.sem(mean_dat[:, c_ind, sample])
 
     #find peak for each subject (abandoned)
     #TODO clean peaks by subject average peak heights each cond
@@ -459,10 +494,7 @@ def barplot(title, ylabel, y_increment, subject_data, global_subj_mean,\
 
 def plot_ps(trace, ste_trace, name):
     """plot a stack of subject mean ps data of all conditions
-    Params:   type : can either by a raw mean or a base 
-        corrected mean
-          length: either trimmed around some window or full
-          meaning including the entire trial_samp"""
+    Params:   trace can either by full trial or a letter window"""
 
     fig, ax = plt.subplots()
     #clean the ticks
@@ -480,23 +512,35 @@ def plot_ps(trace, ste_trace, name):
                 color=colors[c_num], alpha=opacity)  
 
     #mark visual_primer if length is full trial
-    if local_samp_len == trial_samp:
-        ax.text(end_primer / 3, 600, 'Visual\nprimer',\
+    ymin, ymax = ax.get_ylim()
+    yspan = ymax - ymin
+    topFig = ymax - yspan / 7
+    topFigLower = ymax - yspan / 6
+    if local_samp_len == trial_samp: # a trial
+        ax.text(end_primer / 3, topFig, 'Visual\nprimer',\
                 size=10) 
-        ax.axvspan(0, end_primer, color='k', alpha=.12)
+        #ax.axvspan(0, end_primer, color='k', alpha=.12)
         ax.text(end_primer + fix_dot_time / 4,\
-                610, 'Fixation\n   dot',\
+                topFig, 'Fixation\n   dot',\
                 size=10) 
         ax.axvspan(end_primer, preblock_prime_sec,\
                 color='k', alpha=.05)
-        ax.text(24, 700, 'Task', size=10) 
+        ax.text(24, topFig, 'Task\n', size=10) 
+        ax.legend(loc=4, prop={'size':10})
+        ax.set_title(name + ' trial pupil size')
         #indicate with arrow
         #ax.annotate('End visual primer', xy=(end_primer, 
             #global_mean[c_num]), xytext=(5, 2000),
             #arrowprops=dict(facecolor='black', shrink=0.02))
+    elif (local_samp_len == target_samp): # a window
+        ax.axvline(x=preslice_time, linestyle='--', color='k',
+                alpha=.4)
+        ax.text(preslice_time + .1, topFigLower, 
+                'Target\n letter\n onset', size=10) 
+        ax.legend(loc=2, prop={'size':10})
+        ax.set_title(name + ' window pupil size')
 
-    ax.legend(loc=4, prop={'size':12})
-    ax.set_ylabel('Pupil Size')
+    ax.set_ylabel('Pupil Size (AU)')
     #Render stats to plot
     #info = r'$\mu$=%.1f, $\sigma$=%.3f, N=%d' % \
             #(global_mean[c_num],\
@@ -504,7 +548,6 @@ def plot_ps(trace, ste_trace, name):
     #plt.text(20, global_mean[c_num] + 500, info)
     ax.set_xlabel('Trial Time (s)')
     ax.set_xlim((0, local_samp_len / fs))
-    ax.set_title(name + ' trial pupil size')
     plt.show()
     name = name.replace(" ", "")
     fn = name + '_trace.pdf'
@@ -570,13 +613,9 @@ for i in range(condition_nums):
     patternToCond[condition_pattern[i]] =  \
         int(condition_pattern[i][-3:].replace(" ", ""), 2)
 
-#date structures
-#ps_dict = dict()
-#accuracy_dict = dict()
-#ps = []
-#accuracy = []
-#cog = []
-#take three
+#data structures
+usable_trials = np.zeros(shape=(N, 1))
+usable_trials[:] = np.nan
 ps = np.ndarray(shape=(N, condition_nums, s2_blocks, block_len,
     trial_samp))
 ps[:] = np.nan
@@ -586,13 +625,26 @@ ps_incorrect[:] = np.nan
 accuracy = np.ndarray(shape=(N, condition_nums,
     s2_blocks * block_len / condition_nums))
 accuracy[:] = np.nan
+#ps data of base correction
 base_slice_time = 2
 base_samp = np.ceil(base_slice_time * fs)
 ps_base = np.ndarray(shape=(N, condition_nums, s2_blocks,
     block_len, base_samp))
 ps_base[:] = np.nan
-usable_trials = np.zeros(shape=(N, 1))
-usable_trials[:] = np.nan
+#ps data of targets
+preslice_time = 2
+max_targets = 2
+target_slice_time = 5
+target_samp = np.ceil(target_slice_time * fs)
+ps_target = np.ndarray(shape=(N, condition_nums, s2_blocks,\
+    block_len, max_targets, target_samp))
+ps_target[:] = np.nan
+#ps data of replacement letter
+#replacement_slice_time = 2
+#replacement_samp = np.ceil(replacement_slice_time * fs)
+#ps_replacement = np.ndarray(shape=(N, condition_nums, s2_blocks,
+    #block_len, max_targets, replacement_samp))
+#ps_replacement[:] = np.nan
 
 cog = []
 accuracy_dict = dict()
@@ -633,11 +685,14 @@ for s_ind, subj in enumerate(subjects):
         assert(subj not in reprocess_list)
         fsubj = open(processed_file, 'r')
         (subj_accuracy, subj_ps, subj_ps_incorrect, subj_ps_base,
+                subj_ps_target, 
                 subj_usable_trials) = pck.load(fsubj)
         accuracy[s_ind] = subj_accuracy
         ps[s_ind] = subj_ps
         ps_incorrect[s_ind] = subj_ps_incorrect
         ps_base[s_ind] = subj_ps_base
+        #ps_replacement[s_ind] = subj_ps_replacement
+        ps_target[s_ind] = subj_ps_target
         usable_trials[s_ind] = subj_usable_trials
         fsubj.close()
         continue
@@ -650,6 +705,8 @@ for s_ind, subj in enumerate(subjects):
     subj_ps = ps[s_ind]
     subj_ps_incorrect = ps_incorrect[s_ind]
     subj_ps_base = ps_base[s_ind]
+    #subj_ps_replacement = ps_replacement[s_ind]
+    subj_ps_target = ps_target[s_ind]
     subj_usable_trials = 0
     #for pattern in (condition_pattern):
         #subj_accuracy[pattern] = []
@@ -691,12 +748,13 @@ for s_ind, subj in enumerate(subjects):
         remove_c_ind = []
         for tnum in range(block_len):
             #paradigm = getTrialInfo(block_ind, bnum)
-            #id_list = getGeneralInfo(block_ind, bnum, advance=False)
             event_id = s_ind
             remove_flag = False
 
             #check for a mat file for the trial
             try:
+                target_time =\
+                        getGeneralInfo(block_ind, bnum, advance=False)
                 id_list, correct = getFinalInfo(block_ind, bnum,
                         subj_data_dir, advance=True)
                 trial_id = base + ' ' + ' '.join(map(str, id_list))
@@ -741,6 +799,36 @@ for s_ind, subj in enumerate(subjects):
             for i in range(int(base_samp)):
                 subj_ps_base[c_ind, b_ind, tnum, i] = ctemp[i] 
 
+            #save target ps data for each subject
+            for timeind, ttime in enumerate(target_time):
+                tmin = ttime - preslice_time
+                tmax = tmin + target_slice_time
+                try:
+                    #make sure the target window doesn't go over edf file
+                    last_sample = events[0][0] + tmax * fs
+                    assert(raw.n_samples > last_sample)
+                    target_epoch = pp.Epochs(raw, events=events, 
+                        event_id=event_id, tmin=tmin, tmax=tmax)
+                except:
+                    print 'One target lost due to clipping of window'
+                    print 'Raw samples: %d end sample: %d '\
+                            % (raw.n_samples, last_sample)
+                    print 'Overbleed: %d' % (last_sample - raw.n_samples)
+                ctemp = target_epoch.get_data('ps')[0]
+                for i in range(int(target_samp)):
+                    subj_ps_target[c_ind, b_ind, tnum, timeind, i] = ctemp[i] 
+
+            ##save replacement ps data for each subject
+            #if replacement_time is not None:
+                #for timeind, rtime in enumerate(replacement_time):
+                    #tmin = rtime - preslice_time
+                    #replacement_epoch = pp.Epochs(raw, events=events, 
+                        #event_id=event_id, tmin=tmin,
+                        #tmax=tmin + replacement_slice_time)
+                    #ctemp = replacement_epoch.get_data('ps')[0]
+                    #for i in range(int(replacement_samp)):
+                        #subj_ps_replacement[c_ind, b_ind, tnum, timeind, i] = ctemp[i] 
+
             #check for blink criteria
             base_mean = np.nanmean(subj_ps_base[c_ind, b_ind, tnum])
             base_std = np.nanstd(subj_ps_base[c_ind, b_ind, tnum])
@@ -769,7 +857,7 @@ for s_ind, subj in enumerate(subjects):
             #eye_angle = np.arctan2(rho / screen_distance)
             #remove_flag = any(eye_angle > angle_criterion) or \
                 #remove_flag
-            remove_flag = False or remove_flag
+            #remove_flag = False or remove_flag
 
             #remove invalid trials
             if remove_flag:
@@ -803,8 +891,12 @@ for s_ind, subj in enumerate(subjects):
     ps[s_ind] = subj_ps
     ps_incorrect[s_ind] = subj_ps_incorrect
     ps_base[s_ind] = subj_ps_base
+    #ps_replacement[s_ind] = subj_ps_replacement
+    ps_target[s_ind] = subj_ps_target
     subj_tuple = (subj_accuracy, subj_ps, subj_ps_incorrect,
-            subj_ps_base, subj_usable_trials)
+            subj_ps_base, 
+            subj_ps_target,
+            subj_usable_trials)
     fsubj = open(processed_file, 'w')
     pck.dump(subj_tuple, fsubj) # overwrites
     fsubj.close()
@@ -868,21 +960,33 @@ acc_subj_means_end_pc = acc_subj_means_end * 100
 barplot('Accuracy', 'Accuracy (%)', 5, acc_subj_means_pc,
         global_mean_pc, global_ste_pc, yrange=(50, 105))
 
-#TODO write this
 #double_barplot('Accuracy', 'Accuracy (%)', 5,
         #acc_subj_means_start_pc, global_mean_start_pc,
         #global_ste_start_pc, acc_subj_means_end_pc,
         #global_mean_end_pc, global_ste_end_pc, yrange=(50, 105))
 
 #PS
+#trial
 full_mean_trace, full_mean_bc_trace, full_ste_trace,\
         full_ste_bc_trace, mean_trace,\
         bc_mean_trace, ste_trace, bc_ste_trace, global_mean,\
         global_ste, global_bc_mean, global_bc_ste,\
         ps_subj_means, ps_subj_std,\
         ps_subj_bc_means, ps_subj_bc_std,\
-        window_samp = subj_ps_stats();
+        window_samp = subj_ps_stats(ps, global_base_correct=True)
 
+#target
+full_mean_targ_trace, full_mean_bc_targ_trace, full_ste_targ_trace,\
+        full_ste_bc_targ_trace, mean_targ_trace,\
+        bc_mean_targ_trace, ste_targ_trace, bc_ste_targ_trace,\
+        global_mean_targ,\
+        global_ste_targ, global_bc_mean_targ, global_bc_ste_targ,\
+        ps_subj_means_targ, ps_subj_std_targ,\
+        ps_subj_bc_means_targ, ps_subj_bc_std_targ,\
+        dummy_samp = subj_ps_stats(ps_target, type='window',\
+        global_base_correct=True)
+
+#trial
 pResults('Pupil global means', global_mean)
 pResults('Pupil global standard error', global_ste)
 pResults('Pupil global bc means', global_bc_mean)
@@ -890,13 +994,26 @@ pResults('Pupil global bc standard error', global_bc_ste)
 #printSignificant('PS', ps_subj_means)
 printSignificant('PS baseline corrected', ps_subj_bc_means)
 
+#target
+#TODO peaks of target times
+#TODO relative peaks of target times
+pResults('Pupil global target means', global_mean_targ)
+pResults('Pupil global target standard error', global_ste_targ)
+pResults('Pupil global target bc means', global_bc_mean_targ)
+pResults('Pupil global target bc standard error', global_bc_ste_targ)
+#printSignificant('PS target', ps_subj_means_targ)
+printSignificant('PS target baseline corrected', ps_subj_bc_means_targ)
+
 #plot ps data for all conditions
 plot_ps(full_mean_bc_trace, full_ste_bc_trace, 'Base corrected')
+
+#plot target ps data for all conditions
+plot_ps(full_mean_bc_targ_trace, full_ste_bc_targ_trace,\
+        'Base corrected target')
 
 #barplot('Mean pupil size', 'Pupil Size', 50,\
         #ps_subj_means, global_mean, global_ste)
 
-#FIXME what are the units of pupil size?
 #baseline corrected
 barplot('Mean base corrected pupil size', 'Relative pupil size',
         100, ps_subj_bc_means, global_bc_mean, global_bc_ste)
