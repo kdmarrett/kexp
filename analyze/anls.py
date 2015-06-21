@@ -1,7 +1,7 @@
 # author: Karl Marrett
 # analyze pupillometry data
 
-#TODO whole block plot, stats 
+#TODO whole block saving, plot, stats 
 #TODO use remove_blink_artifacts to nullify certain target
 #windows use position of eye to clean the results later
 #TODO think about degrees of freedom
@@ -25,7 +25,7 @@ subjects = ['HL', 'GH', 'GG', 'GN', 'GI', 'HT', 'HI', 'HN', 'HK', 'HJ', 'GR', 'G
 
 
 #shorten for debugging
-subjects = ['HD']
+#subjects = ['HD']
 
 if force_reprocess:
     reprocess_list = subjects
@@ -340,13 +340,31 @@ def subj_ps_stats(ps_data, global_base_correct=True, type='trial',\
                 #for each subject baseline correct by the pretrial
                 #dark period
                 if global_base_correct:
-                    #FIXME check this
                     # mean across all trials then subtract that value
                     base_mean[s_ind] = np.nanmean(np.nanmean(
                         ps_base[s_ind, c_ind].reshape(block_len
                             * s2_blocks[0][0], int(base_samp)), axis=0))
                     bc_mean_dat[s_ind, c_ind] = mean_dat[s_ind,
                             c_ind] - base_mean[s_ind]
+                else:
+                    #for each subject for each trial find the corresponding
+                    #single baseline value to subtract per trial
+                    base_mean[s_ind, :] = np.nanmean(ps_base[s_ind,
+                            c_ind].reshape(trials_exp,
+                                int(base_samp)), axis=1)
+                    raw_windows = subj_ps[c_ind].reshape(
+                            trials_exp * max_targets, local_samp_len)
+                    bc_window = np.zeros(shape=(trials_exp * max_targets,
+                        local_samp_len))
+                    bc_window[:] = np.nan
+                    for rti in range(trials_exp):
+                        for targi in range(max_targets):
+                            #subtract the mean of each trial baseline 
+                            bc_window[max_targets * rti + targi, :] =\
+                                raw_windows[max_targets * rti + targi] -\
+                                base_mean[s_ind, rti]
+                    bc_mean_dat[s_ind, c_ind] = np.nanmean(bc_window,
+                            axis=0)
 
             elif type is 'trial':
                 # raw mean stack for each subject and condition
@@ -368,13 +386,19 @@ def subj_ps_stats(ps_data, global_base_correct=True, type='trial',\
                 else:
                     #for each subject for each trial find the corresponding
                         #baseline to subtract
-                    #FIXME
                     base_mean[s_ind, :] = np.nanmean(ps_base[s_ind,
-                            c_ind].reshape(block_len
-                            * s2_blocks[0][0], base_samp), axis=0)
-                    bc_mean_dat[s_ind, c_ind] = np.nanmean(
-                            subj_ps[c_ind].reshape(trials_exp,
-                                local_samp_len) - base_mean, axis=0)
+                            c_ind].reshape(trials_exp,
+                                int(base_samp)), axis=1)
+                    #subtract the mean of each trial baseline 
+                    raw_trials = subj_ps[c_ind].reshape(trials_exp,
+                                local_samp_len)
+                    bc_trial = np.zeros(shape=(trials_exp,
+                        local_samp_len))
+                    bc_trial[:] = np.nan
+                    for rti, raw_trial in enumerate(raw_trials):
+                        bc_trial[rti,:] = raw_trial - base_mean[s_ind, rti]
+                    bc_mean_dat[s_ind, c_ind] = np.nanmean(bc_trial,
+                            axis=0)
                   
     #trim all data from end of the visual primer on
     if type is 'trial':
@@ -600,6 +624,7 @@ para[0] = '0000000'
 para[1] = '0100000'
 para[2] = '0101000'
 condition_nums = len(condition_asc)
+trials_cond = trials_exp / condition_nums
 wav_indices = dict(
     zip(condition_asc, np.zeros(len(condition_asc), dtype=int)))
 # build String condition ids for raw 'messages'
@@ -788,8 +813,8 @@ for s_ind, subj in enumerate(subjects):
                 remove_c_ind.append(c_ind)
                 remove_trial.append(tnum)
                 subj_accuracy[c_ind, cond_acc_ind[c_ind]] = np.nan
-                for i in range(trial_samp):
-                    subj_ps[c_ind, b_ind, tnum, i] = np.nan
+                #for i in range(trial_samp):
+                    #subj_ps[c_ind, b_ind, tnum, i] = np.nan
                 continue
 
             #save base ps data for each subject
@@ -864,8 +889,8 @@ for s_ind, subj in enumerate(subjects):
                 remove_c_ind.append(c_ind)
                 remove_trial.append(tnum)
                 subj_accuracy[c_ind, cond_acc_ind[c_ind]] = np.nan
-                for i in range(trial_samp):
-                    subj_ps[c_ind, b_ind, tnum, i] = np.nan
+                #for i in range(trial_samp):
+                    #subj_ps[c_ind, b_ind, tnum, i] = np.nan
                 continue
 
             #otherwise process date normally
@@ -973,7 +998,7 @@ full_mean_trace, full_mean_bc_trace, full_ste_trace,\
         global_ste, global_bc_mean, global_bc_ste,\
         ps_subj_means, ps_subj_std,\
         ps_subj_bc_means, ps_subj_bc_std,\
-        window_samp = subj_ps_stats(ps, global_base_correct=True)
+        window_samp = subj_ps_stats(ps, global_base_correct=False)
 
 #target
 full_mean_targ_trace, full_mean_bc_targ_trace, full_ste_targ_trace,\
@@ -984,7 +1009,7 @@ full_mean_targ_trace, full_mean_bc_targ_trace, full_ste_targ_trace,\
         ps_subj_means_targ, ps_subj_std_targ,\
         ps_subj_bc_means_targ, ps_subj_bc_std_targ,\
         dummy_samp = subj_ps_stats(ps_target, type='window',\
-        global_base_correct=True)
+        global_base_correct=False)
 
 #trial
 pResults('Pupil global means', global_mean)
@@ -996,7 +1021,7 @@ printSignificant('PS baseline corrected', ps_subj_bc_means)
 
 #target
 #TODO peaks of target times
-#TODO relative peaks of target times
+#TODO peaks of target times relative to mean task time
 pResults('Pupil global target means', global_mean_targ)
 pResults('Pupil global target standard error', global_ste_targ)
 pResults('Pupil global target bc means', global_bc_mean_targ)
