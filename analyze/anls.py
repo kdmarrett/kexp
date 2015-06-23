@@ -18,14 +18,11 @@ import pickle as pck
 #from pyeparse.utils import pupil_kernel
 
 # if something was changed in the file saving process
-force_reprocess = True
-#HD misunderstood directions ommitted as subject
-#HP substantially corrupted
-subjects = ['HL', 'GH', 'GG', 'GN', 'GI', 'HT', 'HI', 'HN', 'HK', 'HJ', 'GR', 'GU'] 
+force_reprocess = False
+subjects = ['HP', 'HL', 'GH', 'GG', 'GN', 'GI', 'HT', 'HI', 'HN', 'HK', 'HJ', 'GR', 'GU'] 
 
-
+#subjects = ['HP']
 #shorten for debugging
-#subjects = ['HD']
 
 if force_reprocess:
     reprocess_list = subjects
@@ -89,9 +86,8 @@ def cleanCogData(weighted=False):
                     weight = float(rel[i, j, k]) / total_relative_responses
                     response *= weight
                 if k in (3, 5):
-                    score -= response
-                else:
-                    score += response
+                    response = 10 - response
+                score += response
             cog_subj[i, j] = score
     cog_mean = np.nanmean(cog_subj, axis=0)
     cog_ste = stats.sem(cog_subj, axis=0)
@@ -105,8 +101,6 @@ def simpleaxis(ax):
     ax.spines['right'].set_visible(False)
     ax.xaxis.set_ticks_position('bottom')
     ax.yaxis.set_ticks_position('left')
-    #ax.get_xaxis().tick_bottom()
-    #ax.get_yaxis().tick_left()
 
 def con_2_ind(pattern):
     return int(pattern[-3:].replace(" ", ""), 2) - 1
@@ -126,12 +120,52 @@ def pResults(header, var):
     resultstxt.write('\n')
     return
 
+def combinedSigTest(header, subj_combined):
+    """ Takes a matrix of N subjects by condition nums of 
+    some statistic and computes the relative and independent 
+    t test scores.  Prints these scores to results.txt, with 
+    significant relations with * appended."""
+    #assert(subject_data.shape == (N, condition_nums))
+    significant = np.zeros(shape=(len(measure_names),
+        condition_nums), dtype=bool)
+    p = np.zeros(shape=(len(measure_names),
+        condition_nums), dtype=bool)
+    resultstxt.write(header + ' sig. testing:\n')
+    combo = (0, 1)
+    trel, p[0], significant[0] = testSigComb(combo,subj_combined)
+    combo = (0, 2)
+    trel, p[1], significant[1] = testSigComb(combo,subj_combined)
+    combo = (1, 2)
+    trel, p[2], significant[2] = testSigComb(combo,subj_combined)
+    resultstxt.write('\n')
+    return significant, p
+
+def testSigComb(combo, subj_combined):
+    sig_thresh = .05
+    significant = False
+    significant = np.zeros(condition_nums, dtype=bool)
+    p = np.zeros(condition_nums, dtype=bool)
+    for cind in range(condition_nums):
+        resultstxt.write(names[cind] + ':\n')
+        (trel, p[cind]) =\
+                stats.pearsonr(subj_combined[combo[0],:,
+                    cind], subj_combined[combo[1],:, cind])
+        resultstxt.write(measure_names[combo[0]] + ' and ')
+        resultstxt.write(measure_names[combo[1]] + ':')
+        resultstxt.write('%.4f' % p[cind])
+        if p[cind] < sig_thresh:
+            resultstxt.write('**')
+            significant[cind] = True
+        resultstxt.write('\n')
+    #FIXME these returns needs to be array-like
+    return trel, p, significant
+
+
 def printSignificant(header, subject_data):
     """ Takes a matrix of N subjects by condition nums of 
     some statistic and computes the relative and independent 
     t test scores.  Prints these scores to results.txt, with 
     significant relations with * appended."""
-
     assert(subject_data.shape == (N, condition_nums))
     significant = np.zeros(condition_nums, dtype=bool)
     prel = np.zeros(condition_nums, dtype=float)
@@ -287,8 +321,8 @@ def subj_accuracy_stats(accuracy_data):
         global_ste.append(stats.sem(subj_means[:, i]))
     return global_mean, global_ste, subj_means, subj_stds
 
-def subj_ps_stats(ps_data, global_base_correct=True, type='trial',\
-        window_seconds='default'):
+def subj_ps_stats(ps_data, global_base_correct=False, type='trial',\
+        window_seconds='whole'):
     """ ps[subject,cond_ind,block, trial, sample] 
     Params:
         global_base_correct : whether to mean all baseline ps data
@@ -304,7 +338,7 @@ def subj_ps_stats(ps_data, global_base_correct=True, type='trial',\
     local_samp_len = ps_data.shape[-1]
 
     #end of trial for trial type
-    if window_seconds is 'default':
+    if window_seconds is 'whole':
         #include all of task as window
         window_samp = trial_samp - end_primer_samp
     else:
@@ -328,36 +362,37 @@ def subj_ps_stats(ps_data, global_base_correct=True, type='trial',\
     if global_base_correct:
         base_mean = np.zeros(shape=(N, 1))
     else:
-        base_mean = np.zeros(shape=(N, trials_exp))
+        base_mean = np.zeros(shape=(N, trials_per_cond))
 
     base_mean[:] = np.nan
     for s_ind, subj_ps in enumerate(ps_data):
         for c_ind in range(condition_nums):
             if type is 'window':
                 mean_dat[s_ind, c_ind] = np.nanmean(
-                        subj_ps[c_ind].reshape(trials_exp * max_targets,
+                        subj_ps[c_ind].reshape(trials_per_cond * max_targets,
                             int(target_samp)), axis=0)
                 #for each subject baseline correct by the pretrial
                 #dark period
                 if global_base_correct:
                     # mean across all trials then subtract that value
                     base_mean[s_ind] = np.nanmean(np.nanmean(
-                        ps_base[s_ind, c_ind].reshape(block_len
-                            * s2_blocks[0][0], int(base_samp)), axis=0))
+                        ps_base[s_ind,
+                            c_ind].reshape( trials_per_cond,
+                                int(base_samp)), axis=0))
                     bc_mean_dat[s_ind, c_ind] = mean_dat[s_ind,
                             c_ind] - base_mean[s_ind]
                 else:
                     #for each subject for each trial find the corresponding
                     #single baseline value to subtract per trial
                     base_mean[s_ind, :] = np.nanmean(ps_base[s_ind,
-                            c_ind].reshape(trials_exp,
+                            c_ind].reshape(trials_per_cond,
                                 int(base_samp)), axis=1)
                     raw_windows = subj_ps[c_ind].reshape(
-                            trials_exp * max_targets, local_samp_len)
-                    bc_window = np.zeros(shape=(trials_exp * max_targets,
+                            trials_per_cond * max_targets, local_samp_len)
+                    bc_window = np.zeros(shape=(trials_per_cond * max_targets,
                         local_samp_len))
                     bc_window[:] = np.nan
-                    for rti in range(trials_exp):
+                    for rti in range(trials_per_cond):
                         for targi in range(max_targets):
                             #subtract the mean of each trial baseline 
                             bc_window[max_targets * rti + targi, :] =\
@@ -369,30 +404,30 @@ def subj_ps_stats(ps_data, global_base_correct=True, type='trial',\
             elif type is 'trial':
                 # raw mean stack for each subject and condition
                 mean_dat[s_ind, c_ind] = np.nanmean(
-                        subj_ps[c_ind].reshape(trials_exp,
+                        subj_ps[c_ind].reshape(trials_per_cond,
                             local_samp_len), axis=0)
                 #std_dat[s_ind, c_ind] = np.nanstd(
-                        #subj_ps[c_ind].reshape(trials_exp,
+                        #subj_ps[c_ind].reshape(trials_per_cond,
                             #local_samp_len), axis=0)
                 #for each subject baseline correct by the pretrial
                 #dark period
                 if global_base_correct:
                     # mean across all trials then subtract that value
                     base_mean[s_ind] = np.nanmean(np.nanmean(
-                        ps_base[s_ind, c_ind].reshape(block_len
-                            * s2_blocks[0][0], int(base_samp)), axis=0))
+                        ps_base[s_ind, c_ind].reshape(trials_per_cond,
+                            int(base_samp)), axis=0))
                     bc_mean_dat[s_ind, c_ind] = mean_dat[s_ind,
                             c_ind] - base_mean[s_ind]
                 else:
                     #for each subject for each trial find the corresponding
                         #baseline to subtract
                     base_mean[s_ind, :] = np.nanmean(ps_base[s_ind,
-                            c_ind].reshape(trials_exp,
+                            c_ind].reshape(trials_per_cond,
                                 int(base_samp)), axis=1)
                     #subtract the mean of each trial baseline 
-                    raw_trials = subj_ps[c_ind].reshape(trials_exp,
+                    raw_trials = subj_ps[c_ind].reshape(trials_per_cond,
                                 local_samp_len)
-                    bc_trial = np.zeros(shape=(trials_exp,
+                    bc_trial = np.zeros(shape=(trials_per_cond,
                         local_samp_len))
                     bc_trial[:] = np.nan
                     for rti, raw_trial in enumerate(raw_trials):
@@ -428,24 +463,27 @@ def subj_ps_stats(ps_data, global_base_correct=True, type='trial',\
     ste_trace = stats.sem(mean_dat_trim, axis=0)
     bc_ste_trace = stats.sem(bc_mean_dat_trim, axis=0)
 
-    #find peak for each subject (abandoned)
-    #TODO clean peaks by subject average peak heights each cond
-    #TODO get peaks by subject average peak heights each cond
-    #temp = np.nanmax(bc_mean_dat_trim, axis=2)
-    ##then average those peaks
-    #global_bc_peak_mean = np.nanmean(temp)
-    #global_bc_peak_std = np.nanstd(temp)
-    #temp = np.nanmax(mean_dat_trim, axis=2)
-    ##then average peaks across subjects
-    #global_peak_mean = np.nanmean(temp, axis=0)
-    #global_peak_std = np.nanstd(temp, axis=0)
-
     #single number for global average for each condition
     global_mean = np.nanmean(mean_trace, axis=1)
     global_ste = stats.sem(mean_trace, axis=1)
     global_bc_mean = np.nanmean(bc_mean_trace, axis=1)
     global_bc_ste = stats.sem(bc_mean_trace, axis=1)
 
+    #find peak for each subject
+    subj_bc_peaks = np.nanmax(bc_mean_dat_trim, axis=2)
+    subj_mean_corrected_peaks = subj_bc_peaks - ps_subj_bc_means
+    ##then average those peaks
+    global_bc_peak_mean = np.nanmean(subj_bc_peaks, axis=0)
+    global_mc_peak_mean = np.nanmean(subj_mean_corrected_peaks,
+            axis=0)
+    global_bc_peak_ste = stats.sem(subj_bc_peaks, axis=0)
+    global_mc_peak_ste = stats.sem(subj_mean_corrected_peaks, axis=0)
+    #import pdb;pdb.set_trace()
+    #global_bc_peak_mean = np.nanmax(bc_mean_trace, axis=1)
+    #mean_corrected_peaks = global_bc_peak_mean - global_bc_mean
+
+    assert(len(global_bc_peak_ste) == condition_nums)
+    assert(len(global_bc_peak_mean) == condition_nums)
     assert(len(mean_trace) == condition_nums)
     assert(len(global_mean) == condition_nums)
     assert(len(global_bc_mean) == condition_nums)
@@ -459,6 +497,9 @@ def subj_ps_stats(ps_data, global_base_correct=True, type='trial',\
             global_ste, global_bc_mean, global_bc_ste,\
             ps_subj_means, ps_subj_std,\
             ps_subj_bc_means, ps_subj_bc_std,\
+            global_bc_peak_mean, global_mc_peak_mean,\
+            global_bc_peak_ste, global_mc_peak_ste,\
+            subj_bc_peaks, subj_mean_corrected_peaks,\
             window_samp
 
 def roundToIncrement(y, y_increment):
@@ -507,10 +548,10 @@ def barplot(title, ylabel, y_increment, subject_data, global_subj_mean,\
 
     ax.set_ylabel(ylabel)
     ax.set_ylim(yrange)
-    ax.set_title('%s by condition' % title)
+    ax.set_title('%s N=%d' % (title, N))
     plt.xticks(x, ('Alphabetic', 'Fixed-order', 'Random'))
     #plt.tight_layout()
-    plt.show()
+    #plt.show()
     fn = title.replace(" ", "") + '_barplot.pdf'
     print 'Saving figure:\n%s' % fn
     fig.savefig(fn)
@@ -551,7 +592,7 @@ def plot_ps(trace, ste_trace, name):
                 color='k', alpha=.05)
         ax.text(24, topFig, 'Task\n', size=10) 
         ax.legend(loc=4, prop={'size':10})
-        ax.set_title(name + ' trial pupil size')
+        ax.set_title(name + ' trial pupil size N=%d' % N)
         #indicate with arrow
         #ax.annotate('End visual primer', xy=(end_primer, 
             #global_mean[c_num]), xytext=(5, 2000),
@@ -562,7 +603,7 @@ def plot_ps(trace, ste_trace, name):
         ax.text(preslice_time + .1, topFigLower, 
                 'Target\n letter\n onset', size=10) 
         ax.legend(loc=2, prop={'size':10})
-        ax.set_title(name + ' window pupil size')
+        ax.set_title(name + ' window pupil size N=%d' % N)
 
     ax.set_ylabel('Pupil Size (AU)')
     #Render stats to plot
@@ -572,7 +613,7 @@ def plot_ps(trace, ste_trace, name):
     #plt.text(20, global_mean[c_num] + 500, info)
     ax.set_xlabel('Trial Time (s)')
     ax.set_xlim((0, local_samp_len / fs))
-    plt.show()
+    #plt.show()
     name = name.replace(" ", "")
     fn = name + '_trace.pdf'
     print 'Saving figure:\n%s' % fn
@@ -624,7 +665,7 @@ para[0] = '0000000'
 para[1] = '0100000'
 para[2] = '0101000'
 condition_nums = len(condition_asc)
-trials_cond = trials_exp / condition_nums
+trials_per_cond = trials_exp / condition_nums
 wav_indices = dict(
     zip(condition_asc, np.zeros(len(condition_asc), dtype=int)))
 # build String condition ids for raw 'messages'
@@ -641,34 +682,40 @@ for i in range(condition_nums):
 #data structures
 usable_trials = np.zeros(shape=(N, 1))
 usable_trials[:] = np.nan
-ps = np.ndarray(shape=(N, condition_nums, s2_blocks, block_len,
-    trial_samp))
+
+ps = np.ndarray(shape=(N, condition_nums, s2_blocks, 
+    block_len / condition_nums, trial_samp))
 ps[:] = np.nan
-ps_incorrect = np.ndarray(shape=(N, condition_nums, s2_blocks,
-    block_len, trial_samp))
+
+ps_incorrect = np.ndarray(shape=(N, condition_nums, 
+    s2_blocks, block_len / condition_nums, trial_samp))
 ps_incorrect[:] = np.nan
+
 accuracy = np.ndarray(shape=(N, condition_nums,
     s2_blocks * block_len / condition_nums))
 accuracy[:] = np.nan
+
 #ps data of base correction
 base_slice_time = 2
 base_samp = np.ceil(base_slice_time * fs)
 ps_base = np.ndarray(shape=(N, condition_nums, s2_blocks,
-    block_len, base_samp))
+    block_len / condition_nums, base_samp))
 ps_base[:] = np.nan
 #ps data of targets
-preslice_time = 2
+preslice_time = 4
+postslice_time = 2.5
 max_targets = 2
-target_slice_time = 5
+target_slice_time = preslice_time + postslice_time
 target_samp = np.ceil(target_slice_time * fs)
 ps_target = np.ndarray(shape=(N, condition_nums, s2_blocks,\
-    block_len, max_targets, target_samp))
+    block_len / condition_nums, max_targets, target_samp))
 ps_target[:] = np.nan
+
 #ps data of replacement letter
 #replacement_slice_time = 2
 #replacement_samp = np.ceil(replacement_slice_time * fs)
 #ps_replacement = np.ndarray(shape=(N, condition_nums, s2_blocks,
-    #block_len, max_targets, replacement_samp))
+    #block_len / condition_nums, max_targets, replacement_samp))
 #ps_replacement[:] = np.nan
 
 cog = []
@@ -754,8 +801,13 @@ for s_ind, subj in enumerate(subjects):
         fnames = fnames[1:]
     for b_ind, fname in enumerate(fnames):
         bnum = mid_block_order[b_ind]
+        trial_ind = np.zeros(condition_nums)
         print '\tProcessing bnum: ' + str(bnum)
-        raw = pp.Raw(fname)
+        try:
+            raw = pp.Raw(fname)
+        except:
+            print 'Edf file: %s corrupted, skipping' % str(fname)
+            continue
         raw_blinks = raw #hold on to blink data
         raw.remove_blink_artifacts()
         assert raw.info['sfreq'] == fs
@@ -801,8 +853,6 @@ for s_ind, subj in enumerate(subjects):
                 block_ind[bnum] += 1
             else:
                 print '\t\tProcessing trial ' + str(tnum)
-            #TODO target window
-            #TODO get area around targets discard if eyeblink
             for pattern in condition_pattern:
                 if trial_id.startswith(pattern):
                     cond = pattern
@@ -813,8 +863,7 @@ for s_ind, subj in enumerate(subjects):
                 remove_c_ind.append(c_ind)
                 remove_trial.append(tnum)
                 subj_accuracy[c_ind, cond_acc_ind[c_ind]] = np.nan
-                #for i in range(trial_samp):
-                    #subj_ps[c_ind, b_ind, tnum, i] = np.nan
+                trial_ind[c_ind] += 1
                 continue
 
             #save base ps data for each subject
@@ -822,7 +871,7 @@ for s_ind, subj in enumerate(subjects):
                 event_id=event_id, tmin=-base_slice_time, tmax=0)
             ctemp = base_epoch.get_data('ps')[0]
             for i in range(int(base_samp)):
-                subj_ps_base[c_ind, b_ind, tnum, i] = ctemp[i] 
+                subj_ps_base[c_ind, b_ind, trial_ind[c_ind], i] = ctemp[i] 
 
             #save target ps data for each subject
             for timeind, ttime in enumerate(target_time):
@@ -841,7 +890,7 @@ for s_ind, subj in enumerate(subjects):
                     print 'Overbleed: %d' % (last_sample - raw.n_samples)
                 ctemp = target_epoch.get_data('ps')[0]
                 for i in range(int(target_samp)):
-                    subj_ps_target[c_ind, b_ind, tnum, timeind, i] = ctemp[i] 
+                    subj_ps_target[c_ind, b_ind, trial_ind[c_ind], timeind, i] = ctemp[i] 
 
             ##save replacement ps data for each subject
             #if replacement_time is not None:
@@ -852,11 +901,14 @@ for s_ind, subj in enumerate(subjects):
                         #tmax=tmin + replacement_slice_time)
                     #ctemp = replacement_epoch.get_data('ps')[0]
                     #for i in range(int(replacement_samp)):
-                        #subj_ps_replacement[c_ind, b_ind, tnum, timeind, i] = ctemp[i] 
+                        #subj_ps_replacement[c_ind, b_ind,
+                        #trial_ind[c_ind], timeind, i] = ctemp[i] 
 
             #check for blink criteria
-            base_mean = np.nanmean(subj_ps_base[c_ind, b_ind, tnum])
-            base_std = np.nanstd(subj_ps_base[c_ind, b_ind, tnum])
+            base_mean = np.nanmean(subj_ps_base[c_ind, b_ind,
+                trial_ind[c_ind]])
+            base_std = np.nanstd(subj_ps_base[c_ind, b_ind,
+                trial_ind[c_ind]])
 
             tmin = 0.0
             tmax = trial_len + postblock
@@ -889,8 +941,7 @@ for s_ind, subj in enumerate(subjects):
                 remove_c_ind.append(c_ind)
                 remove_trial.append(tnum)
                 subj_accuracy[c_ind, cond_acc_ind[c_ind]] = np.nan
-                #for i in range(trial_samp):
-                    #subj_ps[c_ind, b_ind, tnum, i] = np.nan
+                trial_ind[c_ind] += 1
                 continue
 
             #otherwise process date normally
@@ -903,12 +954,13 @@ for s_ind, subj in enumerate(subjects):
             if correct:
                 subj_accuracy[c_ind, cond_acc_ind[c_ind]] = 1
                 for i in range(trial_samp):
-                    subj_ps[c_ind, b_ind, tnum, i] = temp[i] 
+                    subj_ps[c_ind, b_ind, trial_ind[c_ind], i] = temp[i] 
             else:
                 subj_accuracy[c_ind, cond_acc_ind[c_ind]] = 0
                 for i in range(trial_samp):
-                    subj_ps_incorrect[c_ind, b_ind, tnum, i] = temp[i] 
+                    subj_ps_incorrect[c_ind, b_ind, trial_ind[c_ind], i] = temp[i] 
             #update indexer
+            trial_ind[c_ind] += 1
             cond_acc_ind[c_ind] += 1
             subj_usable_trials += 1
     accuracy[s_ind] = subj_accuracy
@@ -998,6 +1050,9 @@ full_mean_trace, full_mean_bc_trace, full_ste_trace,\
         global_ste, global_bc_mean, global_bc_ste,\
         ps_subj_means, ps_subj_std,\
         ps_subj_bc_means, ps_subj_bc_std,\
+        global_bc_peak_mean, global_mc_peak_mean,\
+        global_bc_peak_ste, global_mc_peak_ste,\
+        subj_bc_peaks, subj_mean_corrected_peaks,\
         window_samp = subj_ps_stats(ps, global_base_correct=False)
 
 #target
@@ -1008,6 +1063,9 @@ full_mean_targ_trace, full_mean_bc_targ_trace, full_ste_targ_trace,\
         global_ste_targ, global_bc_mean_targ, global_bc_ste_targ,\
         ps_subj_means_targ, ps_subj_std_targ,\
         ps_subj_bc_means_targ, ps_subj_bc_std_targ,\
+        global_bc_peak_mean_targ, global_mc_peak_mean_targ,\
+        global_bc_peak_ste_targ, global_mc_peak_ste_targ,\
+        subj_bc_peaks_targ, subj_mean_corrected_peaks_targ,\
         dummy_samp = subj_ps_stats(ps_target, type='window',\
         global_base_correct=False)
 
@@ -1019,15 +1077,31 @@ pResults('Pupil global bc standard error', global_bc_ste)
 #printSignificant('PS', ps_subj_means)
 printSignificant('PS baseline corrected', ps_subj_bc_means)
 
-#target
-#TODO peaks of target times
-#TODO peaks of target times relative to mean task time
+#target means
 pResults('Pupil global target means', global_mean_targ)
 pResults('Pupil global target standard error', global_ste_targ)
 pResults('Pupil global target bc means', global_bc_mean_targ)
 pResults('Pupil global target bc standard error', global_bc_ste_targ)
 #printSignificant('PS target', ps_subj_means_targ)
 printSignificant('PS target baseline corrected', ps_subj_bc_means_targ)
+
+#target peak base corrected
+pResults('Pupil global target base corrected peak',
+        global_bc_peak_mean_targ)
+pResults('Pupil global target bc standard error',
+        global_bc_peak_ste_targ)
+#printSignificant('PS target', ps_subj_means_targ)
+printSignificant('Peak target baseline corrected',
+        subj_bc_peaks_targ)
+
+#target peak mean corrected
+pResults('Pupil global target mean corrected peak',
+        global_mc_peak_mean_targ)
+pResults('Pupil global target mean corrected standard error',
+        global_mc_peak_ste_targ)
+#printSignificant('PS target', ps_subj_means_targ)
+printSignificant('Peak target mean corrected',
+        subj_mean_corrected_peaks_targ)
 
 #plot ps data for all conditions
 plot_ps(full_mean_bc_trace, full_ste_bc_trace, 'Base corrected')
@@ -1042,6 +1116,16 @@ plot_ps(full_mean_bc_targ_trace, full_ste_bc_targ_trace,\
 #baseline corrected
 barplot('Mean base corrected pupil size', 'Relative pupil size',
         100, ps_subj_bc_means, global_bc_mean, global_bc_ste)
+
+#baseline corrected target
+barplot('Peak base corrected target pupil size', 
+    'Relative pupil size', 250, subj_bc_peaks_targ,
+    global_bc_peak_mean_targ, global_bc_peak_ste_targ)
+
+#mean corrected target
+barplot('Peak mean corrected target pupil size', 
+   'Relative pupil size', 50, subj_mean_corrected_peaks_targ,
+   global_mc_peak_mean_targ, global_mc_peak_ste_targ)
 
 #Survey
 #TODO check that high is high demanding
@@ -1064,84 +1148,21 @@ pResults('Cognitive load weighted standard error',
 printSignificant('Cognitive load weighted', cog_subj_weighted)
 
 barplot('Weighted cognitive load survey', 'Relative demand\n'+\
-r'low $\hspace{8} \rightarrow \hspace{8}$high', 5,\
+r'low $\hspace{8} \rightarrow \hspace{8}$high', 2,\
         cog_subj_weighted, cog_mean_weighted, cog_ste_weighted)
+
+#Combined data
+measure_names = ['Accuracy', 'PS', 'Survey']
+subj_combined = np.zeros(shape=(3, N, condition_nums))
+#for safety
+subj_combined[:] = np.nan
+
+subj_combined[0] = acc_subj_means
+subj_combined[1] = ps_subj_means
+subj_combined[2] = cog_subj
+
+combinedSig, combinedP = \
+        combinedSigTest('Cross-measure R Pearson', subj_combined)
 
 resultstxt.close()
 print 'results text file closed\n'
-
-########
-## ABANDONED APPROACHES
-
-##plot ps for each condition individually
-#status = ['correct'] #only consider correct trials
-#for c_ind, pattern in enumerate(condition_pattern):
-    ##print 'plotting pattern' + pattern
-    #for stat in status:
-        #ps_type = ps_dict[pattern + stat]
-        #cond_num = patternToCond[pattern]
-        ##name = 'Condition ' + str(cond_num) + ' ' + stat
-        #name = names[cond_num - 1]
-        ##import pdb; pdb.set_trace()
-        #plot_ps_condition(c_ind, name)
-
-#peaks
-
-#pResults('Pupil global peak means', ps_global_peak_mean)
-#pResults('Pupil global bc peak means', ps_global_bc_peak_mean)
-#pResults('Pupil global bc peak std', ps_global_bc_peak_std)
-#pResults('Pupil global peak std', ps_global_peak_std)
-#plot_ps_peaks(type='mean')
-#plot_ps_peaks(type='bc_mean')
-
-#def plot_ps_peaks(type='mean', name=''):
-    #"""Creates a bar graph showing the peak ps size for each
-    #condition with standard deviations """
-
-    ##Common sizes: (10, 7.5) and (12, 9)  
-    #plt.figure(figsize=(12, 14))  
-      
-    ## Remove the plot frame lines.
-    ##fig = plt.figure()
-    ##ax = plt.gca()
-    ##fig.spines["top"].set_visible(False)  
-    ##fig.spines["bottom"].set_visible(False)  
-    ##fig.spines["right"].set_visible(False)  
-    ##fig.spines["left"].set_visible(False) 
-    #x = [.5, 1.0, 1.5]
-    #bar_width = .25
-    #error_config = {'ecolor': 'k', 'elinewidth': 3, 'ezorder': 5}
-    #if type is 'mean':
-        #plt.bar(x, ps_global_peak_mean, bar_width, color='w',
-                #yerr=ps_global_peak_std,
-                #error_kw=error_config, lw=2)
-        #name = 'Mean'
-    #elif type is 'bc_mean':
-        #plt.bar(x, ps_global_bc_peak_mean, bar_width,
-                #color='w', yerr=ps_global_bc_peak_std,
-                #error_kw=error_config, lw=2)
-        #name = 'bc mean'
-    #else:
-        #print 'Undefined type'
-        #return
-
-    ##yrange = (50, 103)
-    ##plt.ylim(yrange)
-    ##for y in range(50, 103, 5):  
-        ##plt.plot(range(0,3), [y] * len(range(0,3)), "--",
-                ##lw=0.5, color="black", alpha=0.3) 
-    #plt.title(name + 'peak pupil size')
-    #plt.xticks(x, ('Alphabetic', 'Fixed-order', 'Random'))
-    #plt.tight_layout()
-    ##plt.show()
-    #plt.ylabel('Pupil Size')
-    ##info = r'$\mu$=%.1f, $\sigma$=%.3f, N=%d' % (global_mean[c_num],\
-            ##global_std[c_num], N)
-    ##plt.text(20, global_mean[c_num] + 500, info)
-    ##plt.show()
-    #name = name.replace(" ", "")
-    #fn = name + 'peakPS.pdf'
-    #print 'Saving figure: %s' % fn
-    #plt.savefig(fn)
-    #plt.close()
-
