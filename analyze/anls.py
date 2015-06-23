@@ -144,21 +144,22 @@ def testSigComb(combo, subj_combined):
     sig_thresh = .05
     significant = False
     significant = np.zeros(condition_nums, dtype=bool)
-    p = np.zeros(condition_nums, dtype=bool)
+    p_arr = np.zeros(condition_nums, dtype=bool)
+    resultstxt.write(measure_names[combo[0]] + ' and ')
+    resultstxt.write(measure_names[combo[1]] + ':\n')
     for cind in range(condition_nums):
-        resultstxt.write(names[cind] + ':\n')
-        (trel, p[cind]) =\
-                stats.pearsonr(subj_combined[combo[0],:,
-                    cind], subj_combined[combo[1],:, cind])
-        resultstxt.write(measure_names[combo[0]] + ' and ')
-        resultstxt.write(measure_names[combo[1]] + ':')
-        resultstxt.write('%.4f' % p[cind])
-        if p[cind] < sig_thresh:
+        resultstxt.write(names[cind] + ':')
+        (trel, pval) =\
+            stats.pearsonr(subj_combined[combo[0],:, cind],\
+                    subj_combined[combo[1],:, cind])
+        resultstxt.write('%.4f' % pval)
+        p_arr[cind] = pval
+        if pval < sig_thresh:
             resultstxt.write('**')
             significant[cind] = True
         resultstxt.write('\n')
-    #FIXME these returns needs to be array-like
-    return trel, p, significant
+    resultstxt.write('\n')
+    return trel, p_arr, significant
 
 
 def printSignificant(header, subject_data):
@@ -322,7 +323,7 @@ def subj_accuracy_stats(accuracy_data):
     return global_mean, global_ste, subj_means, subj_stds
 
 def subj_ps_stats(ps_data, global_base_correct=False, type='trial',\
-        window_seconds='whole'):
+        window_start=0, window_end='end'):
     """ ps[subject,cond_ind,block, trial, sample] 
     Params:
         global_base_correct : whether to mean all baseline ps data
@@ -334,19 +335,15 @@ def subj_ps_stats(ps_data, global_base_correct=False, type='trial',\
         window_seconds long.  currently not implemented for window
         type"""
 
-    # get the samples (last dim) of the ps data
+    # get # samples (last dim) of the ps data
     local_samp_len = ps_data.shape[-1]
 
     #end of trial for trial type
-    if window_seconds is 'whole':
-        #include all of task as window
-        window_samp = trial_samp - end_primer_samp
-    else:
-        #only analyze trimmed window
-        window_samp = window_seconds * fs
+    if window_end is 'end':
+        #include up to last sample in window
+        window_end = local_samp_len
 
     if type is 'window':
-        window_samp = target_samp
         assert(local_samp_len == target_samp)
     elif type is 'trial':
         assert(local_samp_len == trial_samp)
@@ -434,18 +431,11 @@ def subj_ps_stats(ps_data, global_base_correct=False, type='trial',\
                         bc_trial[rti,:] = raw_trial - base_mean[s_ind, rti]
                     bc_mean_dat[s_ind, c_ind] = np.nanmean(bc_trial,
                             axis=0)
-                  
-    #trim all data from end of the visual primer on
-    if type is 'trial':
-        #std_dat_trim = std_dat[:,:,end_primer_samp:(end_primer_samp+ window_samp)]
-        mean_dat_trim =\
-            mean_dat[:,:,end_primer_samp:(end_primer_samp+ window_samp)]
-        bc_mean_dat_trim =\
-        bc_mean_dat[:,:,end_primer_samp:(end_primer_samp+ window_samp)]
-    else:
-        #keep all of window for type 'window'
-        mean_dat_trim = mean_dat
-        bc_mean_dat_trim = bc_mean_dat
+    #std_dat_trim = std_dat[:,:,window_start:window_end]
+    mean_dat_trim =\
+            mean_dat[:,:,window_start:window_end]
+    bc_mean_dat_trim =\
+            bc_mean_dat[:,:,window_start:window_end]
     #subject means for sig testing and plotting
     ps_subj_means = np.nanmean(mean_dat_trim, axis=2)
     ps_subj_std = np.nanstd(mean_dat_trim, axis=2)
@@ -478,9 +468,6 @@ def subj_ps_stats(ps_data, global_base_correct=False, type='trial',\
             axis=0)
     global_bc_peak_ste = stats.sem(subj_bc_peaks, axis=0)
     global_mc_peak_ste = stats.sem(subj_mean_corrected_peaks, axis=0)
-    #import pdb;pdb.set_trace()
-    #global_bc_peak_mean = np.nanmax(bc_mean_trace, axis=1)
-    #mean_corrected_peaks = global_bc_peak_mean - global_bc_mean
 
     assert(len(global_bc_peak_ste) == condition_nums)
     assert(len(global_bc_peak_mean) == condition_nums)
@@ -488,9 +475,6 @@ def subj_ps_stats(ps_data, global_base_correct=False, type='trial',\
     assert(len(global_mean) == condition_nums)
     assert(len(global_bc_mean) == condition_nums)
     assert(len(global_ste) == condition_nums)
-    assert(mean_trace.shape[1] == window_samp);
-    assert(bc_mean_trace.shape[1] == window_samp)
-    assert(ste_trace.shape[1] == window_samp)
     return full_mean_trace, full_mean_bc_trace, full_ste_trace,\
             full_ste_bc_trace, mean_trace,\
             bc_mean_trace, ste_trace, bc_ste_trace, global_mean,\
@@ -499,8 +483,7 @@ def subj_ps_stats(ps_data, global_base_correct=False, type='trial',\
             ps_subj_bc_means, ps_subj_bc_std,\
             global_bc_peak_mean, global_mc_peak_mean,\
             global_bc_peak_ste, global_mc_peak_ste,\
-            subj_bc_peaks, subj_mean_corrected_peaks,\
-            window_samp
+            subj_bc_peaks, subj_mean_corrected_peaks
 
 def roundToIncrement(y, y_increment):
     return round(float(y) / y_increment) * y_increment
@@ -634,6 +617,7 @@ end_primer_samp = int(end_primer * fs)
 end_stim = int(trial_len * fs)
 #seconds until letters start playing
 preblock_prime_sec = 13 
+cycle_time = 4.5
 fix_dot_time = preblock_prime_sec - end_primer
 target_window = 6000
 usable_criterion = .15
@@ -703,6 +687,7 @@ ps_base = np.ndarray(shape=(N, condition_nums, s2_blocks,
 ps_base[:] = np.nan
 #ps data of targets
 preslice_time = 4
+preslice_samp = preslice_time * fs
 postslice_time = 2.5
 max_targets = 2
 target_slice_time = preslice_time + postslice_time
@@ -1044,6 +1029,10 @@ barplot('Accuracy', 'Accuracy (%)', 5, acc_subj_means_pc,
 
 #PS
 #trial
+#trim all data from end of the visual primer plus 1 cycle
+second_cycle = end_primer_samp + (cycle_time * fs)
+#leave out the last cycle
+fifth_cycle = end_primer_samp + 4 * (cycle_time * fs)
 full_mean_trace, full_mean_bc_trace, full_ste_trace,\
         full_ste_bc_trace, mean_trace,\
         bc_mean_trace, ste_trace, bc_ste_trace, global_mean,\
@@ -1052,8 +1041,11 @@ full_mean_trace, full_mean_bc_trace, full_ste_trace,\
         ps_subj_bc_means, ps_subj_bc_std,\
         global_bc_peak_mean, global_mc_peak_mean,\
         global_bc_peak_ste, global_mc_peak_ste,\
-        subj_bc_peaks, subj_mean_corrected_peaks,\
-        window_samp = subj_ps_stats(ps, global_base_correct=False)
+        subj_bc_peaks, subj_mean_corrected_peaks\
+        = subj_ps_stats(ps,
+                global_base_correct=False,
+                window_start=second_cycle,
+                window_end=fifth_cycle)
 
 #target
 full_mean_targ_trace, full_mean_bc_targ_trace, full_ste_targ_trace,\
@@ -1065,9 +1057,9 @@ full_mean_targ_trace, full_mean_bc_targ_trace, full_ste_targ_trace,\
         ps_subj_bc_means_targ, ps_subj_bc_std_targ,\
         global_bc_peak_mean_targ, global_mc_peak_mean_targ,\
         global_bc_peak_ste_targ, global_mc_peak_ste_targ,\
-        subj_bc_peaks_targ, subj_mean_corrected_peaks_targ,\
-        dummy_samp = subj_ps_stats(ps_target, type='window',\
-        global_base_correct=False)
+        subj_bc_peaks_targ, subj_mean_corrected_peaks_targ\
+        = subj_ps_stats(ps_target, type='window',\
+        global_base_correct=False, window_start=preslice_samp)
 
 #trial
 pResults('Pupil global means', global_mean)
@@ -1135,19 +1127,20 @@ pResults('Cognitive load unweighted means', cog_mean)
 pResults('Cognitive load unweighted standard error', cog_ste)
 printSignificant('Cognitive load unweighted', cog_subj)
 
-barplot('Unweighted cognitive load survey', 'Relative demand\n'+\
+barplot('Unweighted cognitive load survey', 'Relative demand score\n'+\
 r'low $\hspace{8} \rightarrow \hspace{8}$high', 5,\
         cog_subj, cog_mean, cog_ste)
 
 #weighted
-cog_subj_weighted, cog_mean_weighted, cog_ste_weighted = cleanCogData(weighted=True)
+cog_subj_weighted, cog_mean_weighted, cog_ste_weighted =\
+cleanCogData(weighted=True)
 
 pResults('Cognitive load weighted means', cog_mean_weighted)
 pResults('Cognitive load weighted standard error',
         cog_ste_weighted)
 printSignificant('Cognitive load weighted', cog_subj_weighted)
 
-barplot('Weighted cognitive load survey', 'Relative demand\n'+\
+barplot('Weighted cognitive load survey', 'Relative demand score\n'+\
 r'low $\hspace{8} \rightarrow \hspace{8}$high', 2,\
         cog_subj_weighted, cog_mean_weighted, cog_ste_weighted)
 
@@ -1165,4 +1158,4 @@ combinedSig, combinedP = \
         combinedSigTest('Cross-measure R Pearson', subj_combined)
 
 resultstxt.close()
-print 'results text file closed\n'
+print 'Finished... results text file closed\n'
