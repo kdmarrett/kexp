@@ -1,6 +1,6 @@
 \documentclass[10pt]{article}
 \usepackage{setspace}
-\usepackage{fullpage}
+%\usepackage{fullpage}
 %\usepackage[T1]{fontenc}
 %\usepackage[utf8]{inputenc}
 \usepackage{authblk}
@@ -34,12 +34,12 @@
 
 \usepackage{fancyhdr} % Headers and footers
 \pagestyle{fancy} % All pages have headers and footers
-\fancyhead{} % Blank out the default header
-\fancyfoot{} % Blank out the default footer
-%\fancyhead[C]{Running title $\bullet$ November 2012 $\bullet$ Vol. XXI, No. 1} % Custom header text
+%\fancyhead{} % Blank out the default header
+%\fancyfoot{} % Blank out the default footer
 %\fancyhead[C]{Marrett et al. $\bullet$ Neurobiology Bachelors
 %Thesis $\bullet$ June 2015} % Custom header text
-\fancyfoot[RO,LE]{\thepage} % Custom footer text
+%\fancyfoot[RO,LE]{\thepage} % Custom footer text
+%\fancyfoot{\thepage} % Custom footer text
 
 %\graphicspath{ {./figures/} }
 \usepackage{float}
@@ -59,8 +59,6 @@
 \begin{document}
 \maketitle
 %TODO get a bibliography going kexp.bib should include Moore2012
-%TODO make trace bigger
-%TODO make barplots smaller
 %TODO make sig figs agree wit
 %TODO results explain subj mean \pm sem at the beginning
 %TODO add in paragraph for question
@@ -110,16 +108,16 @@
     random condition (p=.03, p=.005 respectively).
     Correlations were found between relative pupil size and
     subjective rating of cognitive load for the alphabetic and
-    fixed-order conditions although not significant (p=.07 for
-    both).  Relative pupil sizes showed that the fixed-order
-    mean was greater than the random condition (p=.06),
-    especially in response to targets (p=.04). No significant
-    differences or correltations were found for the subject's
-    raw ability to attend to the letters among the three
-    conditions. By combining objective and subjective measures
-    of usability, this study offers a strategy for determining
-    cognitive load for the end-user community of individuals
-    who rely on speller systems.
+    fixed-order conditions although not significant (p<.09,
+    p<.08 respectively).  Relative pupil sizes showed that the
+    fixed-order mean was greater than the random condition
+    (p<.03), especially in response to targets (p=.04). No
+    significant differences or correltations were found for
+    the subject's raw ability to attend to the letters among
+    the three conditions. By combining objective and
+    subjective measures of usability, this study offers a
+    strategy for determining cognitive load for the end-user
+    community of individuals who rely on speller systems.
 
 \end{abstract}
 
@@ -242,7 +240,8 @@ confirmation that they aid usability.
 %up and steady state cognitive load involved in selectively attending
 %a letter in an auditory BCI environment across 3 conditions.  
 
-\begin{table}[t]
+\begin{figure}
+\begin{table}[ht]
   \centering
   \begin{tabular}{ | l | c | c | c |}
     \hline
@@ -268,22 +267,24 @@ confirmation that they aid usability.
   \label{conditionTable}
 \end{table}
 
-\section{Methods}
-
 \begin{figure}[t]
   \centering
   \includegraphics[width=0.4\textwidth]{2screenshot}
-  \caption{ An example of the visual primer shown
-      before each trial.  This primer depicts the phonemically
-      displaced ordering characteristic of the primers of the
-      fixed-order and random condition. The three circles represent
-  the three letter groups of the trial.  The target letter is
-  highlighted in green.  The clockwise ordering of
-  the letters (first letter at the bottom) indicates the sequence the selections will be spoken
-  in during any given cycle.  Note that this ordering is only
-  retained past the first cycle of letters in the alphabetic and fixed-order conditions.}
+  \caption{ An example of the visual primer shown before each
+      trial.  This primer depicts the phonemically displaced
+      ordering characteristic of the primers of the
+      fixed-order and random condition. The three circles
+      represent the three letter groups of the trial.  The
+      target letter is highlighted in green.  The clockwise
+      ordering of the letters (first letter at the bottom)
+      indicates the sequence the selections will be spoken in
+  during any given cycle.  Note that this ordering is only
+  retained past the first cycle of letters in the alphabetic
+  and fixed-order conditions.}
   \label{screenshot}
 \end{figure}
+
+\section{Methods}
 
 Thirteen subjects took part in this experiment.  All subjects were
 Native English speakers with no hearing difficulties.  Participants
@@ -309,23 +310,25 @@ Technologies hardware for digital-to-analog conversion and
 attenuation, and then presented over in-ear headphones
 (Etymotic Research ER-2).
 
-Stimuli fell into three conditions alphabetic, fixed-order, and
-random.  The three conditions were chosen to isolate a feature of
-auditory spellers that may have an effect on cognitive load.  The
-ordering and spatial distribution of letters varied by condition as
-explained in Table \ref{conditionTable}.  In the alphabetic
-condition, letters are assigned a spatial location in alphabetic
-order.  The alphabetic ordering was chosen since it is generally
-intuitive and engrained for Native English speakers.  This condition
-also closely matches the charStreamer paradigm proposed by Hohne et
-al.  2014\cite{Hohne2014}.  In the fixed-order condition, letters
-are assigned a spatial location so as to separate phonemically
-similar letters.  Throughout the trial of this condition, the ordering
-of the letters remained constant.  In the random condition, similar letters
-were distributed in the same way as the fixed-order
-condition only throughout the trial, the ordering of the letters
-changed, meaning subjects had no cue as to when the target letter
-would occur. 
+Stimuli fell into three conditions alphabetic, fixed-order,
+and random.  The three conditions were chosen to isolate a
+feature of auditory spellers that may have an effect on
+cognitive load.  The ordering and spatial distribution of
+letters varied by condition as explained in Table
+\ref{conditionTable}.  In the alphabetic condition, letters
+are assigned a spatial location in alphabetic order.  The
+alphabetic ordering was chosen since it is generally intuitive
+and engrained for Native English speakers.  This condition
+also closely matches the charStreamer paradigm proposed by
+Hohne et al.  2014\cite{Hohne2014}.  In the fixed-order
+condition, letters are assigned a spatial location so as to
+separate phonemically similar letters.  Throughout the trial
+of this condition, the ordering of the letters remained
+constant.  In the random condition, similar letters were
+distributed in the same way as the fixed-order condition only
+throughout the trial, the ordering of the letters changed,
+meaning subjects had no cue as to when the target letter would
+occur. 
 
 The three circles in the example visual primer (Figure
 \ref{screenshot}), represent the three groups of a trial.
@@ -335,17 +338,16 @@ between letters.  The complete recitation of all letters in
 the group lasts 4.5 seconds and is termed a cycle.  A trial
 consisted of five repeated cycles. Subjects were informed to
 only listen to the target spatial location group for the
-trial, and were expected to ignore the other two groups
-at the different locations which played simultaneously. Since
-all three groups were simultaneous, all thirty selections were
-presented to the subject every 4.5 seconds, but by
-selectively attending the target group, they only
-attended the recitation of ten selections. All the groups
-were asynchronized from the two others by 150 ms such that no
-letters in separate groups would ever have coinciding onsets during a trial.
+trial, and were expected to ignore the other two groups at the
+different locations which played simultaneously. Since all
+three groups were simultaneous, all thirty selections were
+presented to the subject every 4.5 seconds, but by selectively
+attending the target group, they only attended the recitation
+of ten selections. All the groups were asynchronized from the
+two others by 150 ms such that no letters in separate groups
+would ever have coinciding onsets during a trial.
 %to bin the targets into separate cycles 
 
-%TODO check the duration of the baselne
 The time course of a trial is diagrammed in Figure
 \ref{trialtrace}.  Each trial consisted of a priming period
 lasting the first seven seconds.  During this priming period,
@@ -355,36 +357,35 @@ also spoken at its respective location so that the listener
 knew before the trial began which spatial group location to
 listen to for the entirety of the trial. At seven seconds, the
 visual primer disappeared and subjects began fixation on a
-small (~.5 cm diameter) white dot at the center of the screen for the remainder
-of the trial.  The task lasted from thirteen seconds, when the
-spoken letters began, to thirty-six seconds, the end of the
-trial.  Between each trial was a dark period with no visual,
-or auditory stimuli besides the background white noise. This
-baseline period 
-lasted two seconds.  All pupil data was baseline
-corrected by subtracting all samples of the trial by the
-average value during this baseline period.  All pupil data is
-thus in arbitrary units (AU) since the data processing
-strategy emphasized relative changesin pupil size.  The raw
-pupillometry values were proportional to the
-pixels of the pupil in the infrared
-recordings.  Approximately half of all trials contained two
-targets, the other half, one. To test listener's raw ability
-to discriminate letters among the conditions, subjects were
-prompted at the end of each trial to enter the target
-occurrences, one or two. 
+small (~.5 cm diameter) white dot at the center of the screen
+for the remainder of the trial.  The task lasted from thirteen
+seconds, when the spoken letters began, to thirty-six seconds,
+the end of the trial.  Between each trial was a dark period
+with no visual, or auditory stimuli besides the background
+white noise. This baseline period lasted two seconds.  All
+pupil data was baseline corrected by subtracting all samples
+of the trial by the average value during this baseline period.
+All pupil data is thus in arbitrary units (AU) since the data
+processing strategy emphasized relative changesin pupil size.
+The raw pupillometry values were proportional to the pixels of
+the pupil in the infrared recordings.  Approximately half of
+all trials contained two targets, the other half, one. To test
+listener's raw ability to discriminate letters among the
+conditions, subjects were prompted at the end of each trial to
+enter the target occurrences, one or two. Each cycle either
+contained the target letter or the target was substituted with
+another letter from within the same spatial group location.
 
-%TODO what were the exact times
 The experiment consisted of twenty-seven trials per condition
 with nine trials at each spatial location.  The experiment
 lasted last less than two hours with breaks.   For each
 subject all 27 trials per condition were averaged for accuracy
 and pupil size.  From this, the across subject mean and
-standard errors were computed.  
-In calculating pupillometry means, only the second through
-fourth cycle of task window were counted since the fixed-order
-and random conditions were only distinguishable after the
-first cycle when the letter ordering changed.
+standard errors were computed.  In calculating pupillometry
+means, only the second (17.5 s) through fourth cycle (31 s) of
+the task window were counted since the fixed-order and random
+conditions were only distinguishable after the first cycle
+when the letter ordering changed.
 
 To assess subjects experience of cognitive load subjectively,
 the NASA task load index (TLX) was performed after completion
@@ -397,12 +398,10 @@ temporal demand, frustration, and physical demand. In the
 second section, subjects were given pairs of these factor
 titles and asked to choose which was the more important
 contributor to their experience of workload.  From these
-comparisons, a weighting was computed for each factor.  
-
-%TODO mention baseline correction in the methods
-%Written responses were not elicited
-%during the survey section, however, subjects were made aware that
-%comments they made regarding the subject may be recorded and used.
+comparisons, a weighting was computed for each factor.
+Written responses were not elicited during the survey section,
+however, subjects were made aware that comments they made
+regarding the subject may be recorded and used.
 
 %One subject communicated that they had 
 %misunderstood the task directions by listening at all locations for
@@ -433,7 +432,7 @@ comparisons, a weighting was computed for each factor.
 
 \begin{figure}[t]
   \centering
-  \includegraphics[width=0.2\textwidth]{Accuracy_barplot}
+  \includegraphics[width=0.3\textwidth]{Accuracy_barplot}
   \caption{Depicts the across subjects means for each
   condition.  Individual subject scores are shown in ball and stick.  Error bars
   indicate the standard error.}
@@ -442,7 +441,8 @@ comparisons, a weighting was computed for each factor.
 
 No significant difference was found for subjects ability to
 discriminate the target letter among the three conditions.
-The mean accuracy for the alphabetic, fixed-order, and random
+The across subject mean accuracy (\pm the standard error of
+the subject means) for the alphabetic, fixed-order, and random
 condition were $83.8 \% (\pm2.1)$, $87.9 \% (\pm3.3)$,
 and $83.6 (\pm 2.9)$ respectively.  The two-tailed paired t-testing among 
 the alphabetic and fixed-order condition yielded a p-value of .1469,
@@ -452,12 +452,12 @@ to reject the null hypothesis that means across the conditions are
 equal. These results are summarized in Figure \ref{accuracy}.
 
 \subsection{Physiological}
-%TODO mention AU is arbitrary units
 %TODO tie into the figures
 %TODO check all these values
+
 \begin{figure}[t]
   \centering
-  \includegraphics[width=0.2\textwidth]{Meanbasecorrectedpupilsize_barplot}
+  \includegraphics[width=0.3\textwidth]{Meanbasecorrectedpupilsize_barplot}
   \caption{Shows the across subject means along with the across
   subject standard error of the mean pupil size for the second
   through fourth cycle of the task period. The y-axis indicates the
@@ -467,22 +467,22 @@ equal. These results are summarized in Figure \ref{accuracy}.
   \label{psBarplot}
 \end{figure}
 
-%TODO move the explanation to the to-
+The results for the mean pupil size are summarized in Figure \ref{accuracy}.
 The across subject mean for the baseline corrected pupil responses
-($\pm$ standard error of the subject mean) was $ 303.3472 (\pm 0.8109)$,
-$377.9681 (\pm 1.1683)$, and $235.2736 (\pm 0.6368)$ for the alphabetic,
+($\pm$ standard error of the subject mean) was $ 302.73 (\pm
+0.48)$,
+$400.52 (\pm .60)$, and $179.91 (\pm 0.73)$ for the alphabetic,
 fixed-order, and random conditions respectively.
 The paired t-test
-yielded 0.2259 for alphabetic and fixed-order, 0.4533 for alphabetic
-and random, and 0.0669 for fixed-order and random conditions.
+yielded 0.21 for alphabetic and fixed-order, 0.23 for alphabetic
+and random, and 0.026 for fixed-order and random conditions.
 
-%TODO check the deets on the window time
 %TODO explain all criteria of significance at the beginning of
 %the results section
 When we instead look at the areas around targets, the distinction
-between the random and fixed-order becomes stronger.  Taking
+between the random and fixed-order is also strong.  Taking
 the baseline corrected mean of the window from the target letter
-onset to 1.5 seconds later yields values of $338.2616 (\pm 0.8811)$,
+onset to 2.5 seconds later yields values of $338.2616 (\pm 0.8811)$,
 $413.3336 (\pm 0.8009)$, and $215.5003 (\pm 0.8786)$ for the alphabetic,
 fixed-order, and random conditions respectively.  Comparing p-values
 yields 0.2578 for the alphabetic and fixed-order, 0.2408 for the
@@ -498,7 +498,6 @@ The cross condition p-values were 0.2628 for alphabetic and
 fixed-order, 0.3241 for alphabetic and random, and 0.0513 for
 fixed-order and random conditions which we also consider to be significant.
 
-%TODO base correction needs explanation in the methods section
 However the significance of this difference disappears when we
 instead just at the local peak height within this window.  These
 values are the across subject base corrected max values subtracted
@@ -516,7 +515,7 @@ random conditions.  None of these differences are significant.
 
 \begin{figure}[t]
   \centering
-  \includegraphics[width=0.2\textwidth]{Weightedcognitiveloadsurvey_barplot}
+  \includegraphics[width=0.3\textwidth]{Weightedcognitiveloadsurvey_barplot}
   \caption{Depicts the across subject means and standard errors of
   the scores for each condition in the three conditions. Individual subject scores are shown in ball and stick.}
   \label{cogLoad}
@@ -537,7 +536,7 @@ and random .0734.  These results are summarized in Figure
 rated significantly less demanding than both the fixed-order and
 random trials.
 
-\section{ Cross-measure correlation}
+\subsection{ Cross-measure correlation}
 No measures were found to
 be significantly correlated when comparing the three measures of cognitive load for a linear correlation via the pearson coefficient. However, some correlations between the
 mean baseline corrected pupil size for the task period and the survey were high.
@@ -577,8 +576,8 @@ signals.
 %resolve the population means of the two conditions. 
 %TODO what's the correlation with target max, target mean?
 Although the difference between the fixed-order and alphabetic
-condition was not quite significant ($p=.0634$), the value is
-still compelling.  Inability to resolve these conditions may be
+condition was quite significant ($p<.03$), the spread did not
+distinguish the alphabetic condition from the others. Inability to resolve these conditions may be
 because the
 pupil dynamic range for each subject was not recorded, meaning that
 individuals with a large range may have been given artificially higher
@@ -715,11 +714,11 @@ the Brain Links - Brain Tools summer exchange. We would also like to
 thank the Levinson Emerging Scholarship and the Mary Gates Research
 Scholarship for support during this project.
 
-\clearpage    
+% \clearpage    
 \begin{spacing}{.865}
-\footnotesize{
-\bibliographystyle{plain}
-\bibliography{kexp.bib}}
+%\footnotesize{
+%\bibliographystyle{plain}
+%\bibliography{Summer Auditory P300 Project.bib}}
 \end{spacing}
 %\end{multicols}
 \end{document}
