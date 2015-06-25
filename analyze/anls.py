@@ -534,7 +534,7 @@ def barplot(title, ylabel, y_increment, subject_data, global_subj_mean,\
     ax.set_title('%s N=%d' % (title, N))
     plt.xticks(x, ('Alphabetic', 'Fixed-order', 'Random'))
     #plt.tight_layout()
-    #plt.show()
+    plt.show()
     fn = title.replace(" ", "") + '_barplot.pdf'
     print 'Saving figure:\n%s' % fn
     fig.savefig(fn)
@@ -568,11 +568,11 @@ def plot_ps(trace, ste_trace, name):
         ax.text(end_primer / 3, topFig, 'Visual\nprimer',\
                 size=10) 
         #ax.axvspan(0, end_primer, color='k', alpha=.12)
-        ax.text(end_primer + fix_dot_time / 4,\
+        ax.text(end_primer + fix_dot_time / 3.75,\
                 topFig, 'Fixation\n   dot',\
                 size=10) 
         ax.axvspan(end_primer, preblock_prime_sec,\
-                color='k', alpha=.05)
+                color='k', alpha=.07)
         ax.text(24, topFig, 'Task\n', size=10) 
         ax.legend(loc=4, prop={'size':10})
         ax.set_title(name + ' trial pupil size N=%d' % N)
@@ -596,7 +596,7 @@ def plot_ps(trace, ste_trace, name):
     #plt.text(20, global_mean[c_num] + 500, info)
     ax.set_xlabel('Trial Time (s)')
     ax.set_xlim((0, local_samp_len / fs))
-    #plt.show()
+    plt.show()
     name = name.replace(" ", "")
     fn = name + '_trace.pdf'
     print 'Saving figure:\n%s' % fn
@@ -1030,9 +1030,11 @@ barplot('Accuracy', 'Accuracy (%)', 5, acc_subj_means_pc,
 #PS
 #trial
 #trim all data from end of the visual primer plus 1 cycle
-second_cycle = end_primer_samp + (cycle_time * fs)
+second_cycle = preblock_prime_sec * fs + (cycle_time * fs)
+print 'second cycle time: %.2f' % second_cycle
 #leave out the last cycle
-fifth_cycle = end_primer_samp + 4 * (cycle_time * fs)
+fifth_cycle = preblock_prime_sec * fs + 4 * (cycle_time * fs)
+print 'fifth cycle time: %.2f' % fifth_cycle
 full_mean_trace, full_mean_bc_trace, full_ste_trace,\
         full_ste_bc_trace, mean_trace,\
         bc_mean_trace, ste_trace, bc_ste_trace, global_mean,\
@@ -1107,7 +1109,7 @@ plot_ps(full_mean_bc_targ_trace, full_ste_bc_targ_trace,\
 
 #baseline corrected
 barplot('Mean base corrected pupil size', 'Relative pupil size',
-        100, ps_subj_bc_means, global_bc_mean, global_bc_ste)
+        250, ps_subj_bc_means, global_bc_mean, global_bc_ste)
 
 #baseline corrected target
 barplot('Peak base corrected target pupil size', 
@@ -1141,7 +1143,7 @@ pResults('Cognitive load weighted standard error',
 printSignificant('Cognitive load weighted', cog_subj_weighted)
 
 barplot('Weighted cognitive load survey', 'Relative demand score\n'+\
-r'low $\hspace{8} \rightarrow \hspace{8}$high', 2,\
+r'low $\hspace{8} \rightarrow \hspace{8}$high', 1,\
         cog_subj_weighted, cog_mean_weighted, cog_ste_weighted)
 
 #Combined data

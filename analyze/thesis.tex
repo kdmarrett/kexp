@@ -1,12 +1,13 @@
 \documentclass[10pt]{article}
 \usepackage{setspace}
+\usepackage[font=footnotesize]{subcaption}
+\usepackage[font=footnotesize]{caption}
 %\usepackage{fullpage}
 %\usepackage[T1]{fontenc}
 %\usepackage[utf8]{inputenc}
 \usepackage{authblk}
 \usepackage{graphicx}
 \usepackage{amssymb}
-\usepackage[font=footnotesize]{caption}
 \usepackage[superscript]{cite}
 \usepackage[english]{babel}
 
@@ -240,7 +241,6 @@ confirmation that they aid usability.
 %up and steady state cognitive load involved in selectively attending
 %a letter in an auditory BCI environment across 3 conditions.  
 
-\begin{figure}
 \begin{table}[ht]
   \centering
   \begin{tabular}{ | l | c | c | c |}
@@ -266,23 +266,6 @@ confirmation that they aid usability.
       after each cycle of the trial.}
   \label{conditionTable}
 \end{table}
-
-\begin{figure}[t]
-  \centering
-  \includegraphics[width=0.4\textwidth]{2screenshot}
-  \caption{ An example of the visual primer shown before each
-      trial.  This primer depicts the phonemically displaced
-      ordering characteristic of the primers of the
-      fixed-order and random condition. The three circles
-      represent the three letter groups of the trial.  The
-      target letter is highlighted in green.  The clockwise
-      ordering of the letters (first letter at the bottom)
-      indicates the sequence the selections will be spoken in
-  during any given cycle.  Note that this ordering is only
-  retained past the first cycle of letters in the alphabetic
-  and fixed-order conditions.}
-  \label{screenshot}
-\end{figure}
 
 \section{Methods}
 
@@ -329,6 +312,23 @@ distributed in the same way as the fixed-order condition only
 throughout the trial, the ordering of the letters changed,
 meaning subjects had no cue as to when the target letter would
 occur. 
+
+\begin{figure}[t]
+  \centering
+  \includegraphics[width=0.4\textwidth]{2screenshot}
+  \caption{ An example of the visual primer shown before each
+      trial.  This primer depicts the phonemically displaced
+      ordering characteristic of the primers of the
+      fixed-order and random condition. The three circles
+      represent the three letter groups of the trial.  The
+      target letter is highlighted in green.  The clockwise
+      ordering of the letters (first letter at the bottom)
+      indicates the sequence the selections will be spoken in
+  during any given cycle.  Note that this ordering is only
+  retained past the first cycle of letters in the alphabetic
+  and fixed-order conditions.}
+  \label{screenshot}
+\end{figure}
 
 The three circles in the example visual primer (Figure
 \ref{screenshot}), represent the three groups of a trial.
@@ -414,15 +414,13 @@ regarding the subject may be recorded and used.
 %More technical information and source files with documentation can
 %be found online at https://github.com/kdmarrett/kexp.
 
-\begin{figure}[t]
+\begin{figure}[ht]
   \centering
   \includegraphics[width=0.6\textwidth]{Basecorrected_trace}
   \caption{Depicts the across subject mean pupil size over the course of a trial
   for each condition.  The colored fill indicates the standard error
   for the respective condition.  The y-axis indicates the
-  relative pupil size.  This number is in arbitrary units (AU) and
-  is proportional to the number of pixels identified as pupil during
-  the trial recording.}
+  relative pupil size in arbitrary units (AU).}
   \label{trialtrace}
 \end{figure}
 
@@ -431,17 +429,44 @@ regarding the subject may be recorded and used.
 \subsection{Behavioral}
 
 \begin{figure}[t]
-  \centering
-  \includegraphics[width=0.3\textwidth]{Accuracy_barplot}
-  \caption{Depicts the across subjects means for each
-  condition.  Individual subject scores are shown in ball and stick.  Error bars
-  indicate the standard error.}
-  \label{accuracy}
+    \centering
+    \begin{subfigure}[t]{.25\linewidth}
+        \centering
+      \includegraphics[width=1.2\textwidth]{Accuracy_barplot}
+      \caption{Depicts the objective measure of raw ability of subjects to attend
+          to a letter in the various conditions.  No
+          differences were found to be significant. }
+      \label{accuracy}
+    \end{subfigure}
+    \qquad
+    \begin{subfigure}[t]{.25\linewidth}
+      \centering
+      \includegraphics[width=1.2\textwidth]{Meanbasecorrectedpupilsize_barplot}
+      \caption{Shows the objective measure of the mean pupil size for the second
+      through fourth cycle of the task period. The y-axis indicates the
+  relative pupil size in arbitrary units (AU).} 
+      \label{psBarplot}
+    \end{subfigure}
+    \qquad
+    \begin{subfigure}[t]{.25\linewidth}
+      \centering
+      \includegraphics[width=1.2\textwidth]{Weightedcognitiveloadsurvey_barplot}
+      \caption{The results for the subjective measure of cognitive
+  load.  The fixed-order and random condition were rated
+  as significantly more difficult than the alphabetic
+  condition. The observed differences between the fixed-order
+  and random condition were not significant.}
+      \label{cogLoad}
+    \end{subfigure}
+  \caption{Results for across subject means for each condition
+      between the subject and objective measures. Individual
+  subject means are shown in ball stick and error bars
+  indicate the standard error of the subject means.}
 \end{figure}
 
 No significant difference was found for subjects ability to
 discriminate the target letter among the three conditions.
-The across subject mean accuracy (\pm the standard error of
+The across subject mean accuracy ($\pm$ the standard error of
 the subject means) for the alphabetic, fixed-order, and random
 condition were $83.8 \% (\pm2.1)$, $87.9 \% (\pm3.3)$,
 and $83.6 (\pm 2.9)$ respectively.  The two-tailed paired t-testing among 
@@ -454,18 +479,6 @@ equal. These results are summarized in Figure \ref{accuracy}.
 \subsection{Physiological}
 %TODO tie into the figures
 %TODO check all these values
-
-\begin{figure}[t]
-  \centering
-  \includegraphics[width=0.3\textwidth]{Meanbasecorrectedpupilsize_barplot}
-  \caption{Shows the across subject means along with the across
-  subject standard error of the mean pupil size for the second
-  through fourth cycle of the task period. The y-axis indicates the
-  relative pupil size.  This number is in arbitrary units (AU) and
-  is proportional to the number of pixels identified as pupil during
-  the trial recording. Individual subject scores are shown in ball and stick. }
-  \label{psBarplot}
-\end{figure}
 
 The results for the mean pupil size are summarized in Figure \ref{accuracy}.
 The across subject mean for the baseline corrected pupil responses
@@ -513,14 +526,6 @@ random conditions.  None of these differences are significant.
 
 \subsection{Subjective}
 
-\begin{figure}[t]
-  \centering
-  \includegraphics[width=0.3\textwidth]{Weightedcognitiveloadsurvey_barplot}
-  \caption{Depicts the across subject means and standard errors of
-  the scores for each condition in the three conditions. Individual subject scores are shown in ball and stick.}
-  \label{cogLoad}
-\end{figure}
-
 The NASA task load index survey yielded contrary results then
 those suggested by the pupillometry data.  
 The weighted score for alphabetic, fixed-order, and random
@@ -536,7 +541,7 @@ and random .0734.  These results are summarized in Figure
 rated significantly less demanding than both the fixed-order and
 random trials.
 
-\subsection{ Cross-measure correlation}
+\subsection{Cross-measure correlation}
 No measures were found to
 be significantly correlated when comparing the three measures of cognitive load for a linear correlation via the pearson coefficient. However, some correlations between the
 mean baseline corrected pupil size for the task period and the survey were high.
@@ -688,6 +693,7 @@ was an arbitrary additional cognitive task that while
 was a necessity in the experiment would not necessarily exist in the
 end-user application settings of an auditory speller device.
 
+\subsection{Cross-measure correlation}
 %\section{Conclusion}
 %This study shows that having a known ordering plays the
 %largest role in the task difficulty of an auditory speller
