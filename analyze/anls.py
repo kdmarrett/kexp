@@ -322,13 +322,10 @@ def subj_accuracy_stats(accuracy_data):
         global_ste.append(stats.sem(subj_means[:, i]))
     return global_mean, global_ste, subj_means, subj_stds
 
-def subj_ps_stats(ps_data, global_base_correct=False, type='trial',\
+def subj_ps_stats(ps_data, type='trial',\
         window_start=0, window_end='end'):
     """ ps[subject,cond_ind,block, trial, sample] 
     Params:
-        global_base_correct : whether to mean all baseline ps data
-        across the whole experiment or to baseline correct based
-        individually by trial  
         type : if trial only consider ps data from the window of
         the task if window use all of the window passed
         window_seconds trim the end of trial ps data to be of 
@@ -355,87 +352,56 @@ def subj_ps_stats(ps_data, global_base_correct=False, type='trial',\
     std_dat[:] = np.nan
     bc_mean_dat = np.zeros((N, condition_nums, local_samp_len))
     bc_mean_dat[:] = np.nan
-
-    if global_base_correct:
-        base_mean = np.zeros(shape=(N, 1))
-    else:
-        base_mean = np.zeros(shape=(N, trials_per_cond))
-
+    base_mean = np.zeros(shape=(N, trials_per_cond))
     base_mean[:] = np.nan
+
     for s_ind, subj_ps in enumerate(ps_data):
         for c_ind in range(condition_nums):
             if type is 'window':
                 mean_dat[s_ind, c_ind] = np.nanmean(
                         subj_ps[c_ind].reshape(trials_per_cond * max_targets,
                             int(target_samp)), axis=0)
-                #for each subject baseline correct by the pretrial
-                #dark period
-                if global_base_correct:
-                    # mean across all trials then subtract that value
-                    base_mean[s_ind] = np.nanmean(np.nanmean(
-                        ps_base[s_ind,
-                            c_ind].reshape( trials_per_cond,
-                                int(base_samp)), axis=0))
-                    bc_mean_dat[s_ind, c_ind] = mean_dat[s_ind,
-                            c_ind] - base_mean[s_ind]
-                else:
-                    #for each subject for each trial find the corresponding
-                    #single baseline value to subtract per trial
-                    base_mean[s_ind, :] = np.nanmean(ps_base[s_ind,
-                            c_ind].reshape(trials_per_cond,
-                                int(base_samp)), axis=1)
-                    raw_windows = subj_ps[c_ind].reshape(
-                            trials_per_cond * max_targets, local_samp_len)
-                    bc_window = np.zeros(shape=(trials_per_cond * max_targets,
-                        local_samp_len))
-                    bc_window[:] = np.nan
-                    for rti in range(trials_per_cond):
-                        for targi in range(max_targets):
-                            #subtract the mean of each trial baseline 
-                            bc_window[max_targets * rti + targi, :] =\
-                                raw_windows[max_targets * rti + targi] -\
-                                base_mean[s_ind, rti]
-                    bc_mean_dat[s_ind, c_ind] = np.nanmean(bc_window,
-                            axis=0)
+                #for each subject for each trial find the corresponding
+                #single baseline value to subtract per trial
+                base_mean[s_ind, :] = np.nanmean(ps_base[s_ind,
+                        c_ind].reshape(trials_per_cond,
+                            int(base_samp)), axis=1)
+                raw_windows = subj_ps[c_ind].reshape(
+                        trials_per_cond * max_targets, local_samp_len)
+                bc_window = np.zeros(shape=(trials_per_cond * max_targets,
+                    local_samp_len))
+                bc_window[:] = np.nan
+                for rti in range(trials_per_cond):
+                    for targi in range(max_targets):
+                        #subtract the mean of each trial baseline 
+                        bc_window[max_targets * rti + targi, :] =\
+                            raw_windows[max_targets * rti + targi] -\
+                            base_mean[s_ind, rti]
+                bc_mean_dat[s_ind, c_ind] = np.nanmean(bc_window,
+                        axis=0)
 
             elif type is 'trial':
                 # raw mean stack for each subject and condition
                 mean_dat[s_ind, c_ind] = np.nanmean(
                         subj_ps[c_ind].reshape(trials_per_cond,
                             local_samp_len), axis=0)
-                #std_dat[s_ind, c_ind] = np.nanstd(
-                        #subj_ps[c_ind].reshape(trials_per_cond,
-                            #local_samp_len), axis=0)
-                #for each subject baseline correct by the pretrial
-                #dark period
-                if global_base_correct:
-                    # mean across all trials then subtract that value
-                    base_mean[s_ind] = np.nanmean(np.nanmean(
-                        ps_base[s_ind, c_ind].reshape(trials_per_cond,
-                            int(base_samp)), axis=0))
-                    bc_mean_dat[s_ind, c_ind] = mean_dat[s_ind,
-                            c_ind] - base_mean[s_ind]
-                else:
-                    #for each subject for each trial find the corresponding
-                        #baseline to subtract
-                    base_mean[s_ind, :] = np.nanmean(ps_base[s_ind,
-                            c_ind].reshape(trials_per_cond,
-                                int(base_samp)), axis=1)
-                    #subtract the mean of each trial baseline 
-                    raw_trials = subj_ps[c_ind].reshape(trials_per_cond,
-                                local_samp_len)
-                    bc_trial = np.zeros(shape=(trials_per_cond,
-                        local_samp_len))
-                    bc_trial[:] = np.nan
-                    for rti, raw_trial in enumerate(raw_trials):
-                        bc_trial[rti,:] = raw_trial - base_mean[s_ind, rti]
-                    bc_mean_dat[s_ind, c_ind] = np.nanmean(bc_trial,
-                            axis=0)
-    #std_dat_trim = std_dat[:,:,window_start:window_end]
-    mean_dat_trim =\
-            mean_dat[:,:,window_start:window_end]
-    bc_mean_dat_trim =\
-            bc_mean_dat[:,:,window_start:window_end]
+                #for each subject for each trial find the corresponding
+                    #baseline to subtract
+                base_mean[s_ind, :] = np.nanmean(ps_base[s_ind,
+                        c_ind].reshape(trials_per_cond,
+                            int(base_samp)), axis=1)
+                #subtract the mean of each trial baseline 
+                raw_trials = subj_ps[c_ind].reshape(trials_per_cond,
+                            local_samp_len)
+                bc_trial = np.zeros(shape=(trials_per_cond,
+                    local_samp_len))
+                bc_trial[:] = np.nan
+                for rti, raw_trial in enumerate(raw_trials):
+                    bc_trial[rti,:] = raw_trial - base_mean[s_ind, rti]
+                bc_mean_dat[s_ind, c_ind] = np.nanmean(bc_trial,
+                        axis=0)
+    mean_dat_trim = mean_dat[:,:,window_start:window_end]
+    bc_mean_dat_trim = bc_mean_dat[:,:,window_start:window_end]
     #subject means for sig testing and plotting
     ps_subj_means = np.nanmean(mean_dat_trim, axis=2)
     ps_subj_std = np.nanstd(mean_dat_trim, axis=2)
@@ -1030,6 +996,14 @@ barplot('Accuracy', 'Accuracy (%)', 5, acc_subj_means_pc,
 #PS
 #trial
 #trim all data from end of the visual primer plus 1 cycle
+tot_cycs = 5
+cycle_start_sec = np.zeros(tot_cycs)
+cycle_start_samp = np.zeros(tot_cycs)
+for i in range(tot_cycs):
+    cycle_start_sec[i] = preblock_prime_sec +\
+            i * cycle_time
+    cycle_start_samp[i] = cycle_start_sec[i] * fs
+    print cycle_start_sec[i]
 second_cycle = preblock_prime_sec * fs + (cycle_time * fs)
 print 'second cycle time: %.2f' % second_cycle
 #leave out the last cycle
@@ -1045,7 +1019,6 @@ full_mean_trace, full_mean_bc_trace, full_ste_trace,\
         global_bc_peak_ste, global_mc_peak_ste,\
         subj_bc_peaks, subj_mean_corrected_peaks\
         = subj_ps_stats(ps,
-                global_base_correct=False,
                 window_start=second_cycle,
                 window_end=fifth_cycle)
 
@@ -1061,7 +1034,7 @@ full_mean_targ_trace, full_mean_bc_targ_trace, full_ste_targ_trace,\
         global_bc_peak_ste_targ, global_mc_peak_ste_targ,\
         subj_bc_peaks_targ, subj_mean_corrected_peaks_targ\
         = subj_ps_stats(ps_target, type='window',\
-        global_base_correct=False, window_start=preslice_samp)
+        window_start=preslice_samp)
 
 #trial
 pResults('Pupil global means', global_mean)
