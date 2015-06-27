@@ -163,21 +163,25 @@ difficult task had larger, more salient oddball responses
 \cite{Sirevaag1989}. 
 
 \subsection{Auditory P300 Spellers} 
-ERPs such as the P300 response can be used for gauging user intent
-in an auditory brain computer interface (BCI) device.
-These speller
-devices are typically used for patients with diseases such as
-amyotrophic lateral sclerosis where motor ability is so severely
-impaired that brain signals remain the last means of
-communication\cite{Nijboer2008}.  Visual spellers are most commonly
-used but due to the diversity in the population of users (i.e.
-blindness, eye-movement loss, eyelid-movement loss) recent research
-has focused on replicating the performance of visual P300 spellers
-in the auditory domain\cite{Hohne2011}.  In addition, although the goal of improving
-the raw rate at which information is transferred (bit rate) of
-the P300 speller is a problem several decade old, basic
-psychophysics research is still vital to carry out in parallel with
-new advancements in classification methods.
+
+ERPs such as the P300 response can be used for gauging user
+intent in an auditory brain computer interface (BCI) device.
+Leveraging the various characteristics of the P300 response,
+the fundamental tradeoff for these systems is selections
+presented and the accuracy of classifying the responses.  These
+speller devices are typically used for patients with diseases
+such as amyotrophic lateral sclerosis when motor ability may
+be so severely impaired that brain signals remain the last means
+of communication\cite{Nijboer2008}.  Visual spellers are most
+commonly used but due to the diversity in the population of
+users (i.e.  blindness, eye-movement loss, eyelid-movement
+loss) recent research has focused on replicating the
+performance of visual P300 spellers in the auditory
+domain\cite{Hohne2011}.  In addition, although the goal of
+improving the raw rate at which information is transferred
+(bit rate) of the P300 speller is a problem several decades
+old, basic psychophysics research is still vital to carry out
+in parallel with new advancements in classification methods.
 
 Recent research has shown that even known ordering of stimuli can
 produce classifiable responses.  In a new auditory speller known
@@ -187,12 +191,12 @@ provide as robust a signal as the classical oddball paradigm in this
 filtering method, it still retains some structure that
 new classification methods could extract \cite{Hohne2014}.  
 
-Previous experiments show that, to some degree increasing the number
+Previous experiments show that, to some degree, increasing the number
 of selections presented in a trial decreases performance due to
 informational masking \cite{Maddox2012a}. Therefore, in order to
 create a high bit rate auditory speller paradigm, higher selections
 must be added while minimizing the factors of increased trial time
-and informational masking. 
+and informational masking.
 
 %TODO are there other studies that segregate letters based on simi?
 %\cite{Schreuder2010a,Schreuder2011,Hohne2011a}. 
@@ -206,10 +210,11 @@ effects of phonemic similarities in letters, and the effects
 of dynamic vs. ordered selections.  In particular we explore
 which of these features determine a listener's ability to
 discriminate target selections, how these features correlate
-with cognitive load, and the ability to corroborate these
+with cognitive load, and the ability to corroborate 
 perceived cognitive load with pupillometry data.  Cognitive load is
 assessed objectively via pupillometry which is a corollary of
-the attention and brain activation in a task as well as a
+the attention and brain activation in a
+task\cite{Zekveld2014}, as well as a
 subjective assessment using the NASA Task Load Index survey
 that measures perceived workload \cite{Zickler2013a}.  The
 conditions test the usability of some of the new features
@@ -352,7 +357,7 @@ would ever have coinciding onsets during a trial.
 The time course of a trial is diagrammed in Figure \ref{trialtrace}.
 Each trial contained the visual priming period for the first seven seconds.
 During this priming period, the spatial locations of the letters
-were displayed for reference (Figure \ref{screenshot}).  The target letter was highlighted in
+were displayed (Figure \ref{screenshot}).  The target letter was highlighted in
 green and also spoken at its respective location so that the
 listener knew before the trial began which spatial group location to
 listen to for the entirety of the trial. At 7 s, the visual
@@ -389,7 +394,7 @@ conditions were only distinguishable after the first cycle
 when the letter sequence changed.
 
 To assess the subject's experience of cognitive load subjectively,
-the NASA task load index (TLX) was performed after completion
+the NASA Task Load Index (TLX) was performed after completion
 of the experiment\cite{Zickler2013a}.  The survey consisted of two
 sections which subjects completed separately for each
 condition.  The first section of the survey prompted subjects
@@ -482,8 +487,7 @@ by the baseline period proceeding the respective trial.
 
 No significant difference was found for subjects ability to
 discriminate the target letter among the three conditions.
-The across-subject mean accuracy ($\pm$ the standard error of
-the subject means) for the alphabetic, fixed-order, and random
+The across-subject mean accuracy for the alphabetic, fixed-order, and random
 condition were $83.8 \% (\pm2.1)$, $87.9 \% (\pm3.3)$,
 and $83.6 \% (\pm 2.9)$ respectively.  The two-tailed paired t-testing among 
 the alphabetic and fixed-order condition yielded a p-value of .15,
@@ -499,7 +503,9 @@ experiment that might indicate a learning curve.
 
 The results for the mean pupil size are summarized in Figure
 \ref{psBarplot}. The time course of pupil dynamics is shown in
-Figure \ref{trialtrace}.  The across-subject mean for the
+Figure \ref{trialtrace}.  All mean values reported are mean
+values of the
+task window (13 - 36 s) of the trial.  The across-subject means for the
 baseline-corrected pupil responses ($\pm$ standard error of
 the subject mean) was $ 302.73 (\pm 0.48)$, $400.52 (\pm
 .60)$, and $179.91 (\pm 0.73)$ for the alphabetic,
@@ -528,9 +534,9 @@ condition p-values were 0.26 for alphabetic and fixed-order,
 random conditions which we also consider to be significant.
 
 However the significance of this difference disappears when we
-instead just at the local peak height within this window.
-These values are the across-subject maximum values subtracted
-by the mean task pupil size for that condition.  This measure
+instead look only at the local maximum value within the target window.
+These values are calculated via the across-subject maximum values subtracted
+by the mean pupil size for that condition.  This measure
 gives a sense of how much the pupil size changes with respect
 to the rest of the task condition. The means were $90.78 (\pm
 13.72)$, $97.08 (\pm 12.94)$, and $107.25 (\pm 14.30)$ for the
@@ -542,12 +548,11 @@ are significant.
 
 \subsection{Subjective}
 
-The NASA task load index survey yielded contrasting results than
-those suggested by the pupillometry data.  
-The weighted score for alphabetic, fixed-order, and random
-conditions were 
-$21.53 (\pm 0.44)$, $22.27 (\pm 0.46)$, $22.83 (\pm
-0.42)$ respectively.
+The NASA task load index survey yielded contrasting results
+than those suggested by the pupillometry data.  The weighted
+score for alphabetic, fixed-order, and random conditions were
+$21.53 (\pm 0.44)$, $22.27 (\pm 0.46)$, $22.83 (\pm 0.42)$
+respectively.
 
 Paired t-test p-values between the alphabetic and fixed-order was
 .04, between alphabetic and random .005, and between fixed-order
@@ -615,13 +620,12 @@ If we consider the pupil size to be proportional to mental
 activity, the difference between pupil size for the random and
 fixed-order condition may be explainable.  For example, the
 random condition provides no information to the listener about
-the occurrence of the letter other than its spatial location
-so the subject essentially must passively listen for the
-entire trial.  Since all subjects were native English speakers
-the ordering of the alphabet was familiar, suggesting that
-they may have been passive listeners with some activity
-related to checking the ordering around the target in the
-alphabetic condition.  However, in the fixed-order condition,
+the occurrence of the letter other than its spatial location;
+the subject likely only passively listens for the
+entire trial.  In the alphabetic condition,
+subjects may have been mostly passive listeners with some minor mental activity
+related to recalling and checking the ordering around the target.
+However, in the fixed-order condition,
 an entirely new ordering was assigned. Given that
 a subject is incentivized to memorize a new letter ordering
 (see subjective results and discussion), the fixed-order
@@ -649,8 +653,8 @@ changes in the random condition.  If we examine the trace of
 the fixed-order and random condition we do see a peak in the
 second cycle which devolves thereafter.
 
-Another thing to notice about the trace is the ramp down
-during the trial for each condition.  Some of this may be due
+The mean trace shows a steady ramp down
+during the task period for each condition.  Some of this may be due
 the more immediate decrease in the random and fixed-order
 trace after resolving the task of condition discrimination in
 the second cycle. This may also be because, although the
@@ -809,6 +813,10 @@ Scholarship for support during this project.
         brain-computer interface design. \emph{The Journal of
         Acoustical Society of America}, 132(4):EL385-90,
         November 2012.
+    \bibitem{Zekveld2014} Zekveld A.A., et al., The eye as a
+        window to the listening brain: Neural correlates of
+        pupil size as a measure of cognitive load,
+        \emph{Neuroimage} (2014).
     \bibitem{Zickler2013a} Claudia Zickler, Sebastian Halder,
         Sonja C Kleih, Cornelia Herbert, and Andrea Kubler.
         Brain Painting: usability testing according to the
