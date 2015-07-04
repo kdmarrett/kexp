@@ -1,7 +1,8 @@
 # author: Karl Marrett
 # analyze pupillometry data
 
-#TODO whole block saving, plot, stats 
+#TODO deconvolution
+#TODO check the primer times for significance
 #TODO use remove_blink_artifacts to nullify certain target
 #windows use position of eye to clean the results later
 #TODO think about degrees of freedom
@@ -323,13 +324,13 @@ def subj_accuracy_stats(accuracy_data):
     return global_mean, global_ste, subj_means, subj_stds
 
 def subj_ps_stats(ps_data, type='trial',\
-        window_start=0, window_end='end'):
+        window_start=0, window_end='end', take_trial='all'):
     """ ps[subject,cond_ind,block, trial, sample] 
     Params:
         type : if trial only consider ps data from the window of
-        the task if window use all of the window passed
+        the task if target use all of the target passed
         window_seconds trim the end of trial ps data to be of 
-        window_seconds long.  currently not implemented for window
+        window_seconds long.  currently not implemented for target
         type"""
 
     # get # samples (last dim) of the ps data
@@ -340,7 +341,7 @@ def subj_ps_stats(ps_data, type='trial',\
         #include up to last sample in window
         window_end = local_samp_len
 
-    if type is 'window':
+    if type is 'target':
         assert(local_samp_len == target_samp)
     elif type is 'trial':
         assert(local_samp_len == trial_samp)
@@ -357,21 +358,42 @@ def subj_ps_stats(ps_data, type='trial',\
 
     for s_ind, subj_ps in enumerate(ps_data):
         for c_ind in range(condition_nums):
-            if type is 'window':
-                mean_dat[s_ind, c_ind] = np.nanmean(
-                        subj_ps[c_ind].reshape(trials_per_cond * max_targets,
-                            int(target_samp)), axis=0)
+            if type is 'target':
+                total_targets = trials_per_cond * max_targets
+                trials_to_process = trials_per_cond
+                if take_trial is 'all':
+                    mean_dat[s_ind, c_ind] = np.nanmean(
+                            subj_ps[c_ind].reshape(total_targets,
+                                int(target_samp)), axis=0)
+                    raw_windows = subj_ps[c_ind].reshape(
+                            total_targets, local_samp_len)
+                else:
+                    #take only specified third of the data
+                    total_targets /= 3
+                    trials_to_process /= 3
+                    if take_trial is 'start':
+                        #take only first 9 trials
+                        mean_dat[s_ind, c_ind] = np.nanmean(
+                                subj_ps[c_ind,:8].reshape(total_targets,
+                                    int(target_samp)), axis=0)
+                        raw_windows = subj_ps[c_ind,:8].reshape(
+                                total_targets, local_samp_len)
+                    elif take_trial is 'end':
+                        #take last 9 trials
+                        mean_dat[s_ind, c_ind] = np.nanmean(
+                                subj_ps[c_ind, -9:].reshape(total_targets,
+                                    int(target_samp)), axis=0)
+                        raw_windows = subj_ps[c_ind, -9:].reshape(
+                                total_targets, local_samp_len)
                 #for each subject for each trial find the corresponding
                 #single baseline value to subtract per trial
                 base_mean[s_ind, :] = np.nanmean(ps_base[s_ind,
                         c_ind].reshape(trials_per_cond,
                             int(base_samp)), axis=1)
-                raw_windows = subj_ps[c_ind].reshape(
-                        trials_per_cond * max_targets, local_samp_len)
-                bc_window = np.zeros(shape=(trials_per_cond * max_targets,
+                bc_window = np.zeros(shape=(total_targets,
                     local_samp_len))
                 bc_window[:] = np.nan
-                for rti in range(trials_per_cond):
+                for rti in range(trials_to_process):
                     for targi in range(max_targets):
                         #subtract the mean of each trial baseline 
                         bc_window[max_targets * rti + targi, :] =\
@@ -381,18 +403,41 @@ def subj_ps_stats(ps_data, type='trial',\
                         axis=0)
 
             elif type is 'trial':
+                if take_trial is 'all':
+                    mean_dat[s_ind, c_ind] = np.nanmean(
+                            subj_ps[c_ind].reshape(trials_per_cond,
+                                int(target_samp)), axis=0)
+                    raw_windows = subj_ps[c_ind].reshape(
+                            trials_per_cond, local_samp_len)
+                else:
+                    trials_to_process = trials_per_cond / 3
+                    #take only specified third of the data
+                    if take_trial is 'start':
+                        #take only first 9 trials
+                        mean_dat[s_ind, c_ind] = np.nanmean(
+                                subj_ps[c_ind,:8].reshape(trials_to_process,
+                                    int(target_samp)), axis=0)
+                        raw_windows = subj_ps[c_ind,:8].reshape(
+                                trials_to_process, local_samp_len)
+                    elif take_trial is 'end':
+                        #take last 9 trials
+                        mean_dat[s_ind, c_ind] = np.nanmean(
+                                subj_ps[c_ind, -9:].reshape(trials_to_process,
+                                    int(target_samp)), axis=0)
+                        raw_windows = subj_ps[c_ind, -9:].reshape(
+                                trials_to_process, local_samp_len)
                 # raw mean stack for each subject and condition
                 mean_dat[s_ind, c_ind] = np.nanmean(
                         subj_ps[c_ind].reshape(trials_per_cond,
                             local_samp_len), axis=0)
+                raw_trials = subj_ps[c_ind].reshape(trials_per_cond,
+                            local_samp_len)
                 #for each subject for each trial find the corresponding
                     #baseline to subtract
                 base_mean[s_ind, :] = np.nanmean(ps_base[s_ind,
                         c_ind].reshape(trials_per_cond,
                             int(base_samp)), axis=1)
                 #subtract the mean of each trial baseline 
-                raw_trials = subj_ps[c_ind].reshape(trials_per_cond,
-                            local_samp_len)
                 bc_trial = np.zeros(shape=(trials_per_cond,
                     local_samp_len))
                 bc_trial[:] = np.nan
@@ -1005,10 +1050,11 @@ for i in range(tot_cycs):
     cycle_start_samp[i] = cycle_start_sec[i] * fs
     print cycle_start_sec[i]
 second_cycle = preblock_prime_sec * fs + (cycle_time * fs)
-print 'second cycle time: %.2f' % second_cycle
+#print 'second cycle time: %.2f' % second_cycle
 #leave out the last cycle
 fifth_cycle = preblock_prime_sec * fs + 4 * (cycle_time * fs)
-print 'fifth cycle time: %.2f' % fifth_cycle
+#print 'fifth cycle time: %.2f' % fifth_cycle
+
 full_mean_trace, full_mean_bc_trace, full_ste_trace,\
         full_ste_bc_trace, mean_trace,\
         bc_mean_trace, ste_trace, bc_ste_trace, global_mean,\
@@ -1020,7 +1066,40 @@ full_mean_trace, full_mean_bc_trace, full_ste_trace,\
         subj_bc_peaks, subj_mean_corrected_peaks\
         = subj_ps_stats(ps,
                 window_start=second_cycle,
-                window_end=fifth_cycle)
+                    window_end=fifth_cycle)
+
+full_mean_trace_start, full_mean_bc_trace_start,
+full_ste_trace_start,\
+        full_ste_bc_trace_start, mean_trace_start,\
+        bc_mean_trace_start, ste_trace_start,
+        bc_ste_trace_start, global_mean_start,\
+        global_ste_start, global_bc_mean_start,
+        global_bc_ste_start,\
+        ps_subj_means_start, ps_subj_std_start,\
+        ps_subj_bc_means_start, ps_subj_bc_std_start,\
+        global_bc_peak_mean_start, global_mc_peak_mean_start,\
+        global_bc_peak_ste_start, global_mc_peak_ste_start,\
+        subj_bc_peaks_start, subj_mean_corrected_peaks_start\
+        = subj_ps_stats(ps_start, window_start=second_cycle,
+            window_end=fifth_cycle, take_trial='start')
+
+full_mean_trace_end, full_mean_bc_trace_end,
+        full_ste_trace_end,\
+        full_ste_bc_trace_end, mean_trace_end,\
+        bc_mean_trace_end, ste_trace_end, bc_ste_trace_end,
+        global_mean_end,\
+        global_ste_end, global_bc_mean_end, global_bc_ste_end,\
+        ps_subj_means_end, ps_subj_std_end,\
+        ps_subj_bc_means_end, ps_subj_bc_std_end,\
+        global_bc_peak_mean_end, global_mc_peak_mean_end,\
+        global_bc_peak_ste_end, global_mc_peak_ste_end,\
+        subj_bc_peaks_end, subj_mean_corrected_peaks_end\
+        = subj_ps_stats(ps,
+                window_start=second_cycle,
+                    window_end=fifth_cycle, take_trial='end')
+
+printSignificantInter('Start vs. end ps',
+        ps_subj_bc_means_start, ps_subj_bc_means_end)
 
 #target
 full_mean_targ_trace, full_mean_bc_targ_trace, full_ste_targ_trace,\
@@ -1033,7 +1112,7 @@ full_mean_targ_trace, full_mean_bc_targ_trace, full_ste_targ_trace,\
         global_bc_peak_mean_targ, global_mc_peak_mean_targ,\
         global_bc_peak_ste_targ, global_mc_peak_ste_targ,\
         subj_bc_peaks_targ, subj_mean_corrected_peaks_targ\
-        = subj_ps_stats(ps_target, type='window',\
+        = subj_ps_stats(ps_target, type='target',\
         window_start=preslice_samp)
 
 #trial
@@ -1095,7 +1174,6 @@ barplot('Peak mean corrected target pupil size',
    global_mc_peak_mean_targ, global_mc_peak_ste_targ)
 
 #Survey
-#TODO check that high is high demanding
 cog_subj, cog_mean, cog_ste = cleanCogData(weighted=False)
 
 pResults('Cognitive load unweighted means', cog_mean)
