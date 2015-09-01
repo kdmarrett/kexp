@@ -7,6 +7,7 @@
 #TODO think about degrees of freedom
 #TODO think about subtracting by condition
 #TODO check the strategy for computing survey results
+#FIXME should be second through 5th cycle for analysis
 
 import glob
 from os import path as op
@@ -324,14 +325,14 @@ def subj_accuracy_stats(accuracy_data):
     return global_mean, global_ste, subj_means, subj_stds
 
 def subj_ps_stats(ps_data, type='trial',\
-        window_start=0, window_end='end', take_trial='all'):
+        window_start=0, window_end='end', take_trials='all'):
     """ ps[subject, cond_ind, block, trial, sample] 
     Params:
         window_start : start sample to analyze
         window_end : end sample to analyze
-        type : if trial only consider ps data from the window of
-        the task if target use all of the target passed
-        type"""
+        type : if 'trial' trim around ps data from the window of
+        the task if 'target' use all of the target window passed
+        without windowing"""
 
     # get # samples (last dim) of the ps data
     local_samp_len = ps_data.shape[-1]
@@ -361,7 +362,7 @@ def subj_ps_stats(ps_data, type='trial',\
             if type is 'target':
                 total_targets = trials_per_cond * max_targets
                 trials_to_process = trials_per_cond
-                if take_trial is 'all':
+                if take_trials is 'all':
                     mean_dat[s_ind, c_ind] = np.nanmean(
                             subj_ps[c_ind].reshape(total_targets,
                                 int(target_samp)), axis=0)
@@ -371,14 +372,14 @@ def subj_ps_stats(ps_data, type='trial',\
                     #take only specified third of the data
                     total_targets /= 3
                     trials_to_process /= 3
-                    if take_trial is 'start':
+                    if take_trials is 'start':
                         #take only first 9 trials
                         mean_dat[s_ind, c_ind] = np.nanmean(
                                 subj_ps[c_ind,:8].reshape(total_targets,
                                     int(target_samp)), axis=0)
                         raw_windows = subj_ps[c_ind,:8].reshape(
                                 total_targets, local_samp_len)
-                    elif take_trial is 'end':
+                    elif take_trials is 'end':
                         #take last 9 trials
                         mean_dat[s_ind, c_ind] = np.nanmean(
                                 subj_ps[c_ind, -9:].reshape(total_targets,
@@ -403,27 +404,27 @@ def subj_ps_stats(ps_data, type='trial',\
                         axis=0)
 
             elif type is 'trial':
-                if take_trial is 'all':
+                if take_trials is 'all':
                     mean_dat[s_ind, c_ind] = np.nanmean(
                             subj_ps[c_ind].reshape(trials_per_cond,
-                                int(target_samp)), axis=0)
+                                int(trial_samp)), axis=0)
                     raw_windows = subj_ps[c_ind].reshape(
                             trials_per_cond, local_samp_len)
                 else:
                     trials_to_process = trials_per_cond / 3
                     #take only specified third of the data
-                    if take_trial is 'start':
+                    if take_trials is 'start':
                         #take only first 9 trials
                         mean_dat[s_ind, c_ind] = np.nanmean(
                                 subj_ps[c_ind,:8].reshape(trials_to_process,
-                                    int(target_samp)), axis=0)
+                                    int(trial_samp)), axis=0)
                         raw_windows = subj_ps[c_ind,:8].reshape(
                                 trials_to_process, local_samp_len)
-                    elif take_trial is 'end':
+                    elif take_trials is 'end':
                         #take last 9 trials
                         mean_dat[s_ind, c_ind] = np.nanmean(
                                 subj_ps[c_ind, -9:].reshape(trials_to_process,
-                                    int(target_samp)), axis=0)
+                                    int(trial_samp)), axis=0)
                         raw_windows = subj_ps[c_ind, -9:].reshape(
                                 trials_to_process, local_samp_len)
                 # raw mean stack for each subject and condition
@@ -486,7 +487,7 @@ def subj_ps_stats(ps_data, type='trial',\
     assert(len(global_mean) == condition_nums)
     assert(len(global_bc_mean) == condition_nums)
     assert(len(global_ste) == condition_nums)
-    return full_mean_trace, full_mean_bc_trace, full_ste_trace,\
+    return stats_tuple(full_mean_trace, full_mean_bc_trace, full_ste_trace,\
             full_ste_bc_trace, mean_trace,\
             bc_mean_trace, ste_trace, bc_ste_trace, global_mean,\
             global_ste, global_bc_mean, global_bc_ste,\
@@ -494,7 +495,17 @@ def subj_ps_stats(ps_data, type='trial',\
             ps_subj_bc_means, ps_subj_bc_std,\
             global_bc_peak_mean, global_mc_peak_mean,\
             global_bc_peak_ste, global_mc_peak_ste,\
-            subj_bc_peaks, subj_mean_corrected_peaks
+            subj_bc_peaks, subj_mean_corrected_peaks)
+
+    #return full_mean_trace, full_mean_bc_trace, full_ste_trace,\
+            #full_ste_bc_trace, mean_trace,\
+            #bc_mean_trace, ste_trace, bc_ste_trace, global_mean,\
+            #global_ste, global_bc_mean, global_bc_ste,\
+            #ps_subj_means, ps_subj_std,\
+            #ps_subj_bc_means, ps_subj_bc_std,\
+            #global_bc_peak_mean, global_mc_peak_mean,\
+            #global_bc_peak_ste, global_mc_peak_ste,\
+            #subj_bc_peaks, subj_mean_corrected_peaks
 
 def roundToIncrement(y, y_increment):
     return round(float(y) / y_increment) * y_increment
@@ -622,8 +633,7 @@ preblock = global_vars['preblock_prime_sec'][0]
 trial_len = 36.000
 trial_samp = np.floor(trial_len*fs).astype(int)
 # time of visual primer (s)
-vPrimerLen = global_vars['vPrimerLen'] 
-end_primer = vPrimerLen
+end_primer = global_vars['vPrimerLen'] 
 end_primer_samp = int(end_primer * fs)
 end_stim = int(trial_len * fs)
 #seconds until letters start playing
@@ -1061,39 +1071,48 @@ stats_tuple = namedtuple('stats_tuple', 'full_mean_trace,\
         global_bc_peak_ste, global_mc_peak_ste,\
         subj_bc_peaks, subj_mean_corrected_peaks')
 
-for i in range(tot_cycs):
-        cycle_stats[i] = subj_ps_stats(ps,
-            window_start=cycle_start_sec[i],
-            window_end=cycle_start_sec[i+1], take_trial='start')
 
-full_mean_trace_start, full_mean_bc_trace_start,\
-full_ste_trace_start,\
-        full_ste_bc_trace_start, mean_trace_start,\
-        bc_mean_trace_start, ste_trace_start,\
-        bc_ste_trace_start, global_mean_start,\
-        global_ste_start, global_bc_mean_start,\
-        global_bc_ste_start,\
-        ps_subj_means_start, ps_subj_std_start,\
-        ps_subj_bc_means_start, ps_subj_bc_std_start,\
-        global_bc_peak_mean_start, global_mc_peak_mean_start,\
-        global_bc_peak_ste_start, global_mc_peak_ste_start,\
-        subj_bc_peaks_start, subj_mean_corrected_peaks_start\
-        = subj_ps_stats(ps_start, window_start=second_cycle,
-            window_end=fifth_cycle, take_trial='start')
+cycle_stats = list()
+for i in range(tot_cycs - 1):
+    cycle_stats.append(subj_ps_stats(ps,
+    window_start=cycle_start_sec[i],
+    window_end=cycle_start_sec[i+1]))
 
-full_mean_trace_end, full_mean_bc_trace_end,\
-        full_ste_trace_end,\
-        full_ste_bc_trace_end, mean_trace_end,\
-        bc_mean_trace_end, ste_trace_end, bc_ste_trace_end,\
-        global_mean_end,\
-        global_ste_end, global_bc_mean_end, global_bc_ste_end,\
-        ps_subj_means_end, ps_subj_std_end,\
-        ps_subj_bc_means_end, ps_subj_bc_std_end,\
-        global_bc_peak_mean_end, global_mc_peak_mean_end,\
-        global_bc_peak_ste_end, global_mc_peak_ste_end,\
-        subj_bc_peaks_end, subj_mean_corrected_peaks_end\
-        = subj_ps_stats(ps, window_start=second_cycle,
-                    window_end=fifth_cycle, take_trial='end')
+primer_stats = subj_ps_stats(ps, window_end=end_primer_samp)
+import pdb;pdb.set_trace()
+
+#full_mean_trace_start, full_mean_bc_trace_start,\
+#full_ste_trace_start,\
+        #full_ste_bc_trace_start, mean_trace_start,\
+        #bc_mean_trace_start, ste_trace_start,\
+        #bc_ste_trace_start, global_mean_start,\
+        #global_ste_start, global_bc_mean_start,\
+        #global_bc_ste_start,\
+        #ps_subj_means_start, ps_subj_std_start,\
+        #ps_subj_bc_means_start, ps_subj_bc_std_start,\
+        #global_bc_peak_mean_start, global_mc_peak_mean_start,\
+        #global_bc_peak_ste_start, global_mc_peak_ste_start,\
+        #subj_bc_peaks_start, subj_mean_corrected_peaks_start\
+
+#start stats for 2nd through 5th cycle
+start_stats = subj_ps_stats(ps, window_start=cycle_start_samp[1],
+    window_end=cycle_start_samp[5], take_trials='start')
+
+#full_mean_trace_end, full_mean_bc_trace_end,\
+        #full_ste_trace_end,\
+        #full_ste_bc_trace_end, mean_trace_end,\
+        #bc_mean_trace_end, ste_trace_end, bc_ste_trace_end,\
+        #global_mean_end,\
+        #global_ste_end, global_bc_mean_end, global_bc_ste_end,\
+        #ps_subj_means_end, ps_subj_std_end,\
+        #ps_subj_bc_means_end, ps_subj_bc_std_end,\
+        #global_bc_peak_mean_end, global_mc_peak_mean_end,\
+        #global_bc_peak_ste_end, global_mc_peak_ste_end,\
+        #subj_bc_peaks_end, subj_mean_corrected_peaks_end\
+
+#end stats for 2nd through 5th cycle
+end_stats = subj_ps_stats(ps, window_start=cycle_start_samp[1],
+                    window_end=cycle_start_samp[5], take_trials='end')
 
 printSignificantInter('Start vs. end ps',
         ps_subj_bc_means_start, ps_subj_bc_means_end)
