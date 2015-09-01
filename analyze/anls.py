@@ -1,12 +1,12 @@
 # author: Karl Marrett
 # analyze pupillometry data
 
-#TODO deconvolution
 #TODO check the primer times for significance
 #TODO use remove_blink_artifacts to nullify certain target
 #windows use position of eye to clean the results later
 #TODO think about degrees of freedom
 #TODO think about subtracting by condition
+#TODO check the strategy for computing survey results
 
 import glob
 from os import path as op
@@ -16,13 +16,13 @@ import pyeparse as pp
 import numpy as np
 import matplotlib.pyplot as plt
 import pickle as pck
-#from pyeparse.utils import pupil_kernel
+from collections import namedtuple
 
 # if something was changed in the file saving process
 force_reprocess = False
 subjects = ['HP', 'HL', 'GH', 'GG', 'GN', 'GI', 'HT', 'HI', 'HN', 'HK', 'HJ', 'GR', 'GU'] 
 
-#subjects = ['HP']
+subjects = ['HP']
 #shorten for debugging
 
 if force_reprocess:
@@ -325,12 +325,12 @@ def subj_accuracy_stats(accuracy_data):
 
 def subj_ps_stats(ps_data, type='trial',\
         window_start=0, window_end='end', take_trial='all'):
-    """ ps[subject,cond_ind,block, trial, sample] 
+    """ ps[subject, cond_ind, block, trial, sample] 
     Params:
+        window_start : start sample to analyze
+        window_end : end sample to analyze
         type : if trial only consider ps data from the window of
         the task if target use all of the target passed
-        window_seconds trim the end of trial ps data to be of 
-        window_seconds long.  currently not implemented for target
         type"""
 
     # get # samples (last dim) of the ps data
@@ -1041,7 +1041,7 @@ barplot('Accuracy', 'Accuracy (%)', 5, acc_subj_means_pc,
 #PS
 #trial
 #trim all data from end of the visual primer plus 1 cycle
-tot_cycs = 5
+tot_cycs = 5 + 1 # get one more iteration to find end of 5th
 cycle_start_sec = np.zeros(tot_cycs)
 cycle_start_samp = np.zeros(tot_cycs)
 for i in range(tot_cycs):
@@ -1049,13 +1049,9 @@ for i in range(tot_cycs):
             i * cycle_time
     cycle_start_samp[i] = cycle_start_sec[i] * fs
     print cycle_start_sec[i]
-second_cycle = preblock_prime_sec * fs + (cycle_time * fs)
-#print 'second cycle time: %.2f' % second_cycle
-#leave out the last cycle
-fifth_cycle = preblock_prime_sec * fs + 4 * (cycle_time * fs)
-#print 'fifth cycle time: %.2f' % fifth_cycle
 
-full_mean_trace, full_mean_bc_trace, full_ste_trace,\
+stats_tuple = namedtuple('stats_tuple', 'full_mean_trace,\
+        full_mean_bc_trace, full_ste_trace,\
         full_ste_bc_trace, mean_trace,\
         bc_mean_trace, ste_trace, bc_ste_trace, global_mean,\
         global_ste, global_bc_mean, global_bc_ste,\
@@ -1063,17 +1059,19 @@ full_mean_trace, full_mean_bc_trace, full_ste_trace,\
         ps_subj_bc_means, ps_subj_bc_std,\
         global_bc_peak_mean, global_mc_peak_mean,\
         global_bc_peak_ste, global_mc_peak_ste,\
-        subj_bc_peaks, subj_mean_corrected_peaks\
-        = subj_ps_stats(ps,
-                window_start=second_cycle,
-                    window_end=fifth_cycle)
+        subj_bc_peaks, subj_mean_corrected_peaks')
 
-full_mean_trace_start, full_mean_bc_trace_start,
+for i in range(tot_cycs):
+        cycle_stats[i] = subj_ps_stats(ps,
+            window_start=cycle_start_sec[i],
+            window_end=cycle_start_sec[i+1], take_trial='start')
+
+full_mean_trace_start, full_mean_bc_trace_start,\
 full_ste_trace_start,\
         full_ste_bc_trace_start, mean_trace_start,\
-        bc_mean_trace_start, ste_trace_start,
+        bc_mean_trace_start, ste_trace_start,\
         bc_ste_trace_start, global_mean_start,\
-        global_ste_start, global_bc_mean_start,
+        global_ste_start, global_bc_mean_start,\
         global_bc_ste_start,\
         ps_subj_means_start, ps_subj_std_start,\
         ps_subj_bc_means_start, ps_subj_bc_std_start,\
@@ -1083,10 +1081,10 @@ full_ste_trace_start,\
         = subj_ps_stats(ps_start, window_start=second_cycle,
             window_end=fifth_cycle, take_trial='start')
 
-full_mean_trace_end, full_mean_bc_trace_end,
+full_mean_trace_end, full_mean_bc_trace_end,\
         full_ste_trace_end,\
         full_ste_bc_trace_end, mean_trace_end,\
-        bc_mean_trace_end, ste_trace_end, bc_ste_trace_end,
+        bc_mean_trace_end, ste_trace_end, bc_ste_trace_end,\
         global_mean_end,\
         global_ste_end, global_bc_mean_end, global_bc_ste_end,\
         ps_subj_means_end, ps_subj_std_end,\
@@ -1094,8 +1092,7 @@ full_mean_trace_end, full_mean_bc_trace_end,
         global_bc_peak_mean_end, global_mc_peak_mean_end,\
         global_bc_peak_ste_end, global_mc_peak_ste_end,\
         subj_bc_peaks_end, subj_mean_corrected_peaks_end\
-        = subj_ps_stats(ps,
-                window_start=second_cycle,
+        = subj_ps_stats(ps, window_start=second_cycle,
                     window_end=fifth_cycle, take_trial='end')
 
 printSignificantInter('Start vs. end ps',
