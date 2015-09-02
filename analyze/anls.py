@@ -106,7 +106,7 @@ def simpleaxis(ax):
 
 def con_2_ind(pattern):
     return int(pattern[-3:].replace(" ", ""), 2) - 1
- 
+
 def pResults(header, var):
     """Print some numpy var or vector to results file, 
     if the vector happens to be of condition_nums len
@@ -122,6 +122,14 @@ def pResults(header, var):
     resultstxt.write('\n')
     return
 
+def pGroupedResults(stats_tuple, group):
+    pResults('Pupil global %s means' % group, stats_tuple.global_mean)
+    pResults('Pupil global %s standard error', stats_tuple.global_ste)
+    pResults('Pupil global %s bc means', stats_tuple.global_bc_mean)
+    pResults('Pupil global %s bc standard error', stats_tuple.global_bc_ste)
+    #printSignificant('PS', ps_subj_means)
+    printSignificant('PS baseline corrected', stats_tuple.ps_subj_bc_means)
+ 
 def combinedSigTest(header, subj_combined):
     """ Takes a matrix of N subjects by condition nums of 
     some statistic and computes the relative and independent 
@@ -415,6 +423,7 @@ def subj_ps_stats(ps_data, type='trial',\
                     #take only specified third of the data
                     if take_trials is 'start':
                         #take only first 9 trials
+                        #FIXME reshaped incorrectly
                         mean_dat[s_ind, c_ind] = np.nanmean(
                                 subj_ps[c_ind,:8].reshape(trials_to_process,
                                     int(trial_samp)), axis=0)
@@ -507,8 +516,7 @@ def subj_ps_stats(ps_data, type='trial',\
             #global_bc_peak_ste, global_mc_peak_ste,\
             #subj_bc_peaks, subj_mean_corrected_peaks
 
-def roundToIncrement(y, y_increment):
-    return round(float(y) / y_increment) * y_increment
+roundToIncrement = lambda (y, inc): round(float(y) / inc) * inc
 
 def barplot(title, ylabel, y_increment, subject_data, global_subj_mean,\
         global_subj_ste, yrange='default'):
@@ -1073,103 +1081,56 @@ stats_tuple = namedtuple('stats_tuple', 'full_mean_trace,\
 
 
 cycle_stats = list()
+#parse results by cycle count
 for i in range(tot_cycs - 1):
-    cycle_stats.append(subj_ps_stats(ps,
-    window_start=cycle_start_sec[i],
-    window_end=cycle_start_sec[i+1]))
+    temp = subj_ps_stats(ps, window_start=cycle_start_sec[i],\
+        window_end=cycle_start_sec[i+1])
+    cycle_stats.append(temp) 
+    pGroupedResults(temp, 'Cycle %s' % (i + 1))
 
+trial_stats = subj_ps_stats(ps)
 primer_stats = subj_ps_stats(ps, window_end=end_primer_samp)
-import pdb;pdb.set_trace()
-
-#full_mean_trace_start, full_mean_bc_trace_start,\
-#full_ste_trace_start,\
-        #full_ste_bc_trace_start, mean_trace_start,\
-        #bc_mean_trace_start, ste_trace_start,\
-        #bc_ste_trace_start, global_mean_start,\
-        #global_ste_start, global_bc_mean_start,\
-        #global_bc_ste_start,\
-        #ps_subj_means_start, ps_subj_std_start,\
-        #ps_subj_bc_means_start, ps_subj_bc_std_start,\
-        #global_bc_peak_mean_start, global_mc_peak_mean_start,\
-        #global_bc_peak_ste_start, global_mc_peak_ste_start,\
-        #subj_bc_peaks_start, subj_mean_corrected_peaks_start\
-
 #start stats for 2nd through 5th cycle
 start_stats = subj_ps_stats(ps, window_start=cycle_start_samp[1],
     window_end=cycle_start_samp[5], take_trials='start')
-
-#full_mean_trace_end, full_mean_bc_trace_end,\
-        #full_ste_trace_end,\
-        #full_ste_bc_trace_end, mean_trace_end,\
-        #bc_mean_trace_end, ste_trace_end, bc_ste_trace_end,\
-        #global_mean_end,\
-        #global_ste_end, global_bc_mean_end, global_bc_ste_end,\
-        #ps_subj_means_end, ps_subj_std_end,\
-        #ps_subj_bc_means_end, ps_subj_bc_std_end,\
-        #global_bc_peak_mean_end, global_mc_peak_mean_end,\
-        #global_bc_peak_ste_end, global_mc_peak_ste_end,\
-        #subj_bc_peaks_end, subj_mean_corrected_peaks_end\
-
 #end stats for 2nd through 5th cycle
 end_stats = subj_ps_stats(ps, window_start=cycle_start_samp[1],
-                    window_end=cycle_start_samp[5], take_trials='end')
+    window_end=cycle_start_samp[5], take_trials='end')
+target_stats = subj_ps_stats(ps_target, type='target',\
+    window_start=preslice_samp)
 
+import pdb;pdb.set_trace()
 printSignificantInter('Start vs. end ps',
-        ps_subj_bc_means_start, ps_subj_bc_means_end)
+        start_stats.ps_subj_means, end_stats.ps_subj_means)
 
-#target
-full_mean_targ_trace, full_mean_bc_targ_trace, full_ste_targ_trace,\
-        full_ste_bc_targ_trace, mean_targ_trace,\
-        bc_mean_targ_trace, ste_targ_trace, bc_ste_targ_trace,\
-        global_mean_targ,\
-        global_ste_targ, global_bc_mean_targ, global_bc_ste_targ,\
-        ps_subj_means_targ, ps_subj_std_targ,\
-        ps_subj_bc_means_targ, ps_subj_bc_std_targ,\
-        global_bc_peak_mean_targ, global_mc_peak_mean_targ,\
-        global_bc_peak_ste_targ, global_mc_peak_ste_targ,\
-        subj_bc_peaks_targ, subj_mean_corrected_peaks_targ\
-        = subj_ps_stats(ps_target, type='target',\
-        window_start=preslice_samp)
-
-#trial
-pResults('Pupil global means', global_mean)
-pResults('Pupil global standard error', global_ste)
-pResults('Pupil global bc means', global_bc_mean)
-pResults('Pupil global bc standard error', global_bc_ste)
-#printSignificant('PS', ps_subj_means)
-printSignificant('PS baseline corrected', ps_subj_bc_means)
-
-#target means
-pResults('Pupil global target means', global_mean_targ)
-pResults('Pupil global target standard error', global_ste_targ)
-pResults('Pupil global target bc means', global_bc_mean_targ)
-pResults('Pupil global target bc standard error', global_bc_ste_targ)
-#printSignificant('PS target', ps_subj_means_targ)
-printSignificant('PS target baseline corrected', ps_subj_bc_means_targ)
+pGroupedResults(trial_stats, 'trial')
+pGroupedResults(primer_stats, 'primer')
+pGroupedResults(start_stats, 'start')
+pGroupedResults(end_stats, 'end')
+pGroupedResults(target_stats, 'target')
 
 #target peak base corrected
 pResults('Pupil global target base corrected peak',
-        global_bc_peak_mean_targ)
+        target_stats.global_bc_peak_mean)
 pResults('Pupil global target bc standard error',
-        global_bc_peak_ste_targ)
-#printSignificant('PS target', ps_subj_means_targ)
+        target_stats.global_bc_peak_ste)
 printSignificant('Peak target baseline corrected',
-        subj_bc_peaks_targ)
+        target_stats.subj_bc_peaks)
 
 #target peak mean corrected
 pResults('Pupil global target mean corrected peak',
-        global_mc_peak_mean_targ)
+        target_stats.global_mc_peak_mean)
 pResults('Pupil global target mean corrected standard error',
-        global_mc_peak_ste_targ)
+        target_stats.global_mc_peak_ste)
 #printSignificant('PS target', ps_subj_means_targ)
 printSignificant('Peak target mean corrected',
-        subj_mean_corrected_peaks_targ)
+        target_stats.subj_mean_corrected_peaks)
 
 #plot ps data for all conditions
-plot_ps(full_mean_bc_trace, full_ste_bc_trace, 'Base corrected')
+plot_ps(trial_stats.full_mean_bc_trace, trial_stats.full_ste_bc_trace, 'Base corrected')
 
 #plot target ps data for all conditions
-plot_ps(full_mean_bc_targ_trace, full_ste_bc_targ_trace,\
+plot_ps(target_stats.full_mean_bc_trace, target_stats.full_ste_bc_trace,\
         'Base corrected target')
 
 #barplot('Mean pupil size', 'Pupil Size', 50,\
@@ -1177,17 +1138,18 @@ plot_ps(full_mean_bc_targ_trace, full_ste_bc_targ_trace,\
 
 #baseline corrected
 barplot('Mean base corrected pupil size', 'Relative pupil size',
-        250, ps_subj_bc_means, global_bc_mean, global_bc_ste)
+        250, trial_stats.ps_subj_bc_means,
+        trial_stats.global_bc_mean, trial_stats.global_bc_ste)
 
 #baseline corrected target
 barplot('Peak base corrected target pupil size', 
-    'Relative pupil size', 250, subj_bc_peaks_targ,
-    global_bc_peak_mean_targ, global_bc_peak_ste_targ)
+    'Relative pupil size', 250, target_stats.subj_bc_peaks,
+    target_stats.global_bc_peak_mean, target_stats.global_bc_peak_ste)
 
 #mean corrected target
 barplot('Peak mean corrected target pupil size', 
-   'Relative pupil size', 50, subj_mean_corrected_peaks_targ,
-   global_mc_peak_mean_targ, global_mc_peak_ste_targ)
+   'Relative pupil size', 50, target_stats.subj_mean_corrected_peaks,
+   target_stats.global_mc_peak_mean, target_stats.global_mc_peak_ste)
 
 #Survey
 cog_subj, cog_mean, cog_ste = cleanCogData(weighted=False)
