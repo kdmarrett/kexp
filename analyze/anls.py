@@ -383,16 +383,16 @@ def subj_ps_stats(ps_data, type='trial',\
                     if take_trials is 'start':
                         #take only first 9 trials
                         mean_dat[s_ind, c_ind] = np.nanmean(
-                                subj_ps[c_ind,:8].reshape(total_targets,
+                                subj_ps[c_ind,:3].reshape(total_targets,
                                     int(target_samp)), axis=0)
-                        raw_windows = subj_ps[c_ind,:8].reshape(
+                        raw_windows = subj_ps[c_ind,:3].reshape(
                                 total_targets, local_samp_len)
                     elif take_trials is 'end':
                         #take last 9 trials
                         mean_dat[s_ind, c_ind] = np.nanmean(
-                                subj_ps[c_ind, -9:].reshape(total_targets,
+                                subj_ps[c_ind, -3:].reshape(total_targets,
                                     int(target_samp)), axis=0)
-                        raw_windows = subj_ps[c_ind, -9:].reshape(
+                        raw_windows = subj_ps[c_ind, -3:].reshape(
                                 total_targets, local_samp_len)
                 #for each subject for each trial find the corresponding
                 #single baseline value to subtract per trial
@@ -425,16 +425,16 @@ def subj_ps_stats(ps_data, type='trial',\
                         #take only first 9 trials
                         #FIXME reshaped incorrectly
                         mean_dat[s_ind, c_ind] = np.nanmean(
-                                subj_ps[c_ind,:8].reshape(trials_to_process,
+                                subj_ps[c_ind,:3].reshape(trials_to_process,
                                     int(trial_samp)), axis=0)
-                        raw_windows = subj_ps[c_ind,:8].reshape(
+                        raw_windows = subj_ps[c_ind,:3].reshape(
                                 trials_to_process, local_samp_len)
                     elif take_trials is 'end':
                         #take last 9 trials
                         mean_dat[s_ind, c_ind] = np.nanmean(
-                                subj_ps[c_ind, -9:].reshape(trials_to_process,
+                                subj_ps[c_ind, -3:].reshape(trials_to_process,
                                     int(trial_samp)), axis=0)
-                        raw_windows = subj_ps[c_ind, -9:].reshape(
+                        raw_windows = subj_ps[c_ind, -3:].reshape(
                                 trials_to_process, local_samp_len)
                 # raw mean stack for each subject and condition
                 mean_dat[s_ind, c_ind] = np.nanmean(
@@ -1079,7 +1079,6 @@ stats_tuple = namedtuple('stats_tuple', 'full_mean_trace,\
         global_bc_peak_ste, global_mc_peak_ste,\
         subj_bc_peaks, subj_mean_corrected_peaks')
 
-
 cycle_stats = list()
 #parse results by cycle count
 for i in range(tot_cycs - 1):
@@ -1182,7 +1181,7 @@ subj_combined = np.zeros(shape=(3, N, condition_nums))
 subj_combined[:] = np.nan
 
 subj_combined[0] = acc_subj_means
-subj_combined[1] = ps_subj_means
+subj_combined[1] = trial_stats.ps_subj_means
 subj_combined[2] = cog_subj
 
 combinedSig, combinedP = \
