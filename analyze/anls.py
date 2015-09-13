@@ -375,16 +375,16 @@ def subj_ps_stats(ps_data, type='trial',\
                     if take_trials is 'start':
                         #take only first 9 trials
                         mean_dat[s_ind, c_ind] = np.nanmean(
-                                subj_ps[c_ind,:8].reshape(total_targets,
+                                subj_ps[c_ind,:3].reshape(total_targets,
                                     int(target_samp)), axis=0)
-                        raw_windows = subj_ps[c_ind,:8].reshape(
+                        raw_windows = subj_ps[c_ind,:3].reshape(
                                 total_targets, local_samp_len)
                     elif take_trials is 'end':
                         #take last 9 trials
                         mean_dat[s_ind, c_ind] = np.nanmean(
-                                subj_ps[c_ind, -9:].reshape(total_targets,
+                                subj_ps[c_ind, -3:].reshape(total_targets,
                                     int(target_samp)), axis=0)
-                        raw_windows = subj_ps[c_ind, -9:].reshape(
+                        raw_windows = subj_ps[c_ind, -3:].reshape(
                                 total_targets, local_samp_len)
                 #for each subject for each trial find the corresponding
                 #single baseline value to subtract per trial
@@ -414,18 +414,20 @@ def subj_ps_stats(ps_data, type='trial',\
                     trials_to_process = trials_per_cond / 3
                     #take only specified third of the data
                     if take_trials is 'start':
-                        #take only first 9 trials
+                        #take only first 9 trials by taking all
+                        #trials from a single condition in the
+                        #first 3 blocks
                         mean_dat[s_ind, c_ind] = np.nanmean(
-                                subj_ps[c_ind,:8].reshape(trials_to_process,
+                                subj_ps[c_ind, :3].reshape(trials_to_process,
                                     int(trial_samp)), axis=0)
-                        raw_windows = subj_ps[c_ind,:8].reshape(
+                        raw_windows = subj_ps[c_ind,:3].reshape(
                                 trials_to_process, local_samp_len)
                     elif take_trials is 'end':
-                        #take last 9 trials
+                        #take last 9 trials, "" last three blocks
                         mean_dat[s_ind, c_ind] = np.nanmean(
-                                subj_ps[c_ind, -9:].reshape(trials_to_process,
+                                subj_ps[c_ind, -3:].reshape(trials_to_process,
                                     int(trial_samp)), axis=0)
-                        raw_windows = subj_ps[c_ind, -9:].reshape(
+                        raw_windows = subj_ps[c_ind, -3:].reshape(
                                 trials_to_process, local_samp_len)
                 # raw mean stack for each subject and condition
                 mean_dat[s_ind, c_ind] = np.nanmean(
