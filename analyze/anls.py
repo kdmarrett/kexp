@@ -8,7 +8,8 @@
 #TODO think about subtracting by condition
 #TODO check the strategy for computing survey results
 #FIXME should be second through 5th cycle for analysis
-#TODO none of the subjects data found
+#TODO start and end
+#TODO where is primer stats?
 
 import glob
 from os import path as op
@@ -25,7 +26,7 @@ assert(pp.__version__ == .01)
 force_reprocess = False
 subjects = ['HP', 'HL', 'GH', 'GG', 'GN', 'GI', 'HT', 'HI', 'HN', 'HK', 'HJ', 'GR', 'GU'] 
 
-subjects = ['HP']
+#subjects = ['HP', 'HL']
 #shorten for debugging
 
 if force_reprocess:
@@ -40,6 +41,7 @@ stim_version_code = 8010
 fs = 1000.0  
 
 #data_dir = os.path.abspath(os.path.join(os.pardir, 'Data'))
+results_dir = op.abspath(op.join(op.pardir, 'paperFiles'))
 data_dir = '/home/kdmarrett/lab/FilesScript/Data'
 
 def cleanCogData(weighted=False):
@@ -125,12 +127,12 @@ def pResults(header, var):
     return
 
 def pGroupedResults(stats_tuple, group):
-    pResults('Pupil global %s means' % group, stats_tuple.global_mean)
-    pResults('Pupil global %s standard error', stats_tuple.global_ste)
-    pResults('Pupil global %s bc means', stats_tuple.global_bc_mean)
-    pResults('Pupil global %s bc standard error', stats_tuple.global_bc_ste)
+    pResults('Pupil global %s means' % str(group), stats_tuple.global_mean)
+    pResults('Pupil global %s standard error' % str(group), stats_tuple.global_ste)
+    pResults('Pupil global %s bc means' % str(group), stats_tuple.global_bc_mean)
+    pResults('Pupil global %s bc standard error' % str(group), stats_tuple.global_bc_ste)
     #printSignificant('PS', ps_subj_means)
-    printSignificant('PS baseline corrected', stats_tuple.ps_subj_bc_means)
+    printSignificant('PS baseline %s corrected' % str(group), stats_tuple.ps_subj_bc_means)
  
 def combinedSigTest(header, subj_combined):
     """ Takes a matrix of N subjects by condition nums of 
@@ -382,7 +384,11 @@ def subj_ps_stats(ps_data, type='trial',\
                     #take only specified third of the data
                     total_targets /= 3
                     trials_to_process /= 3
+                    #FIXME start and end are the same
+                    #import pdb; pdb.set_trace()
                     if take_trials is 'start':
+                        #ps.shape=(N, condition_nums, s2_blocks, 
+                            #block_len / condition_nums, trial_samp))
                         #take only first 9 trials
                         mean_dat[s_ind, c_ind] = np.nanmean(
                                 subj_ps[c_ind,:3].reshape(total_targets,
@@ -423,6 +429,7 @@ def subj_ps_stats(ps_data, type='trial',\
                 else:
                     trials_to_process = trials_per_cond / 3
                     #take only specified third of the data
+                    #import pdb; pdb.set_trace()
                     if take_trials is 'start':
                         #take only first 9 trials
                         #FIXME reshaped incorrectly
@@ -1087,7 +1094,7 @@ for i in range(tot_cycs - 1):
     temp = subj_ps_stats(ps, window_start=cycle_start_sec[i],\
         window_end=cycle_start_sec[i+1])
     cycle_stats.append(temp) 
-    pGroupedResults(temp, 'Cycle %s' % (i + 1))
+    pGroupedResults(temp, 'Cycle %d' % (i + 1))
 
 trial_stats = subj_ps_stats(ps)
 primer_stats = subj_ps_stats(ps, window_end=end_primer_samp)
