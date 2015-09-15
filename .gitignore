@@ -6,6 +6,8 @@ Letters/Files
 *.swp
 *.asv
 *.pdf
+*.aux
+*.bbl
 *.obj
 expCode/expyfun
 backupFiles/
@@ -14,3 +16,5 @@ analyze/tags
 *.png
 analyze/screenshots/
 analyze/results.txt
+*.out
+*.log
