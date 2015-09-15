@@ -8,6 +8,7 @@
 #TODO think about subtracting by condition
 #TODO check the strategy for computing survey results
 #FIXME should be second through 5th cycle for analysis
+#TODO none of the subjects data found
 
 import glob
 from os import path as op
@@ -19,6 +20,7 @@ import matplotlib.pyplot as plt
 import pickle as pck
 from collections import namedtuple
 
+assert(pp.__version__ == .01)
 # if something was changed in the file saving process
 force_reprocess = False
 subjects = ['HP', 'HL', 'GH', 'GG', 'GN', 'GI', 'HT', 'HI', 'HN', 'HK', 'HJ', 'GR', 'GU'] 
@@ -516,7 +518,7 @@ def subj_ps_stats(ps_data, type='trial',\
             #global_bc_peak_ste, global_mc_peak_ste,\
             #subj_bc_peaks, subj_mean_corrected_peaks
 
-roundToIncrement = lambda (y, inc): round(float(y) / inc) * inc
+roundToIncrement = lambda y, inc: round(float(y) / inc) * inc
 
 def barplot(title, ylabel, y_increment, subject_data, global_subj_mean,\
         global_subj_ste, yrange='default'):
@@ -533,8 +535,8 @@ def barplot(title, ylabel, y_increment, subject_data, global_subj_mean,\
     if yrange is 'default':
         lim_buffer = y_increment
         yrange = np.zeros((2,1))
-        yrange[0] = roundToIncrement(np.nanmin(subject_data) -\
-            lim_buffer, y_increment)
+        yrange[0] = roundToIncrement((np.nanmin(subject_data) - lim_buffer),
+                y_increment)
         yrange[1] = roundToIncrement(np.nanmax(subject_data) +\
                 lim_buffer, y_increment)
         #yrange[0] = roundToIncrement(np.nanmin(global_subj_mean) -\
@@ -771,8 +773,7 @@ for s_ind, subj in enumerate(subjects):
         assert(subj not in reprocess_list)
         fsubj = open(processed_file, 'r')
         (subj_accuracy, subj_ps, subj_ps_incorrect, subj_ps_base,
-                subj_ps_target, 
-                subj_usable_trials) = pck.load(fsubj)
+                subj_ps_target, subj_usable_trials) = pck.load(fsubj)
         accuracy[s_ind] = subj_accuracy
         ps[s_ind] = subj_ps
         ps_incorrect[s_ind] = subj_ps_incorrect
@@ -818,7 +819,7 @@ for s_ind, subj in enumerate(subjects):
         trial_ind = np.zeros(condition_nums)
         print '\tProcessing bnum: ' + str(bnum)
         try:
-            raw = pp.Raw(fname)
+            raw = pp.raw(fname)
         except:
             print 'Edf file: %s corrupted, skipping' % str(fname)
             continue
@@ -963,6 +964,7 @@ for s_ind, subj in enumerate(subjects):
             trial_epoch = pp.Epochs(raw, events=events, 
                 event_id = event_id, tmin=tmin, tmax=tmax)
             temp = trial_epoch.get_data('ps')[0]
+            #import pdb;pdb.set_trace()
 
             #save all other ps and accuracy info
             if correct:
@@ -1098,7 +1100,7 @@ end_stats = subj_ps_stats(ps, window_start=cycle_start_samp[1],
 target_stats = subj_ps_stats(ps_target, type='target',\
     window_start=preslice_samp)
 
-import pdb;pdb.set_trace()
+#import pdb;pdb.set_trace()
 printSignificantInter('Start vs. end ps',
         start_stats.ps_subj_means, end_stats.ps_subj_means)
 
