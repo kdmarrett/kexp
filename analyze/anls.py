@@ -20,13 +20,14 @@ import numpy as np
 import matplotlib.pyplot as plt
 import pickle as pck
 from collections import namedtuple
+from datetime import datetime
 
 assert(pp.__version__ == .01)
 # if something was changed in the file saving process
 force_reprocess = False
 subjects = ['HP', 'HL', 'GH', 'GG', 'GN', 'GI', 'HT', 'HI', 'HN', 'HK', 'HJ', 'GR', 'GU'] 
 
-#subjects = ['HP', 'HL']
+subjects = ['HP', 'HL']
 #shorten for debugging
 
 if force_reprocess:
@@ -44,7 +45,7 @@ fs = 1000.0
 results_dir = op.abspath(op.join(op.pardir, 'paperFiles'))
 data_dir = '/home/kdmarrett/lab/FilesScript/Data'
 
-def cleanCogData(weighted=False):
+def cleanCogData(weighted=False, weighting_type='default'):
     """ Return formatted cognitive load survey
     data"""
     gen_qnum = 6 #factors 
@@ -60,6 +61,7 @@ def cleanCogData(weighted=False):
     cog_subj = np.zeros((N, condition_nums))
     rel = np.zeros((N, condition_nums, gen_qnum))
     gen = np.ndarray(shape=(N, condition_nums, gen_qnum))
+    #tally the importance of different selections
     for i in range(N):
         for j in range(condition_nums):
             total_relative_responses = 0
@@ -74,12 +76,14 @@ def cleanCogData(weighted=False):
                                 total_relative_responses += 1
                                 break
                
-                #give all factors at least some partial weighting
                 one_modified = False
                 for dind, survey_dict in enumerate(dicts):
                    if rel[i, j, dind] == 0:
-                       rel[i, j, dind] += 1
-                       total_relative_responses += 1
+                       #give all factors at least some partial weighting
+                       #if weighting is not WWL type
+                       if weighting_type is 'default':
+                           rel[i, j, dind] += 1
+                           total_relative_responses += 1
                        #if two have 0 there must be a bug
                        assert(one_modified == False)
                        one_modified = True
@@ -88,17 +92,23 @@ def cleanCogData(weighted=False):
                 response =  cog[i][j]['gen_' + para[j] + '_qnum_' + \
                     str(k)][0,0]
                 gen[i, j, k] = response
-                if weighted:
-                    weight = float(rel[i, j, k]) / total_relative_responses
-                    response *= weight
                 if k in (3, 5):
                     response = 10 - response
+                assert(response >= 0)
+                if weighted:
+                    if weighting_type is 'WWL':
+                        weight = float(rel[i, j, k])
+                    else:
+                        weight = float(rel[i, j, k]) / total_relative_responses
+                    response *= weight
+                assert(response >= 0)
                 score += response
+            if  weighting_type is 'WWL':
+                score /= total_relative_responses
             cog_subj[i, j] = score
     cog_mean = np.nanmean(cog_subj, axis=0)
     cog_ste = stats.sem(cog_subj, axis=0)
     return cog_subj, cog_mean, cog_ste
-
 
 def simpleaxis(ax):
     """Taken from timday on S.O.,
@@ -336,13 +346,13 @@ def subj_accuracy_stats(accuracy_data):
         global_ste.append(stats.sem(subj_means[:, i]))
     return global_mean, global_ste, subj_means, subj_stds
 
-def subj_ps_stats(ps_data, type='trial',\
+def subj_ps_stats(ps_data, data_type='trial',\
         window_start=0, window_end='end', take_trials='all'):
     """ ps[subject, cond_ind, block, trial, sample] 
     Params:
         window_start : start sample to analyze
         window_end : end sample to analyze
-        type : if 'trial' trim around ps data from the window of
+        data_type : if 'trial' trim around ps data from the window of
         the task if 'target' use all of the target window passed
         without windowing"""
 
@@ -353,48 +363,48 @@ def subj_ps_stats(ps_data, type='trial',\
     if window_end is 'end':
         #include up to last sample in window
         window_end = local_samp_len
+    if take_trials is 'all':
+        trials_to_process = trials_per_cond
+    else:
+        trials_to_process = trials_per_cond / 3
 
-    if type is 'target':
+    if data_type is 'target':
         assert(local_samp_len == target_samp)
-    elif type is 'trial':
+    elif data_type is 'trial':
         assert(local_samp_len == trial_samp)
 
     # dat holds each time trace
-    mean_dat = np.zeros((N, condition_nums, local_samp_len))
-    mean_dat[:] = np.nan
-    std_dat = np.zeros((N, condition_nums, local_samp_len))
-    std_dat[:] = np.nan
-    bc_mean_dat = np.zeros((N, condition_nums, local_samp_len))
-    bc_mean_dat[:] = np.nan
-    base_mean = np.zeros(shape=(N, trials_per_cond))
-    base_mean[:] = np.nan
-
+    mean_dat = np.full((N, condition_nums, local_samp_len), np.nan)
+    std_dat = np.full((N, condition_nums, local_samp_len), np.nan)
+    bc_mean_dat = np.full((N, condition_nums, local_samp_len),
+            np.nan)
+    base_mean = np.full((N, trials_to_process), np.nan)
+    #FIXME collapse this
     for s_ind, subj_ps in enumerate(ps_data):
         for c_ind in range(condition_nums):
-            if type is 'target':
-                total_targets = trials_per_cond * max_targets
-                trials_to_process = trials_per_cond
+            if data_type is 'target':
+                total_targets = trials_to_process * max_targets
                 if take_trials is 'all':
                     mean_dat[s_ind, c_ind] = np.nanmean(
                             subj_ps[c_ind].reshape(total_targets,
                                 int(target_samp)), axis=0)
                     raw_windows = subj_ps[c_ind].reshape(
                             total_targets, local_samp_len)
+                    base_mean[s_ind, :] = np.nanmean(ps_base[s_ind,
+                            c_ind].reshape(trials_to_process,
+                                int(base_samp)), axis=1)
                 else:
                     #take only specified third of the data
-                    total_targets /= 3
-                    trials_to_process /= 3
-                    #FIXME start and end are the same
-                    #import pdb; pdb.set_trace()
                     if take_trials is 'start':
-                        #ps.shape=(N, condition_nums, s2_blocks, 
-                            #block_len / condition_nums, trial_samp))
-                        #take only first 9 trials
+                        #take only first 9 trials (first three blocks)
                         mean_dat[s_ind, c_ind] = np.nanmean(
                                 subj_ps[c_ind,:3].reshape(total_targets,
                                     int(target_samp)), axis=0)
                         raw_windows = subj_ps[c_ind,:3].reshape(
                                 total_targets, local_samp_len)
+                        base_mean[s_ind, :] = np.nanmean(ps_base[s_ind,
+                            c_ind, :3].reshape(trials_to_process,
+                                    int(base_samp)), axis=1)
                     elif take_trials is 'end':
                         #take last 9 trials
                         mean_dat[s_ind, c_ind] = np.nanmean(
@@ -402,11 +412,11 @@ def subj_ps_stats(ps_data, type='trial',\
                                     int(target_samp)), axis=0)
                         raw_windows = subj_ps[c_ind, -3:].reshape(
                                 total_targets, local_samp_len)
+                        base_mean[s_ind, :] = np.nanmean(ps_base[s_ind,
+                            c_ind, -3:].reshape(trials_to_process,
+                                    int(base_samp)), axis=1)
                 #for each subject for each trial find the corresponding
                 #single baseline value to subtract per trial
-                base_mean[s_ind, :] = np.nanmean(ps_base[s_ind,
-                        c_ind].reshape(trials_per_cond,
-                            int(base_samp)), axis=1)
                 bc_window = np.zeros(shape=(total_targets,
                     local_samp_len))
                 bc_window[:] = np.nan
@@ -418,52 +428,62 @@ def subj_ps_stats(ps_data, type='trial',\
                             base_mean[s_ind, rti]
                 bc_mean_dat[s_ind, c_ind] = np.nanmean(bc_window,
                         axis=0)
-
-            elif type is 'trial':
+            elif data_type is 'trial':
                 if take_trials is 'all':
+                    ## raw mean stack for each subject and condition
                     mean_dat[s_ind, c_ind] = np.nanmean(
-                            subj_ps[c_ind].reshape(trials_per_cond,
-                                int(trial_samp)), axis=0)
+                            subj_ps[c_ind].reshape(trials_to_process,
+                                local_samp_len), axis=0)
                     raw_windows = subj_ps[c_ind].reshape(
-                            trials_per_cond, local_samp_len)
+                            trials_to_process, local_samp_len)
+                    #for each subject for each trial find the corresponding
+                        #baseline to subtract
+                    base_mean[s_ind, :] = np.nanmean(ps_base[s_ind,
+                            c_ind].reshape(trials_to_process,
+                                int(base_samp)), axis=1)
+                    #subtract the mean of each trial baseline 
+                    bc_trial = np.zeros(shape=(trials_to_process,
+                        local_samp_len))
+                    bc_trial[:] = np.nan
+                    for rti, raw_trial in enumerate(raw_windows):
+                        bc_trial[rti,:] = raw_trial - base_mean[s_ind, rti]
+                    bc_mean_dat[s_ind, c_ind] = np.nanmean(bc_trial,
+                            axis=0)
                 else:
-                    trials_to_process = trials_per_cond / 3
                     #take only specified third of the data
-                    #import pdb; pdb.set_trace()
                     if take_trials is 'start':
                         #take only first 9 trials
-                        #FIXME reshaped incorrectly
                         mean_dat[s_ind, c_ind] = np.nanmean(
                                 subj_ps[c_ind,:3].reshape(trials_to_process,
-                                    int(trial_samp)), axis=0)
+                                    local_samp_len), axis=0)
                         raw_windows = subj_ps[c_ind,:3].reshape(
                                 trials_to_process, local_samp_len)
+                        base_mean[s_ind, :] = np.nanmean(ps_base[s_ind,
+                            c_ind,:3].reshape(trials_to_process,
+                                    int(base_samp)), axis=1)
                     elif take_trials is 'end':
                         #take last 9 trials
                         mean_dat[s_ind, c_ind] = np.nanmean(
-                                subj_ps[c_ind, -3:].reshape(trials_to_process,
-                                    int(trial_samp)), axis=0)
+                                subj_ps[c_ind,
+                                    -3:].reshape(trials_to_process,
+                                        local_samp_len), axis=0)
                         raw_windows = subj_ps[c_ind, -3:].reshape(
                                 trials_to_process, local_samp_len)
-                # raw mean stack for each subject and condition
-                mean_dat[s_ind, c_ind] = np.nanmean(
-                        subj_ps[c_ind].reshape(trials_per_cond,
-                            local_samp_len), axis=0)
-                raw_trials = subj_ps[c_ind].reshape(trials_per_cond,
-                            local_samp_len)
-                #for each subject for each trial find the corresponding
-                    #baseline to subtract
-                base_mean[s_ind, :] = np.nanmean(ps_base[s_ind,
-                        c_ind].reshape(trials_per_cond,
-                            int(base_samp)), axis=1)
-                #subtract the mean of each trial baseline 
-                bc_trial = np.zeros(shape=(trials_per_cond,
-                    local_samp_len))
-                bc_trial[:] = np.nan
-                for rti, raw_trial in enumerate(raw_trials):
-                    bc_trial[rti,:] = raw_trial - base_mean[s_ind, rti]
-                bc_mean_dat[s_ind, c_ind] = np.nanmean(bc_trial,
-                        axis=0)
+                        base_mean[s_ind, :] = np.nanmean(ps_base[s_ind,
+                            c_ind,-3:].reshape(trials_to_process,
+                                    int(base_samp)), axis=1)
+                    #for each subject for each trial find the corresponding
+                        #baseline to subtract
+                    #ps_base.shape=(N, condition_nums, s2_blocks,
+                        #block_len / condition_nums, base_samp))
+                    #subtract the mean of each trial baseline 
+                    bc_trial = np.zeros(shape=(trials_to_process,
+                        local_samp_len))
+                    bc_trial[:] = np.nan
+                    for rti, raw_trial in enumerate(raw_windows):
+                        bc_trial[rti,:] = raw_trial - base_mean[s_ind, rti]
+                    bc_mean_dat[s_ind, c_ind] = np.nanmean(bc_trial,
+                            axis=0)
     mean_dat_trim = mean_dat[:,:,window_start:window_end]
     bc_mean_dat_trim = bc_mean_dat[:,:,window_start:window_end]
     #subject means for sig testing and plotting
@@ -1008,6 +1028,7 @@ resultstxt = open('results.txt', 'w')
 resultstxt.truncate()
 resultstxt.write('Text file for KEXP stats\n')
 resultstxt.write('# of Subjects: %d\n \n' % N)
+resultstxt.write('%s \n' % str(datetime.now()))
 
 #Accuracy
 acc_global_mean, acc_global_ste,\
@@ -1075,7 +1096,7 @@ for i in range(tot_cycs):
     cycle_start_sec[i] = preblock_prime_sec +\
             i * cycle_time
     cycle_start_samp[i] = cycle_start_sec[i] * fs
-    print cycle_start_sec[i]
+    #print cycle_start_sec[i]
 
 stats_tuple = namedtuple('stats_tuple', 'full_mean_trace,\
         full_mean_bc_trace, full_ste_trace,\
@@ -1104,7 +1125,7 @@ start_stats = subj_ps_stats(ps, window_start=cycle_start_samp[1],
 #end stats for 2nd through 5th cycle
 end_stats = subj_ps_stats(ps, window_start=cycle_start_samp[1],
     window_end=cycle_start_samp[5], take_trials='end')
-target_stats = subj_ps_stats(ps_target, type='target',\
+target_stats = subj_ps_stats(ps_target, data_type='target',\
     window_start=preslice_samp)
 
 #import pdb;pdb.set_trace()
@@ -1182,6 +1203,21 @@ printSignificant('Cognitive load weighted', cog_subj_weighted)
 barplot('Weighted cognitive load survey', 'Relative demand score\n'+\
 r'low $\hspace{8} \rightarrow \hspace{8}$high', 1,\
         cog_subj_weighted, cog_mean_weighted, cog_ste_weighted)
+
+# WWL weighted
+cog_subj_weighted_WWL, cog_mean_weighted_WWL,\
+    cog_ste_weighted_WWL =\
+    cleanCogData(weighted=True, weighting_type='WWL')
+
+pResults('Cognitive load WWL weighted means', cog_mean_weighted_WWL)
+pResults('Cognitive load WWL weighted standard error',
+        cog_ste_weighted_WWL)
+printSignificant('Cognitive load WWL weighted',
+        cog_subj_weighted_WWL)
+
+barplot('WWL Weighted cognitive load survey', 'Relative demand score\n'+\
+r'low $\hspace{8} \rightarrow \hspace{8}$high', 1,\
+        cog_subj_weighted_WWL, cog_mean_weighted_WWL, cog_ste_weighted_WWL)
 
 #Combined data
 measure_names = ['Accuracy', 'PS', 'Survey']
