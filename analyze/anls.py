@@ -1,15 +1,15 @@
 # author: Karl Marrett
 # analyze pupillometry data
 
-#TODO check the primer times for significance
+#TODO printSignificantInter for cycle 1 vs. 2 and so on
+#TODO double check that cycle stats are working properly
+#FIXME should be second through 5th cycle for analysis
+
+#if there is time
 #TODO use remove_blink_artifacts to nullify certain target
 #windows use position of eye to clean the results later
 #TODO think about degrees of freedom
 #TODO think about subtracting by condition
-#TODO check the strategy for computing survey results
-#FIXME should be second through 5th cycle for analysis
-#TODO start and end
-#TODO where is primer stats?
 
 import glob
 from os import path as op
@@ -27,7 +27,7 @@ assert(pp.__version__ == .01)
 force_reprocess = False
 subjects = ['HP', 'HL', 'GH', 'GG', 'GN', 'GI', 'HT', 'HI', 'HN', 'HK', 'HJ', 'GR', 'GU'] 
 
-subjects = ['HP', 'HL']
+#subjects = ['HP', 'HL']
 #shorten for debugging
 
 if force_reprocess:
@@ -138,11 +138,11 @@ def pResults(header, var):
 
 def pGroupedResults(stats_tuple, group):
     pResults('Pupil global %s means' % str(group), stats_tuple.global_mean)
-    pResults('Pupil global %s standard error' % str(group), stats_tuple.global_ste)
+    #pResults('Pupil global %s standard error' % str(group), stats_tuple.global_ste)
+    printSignificant('PS %s' % str(group), stats_tuple.ps_subj_means)
     pResults('Pupil global %s bc means' % str(group), stats_tuple.global_bc_mean)
-    pResults('Pupil global %s bc standard error' % str(group), stats_tuple.global_bc_ste)
-    #printSignificant('PS', ps_subj_means)
-    printSignificant('PS baseline %s corrected' % str(group), stats_tuple.ps_subj_bc_means)
+    #pResults('Pupil global %s bc standard error' % str(group), stats_tuple.global_bc_ste)
+    printSignificant('PS baseline corrected %s' % str(group), stats_tuple.ps_subj_bc_means)
  
 def combinedSigTest(header, subj_combined):
     """ Takes a matrix of N subjects by condition nums of 
@@ -387,7 +387,7 @@ def subj_ps_stats(ps_data, data_type='trial',\
                 if take_trials is 'all':
                     mean_dat[s_ind, c_ind] = np.nanmean(
                             subj_ps[c_ind].reshape(total_targets,
-                                int(target_samp)), axis=0)
+                                local_samp_len), axis=0)
                     raw_windows = subj_ps[c_ind].reshape(
                             total_targets, local_samp_len)
                     base_mean[s_ind, :] = np.nanmean(ps_base[s_ind,
@@ -399,7 +399,7 @@ def subj_ps_stats(ps_data, data_type='trial',\
                         #take only first 9 trials (first three blocks)
                         mean_dat[s_ind, c_ind] = np.nanmean(
                                 subj_ps[c_ind,:3].reshape(total_targets,
-                                    int(target_samp)), axis=0)
+                                    local_samp_len), axis=0)
                         raw_windows = subj_ps[c_ind,:3].reshape(
                                 total_targets, local_samp_len)
                         base_mean[s_ind, :] = np.nanmean(ps_base[s_ind,
@@ -1027,8 +1027,8 @@ resultstxt = open('results.txt', 'w')
 #remove past data
 resultstxt.truncate()
 resultstxt.write('Text file for KEXP stats\n')
-resultstxt.write('# of Subjects: %d\n \n' % N)
-resultstxt.write('%s \n' % str(datetime.now()))
+resultstxt.write('# of Subjects: %d\n' % N)
+resultstxt.write('%s \n \n' % str(datetime.now()))
 
 #Accuracy
 acc_global_mean, acc_global_ste,\
