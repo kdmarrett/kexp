@@ -41,6 +41,7 @@ N = len(subjects)
 stim_version_code = 8010
 # asserted fs
 fs = 1000.0  
+sig_thresh = .10
 
 #data_dir = os.path.abspath(os.path.join(os.pardir, 'Data'))
 results_dir = op.abspath(op.join(op.pardir, 'paperFiles'))
@@ -145,7 +146,7 @@ def pGroupedResults(stats_tuple, group):
     #pResults('Pupil global %s bc standard error' % str(group), stats_tuple.global_bc_ste)
     printSignificant('PS baseline corrected %s' % str(group), stats_tuple.ps_subj_bc_means)
  
-def combinedSigTest(header, subj_combined):
+def combinedSigTest(header, subj_combined, strategy):
     """ Takes a matrix of N subjects by condition nums of 
     some statistic and computes the relative and independent 
     t test scores.  Prints these scores to results.txt, with 
@@ -157,16 +158,18 @@ def combinedSigTest(header, subj_combined):
         condition_nums), dtype=bool)
     resultstxt.write(header + ' sig. testing:\n')
     combo = (0, 1)
-    trel, p[0], significant[0] = testSigComb(combo,subj_combined)
+    trel, p[0], significant[0] = testSigComb(combo,subj_combined,
+            strategy)
     combo = (0, 2)
-    trel, p[1], significant[1] = testSigComb(combo,subj_combined)
+    trel, p[1], significant[1] = testSigComb(combo,subj_combined,
+            strategy)
     combo = (1, 2)
-    trel, p[2], significant[2] = testSigComb(combo,subj_combined)
+    trel, p[2], significant[2] = testSigComb(combo,subj_combined,
+            strategy)
     resultstxt.write('\n')
     return significant, p
 
-def testSigComb(combo, subj_combined):
-    sig_thresh = .05
+def testSigComb(combo, subj_combined, strategy):
     significant = False
     significant = np.zeros(condition_nums, dtype=bool)
     p_arr = np.zeros(condition_nums, dtype=bool)
@@ -175,7 +178,7 @@ def testSigComb(combo, subj_combined):
     for cind in range(condition_nums):
         resultstxt.write(names[cind] + ':')
         (trel, pval) =\
-            stats.pearsonr(subj_combined[combo[0],:, cind],\
+            strategy(subj_combined[combo[0],:, cind],\
                     subj_combined[combo[1],:, cind])
         resultstxt.write('%.4f' % pval)
         p_arr[cind] = pval
@@ -213,7 +216,6 @@ def printSignificantInter(header, subject_data,
     with significant relations with * appended."""
 
     assert(subject_data.shape == (N, condition_nums))
-    sig_thresh = .05
     significant = np.zeros(condition_nums, dtype=bool)
     prel = np.zeros(condition_nums, dtype=float)
     resultstxt.write(header + ' sig. testing:\n')
@@ -232,7 +234,6 @@ def printSignificantInter(header, subject_data,
     return significant, prel
 
 def testSig(combo, subject_data):
-    sig_thresh = .05
     significant = False
     #(tind, pind) = stats.ttest_ind(subject_data[:, combo[0]],\
         #subject_data[:, combo[1]])
@@ -380,6 +381,7 @@ def subj_ps_stats(ps_data, data_type='trial',\
     std_dat = np.full((N, condition_nums, local_samp_len), np.nan)
     bc_mean_dat = np.full((N, condition_nums, local_samp_len),
             np.nan)
+    #get a mean value for the baseline period proceeding each trial 
     base_mean = np.full((N, trials_to_process), np.nan)
     #FIXME collapse this
     for s_ind, subj_ps in enumerate(ps_data):
@@ -1240,29 +1242,36 @@ r'low $\hspace{8} \rightarrow \hspace{8}$high', 1,\
         cog_subj_weighted_WWL, cog_mean_weighted_WWL, cog_ste_weighted_WWL)
 
 #Combined data
-measure_names = ['Accuracy', 'PS', 'Survey']
-subj_combined = np.zeros(shape=(3, N, condition_nums))
+correlation_strategies = [stats.pearsonr, stats.spearmanr]
+strategy_names = ['pearson', 'spearman']
+for si, strategy in enumerate(correlation_strategies):
+    strategy_name = strategy_names[si]
+    measure_names = ['Accuracy', 'PS', 'Survey']
+    subj_combined = np.zeros(shape=(3, N, condition_nums))
 #for safety
-subj_combined[:] = np.nan
+    subj_combined[:] = np.nan
 
-subj_combined[0] = acc_subj_means
-subj_combined[1] = task_stats.ps_subj_means
-subj_combined[2] = cog_subj
+    subj_combined[0] = acc_subj_means
+    subj_combined[1] = task_stats.ps_subj_means
+    subj_combined[2] = cog_subj
 
-combinedSig, combinedP = \
-        combinedSigTest('Cross-measure R Pearson', subj_combined)
+    combinedSig, combinedP = \
+            combinedSigTest('Cross-measure R %s' % strategy_name,
+                    subj_combined, strategy)
 
-subj_combined[0] = acc_subj_means_start
-subj_combined[1] = start_stats.ps_subj_means
+    subj_combined[0] = acc_subj_means_start
+    subj_combined[1] = start_stats.ps_subj_means
 
-combinedSig, combinedP = \
-        combinedSigTest('Cross-measure R Pearson start trials', subj_combined)
+    combinedSig, combinedP = \
+            combinedSigTest('Cross-measure R %s start trials'
+                    % strategy_name, subj_combined, strategy)
 
-subj_combined[0] = acc_subj_means_end
-subj_combined[1] = end_stats.ps_subj_means
+    subj_combined[0] = acc_subj_means_end
+    subj_combined[1] = end_stats.ps_subj_means
 
-combinedSig, combinedP = \
-        combinedSigTest('Cross-measure R Pearson end trials', subj_combined)
+    combinedSig, combinedP = \
+            combinedSigTest('Cross-measure R %s end trials' %
+                    strategy_name, subj_combined, strategy)
 
 resultstxt.close()
 print 'Finished... results text file closed\n'
