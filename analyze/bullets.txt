@@ -1,0 +1,48 @@
+General
+-Primer times show no significant differences
+-In general baseline correction by trial has lower p values 
+-Task period (second through fifth cycles) yields lower p value
+    than all including first cycle
+
+Start vs. end (first 9 trials of exp. vs. last 9 trials)
+-accuracy shows no sig. differences between start and end
+-differences between fixed order and ps is exagerrated when
+    examining early trials
+-Fixed-order is significantly greater than Alphabetic
+    and Random in early trials
+-Across all trials only Fixed-order and Random are significantly different
+-differences diminish in later trials
+-in comparing global pupil means from start vs. end trials
+    only fixed order showed a significant difference (.02)
+
+Cycles
+-Cycle 1 shows no significant differences across the board
+-Whereas Cycle 2 shows sig differences as expected
+
+Cognitive load
+-WWL is an example manner for weighting different factors used in
+the original NASA TLX study
+-The values produced are very similar to the weighted and
+unweighted values
+-It will be used as the final strategy for the paper
+
+Cross-measure validation
+-Survey and Pupillometry are particularly correlated
+-Fixed-order higher correlations
+-Spearman better strategy than pearson due to relative nature
+
+Discussion points:
+-p < .05 or .10?
+-In some cases non baseline corrected data shows more significant
+    differences than baseline corrected.  This is the minority of
+    cases and is considered random
+-Rudimentary target interval testing shows a significant
+    difference in mean value and maximum value in the interval after
+    a target in the fixed order case.  However, when the mean of the
+    condition is subtracted these differences are no longer
+    significant. This suggests that local changes in pupil size, as
+    in the interval after a target, may not be as discriminative as
+    global changes for a task.
+
+Takeaway
+The difference between pupil size  
