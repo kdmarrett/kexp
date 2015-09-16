@@ -1,9 +1,10 @@
 # author: Karl Marrett
 # analyze pupillometry data
 
+#TODO plot start vs end baseline corrected
+#TODO cycle sigs for start vs. ends
 #TODO printSignificantInter for cycle 1 vs. 2 and so on
-#TODO double check that cycle stats are working properly
-#FIXME should be second through 5th cycle for analysis
+#TODO label each cycle
 
 #if there is time
 #TODO use remove_blink_artifacts to nullify certain target
@@ -363,6 +364,7 @@ def subj_ps_stats(ps_data, data_type='trial',\
     if window_end is 'end':
         #include up to last sample in window
         window_end = local_samp_len
+    #print '%d to %d' % (window_start, window_end)
     if take_trials is 'all':
         trials_to_process = trials_per_cond
     else:
@@ -635,6 +637,9 @@ def plot_ps(trace, ste_trace, name):
         ax.text(24, topFig, 'Task\n', size=10) 
         ax.legend(loc=4, prop={'size':10})
         ax.set_title(name + ' trial pupil size N=%d' % N)
+        for i in cycle_start_sec[1:]:
+            ax.axvline(x=i, linestyle='--', color='k',
+                    alpha=.4)
         #indicate with arrow
         #ax.annotate('End visual primer', xy=(end_primer, 
             #global_mean[c_num]), xytext=(5, 2000),
@@ -1109,15 +1114,20 @@ stats_tuple = namedtuple('stats_tuple', 'full_mean_trace,\
         global_bc_peak_ste, global_mc_peak_ste,\
         subj_bc_peaks, subj_mean_corrected_peaks')
 
-cycle_stats = list()
-#parse results by cycle count
-for i in range(tot_cycs - 1):
-    temp = subj_ps_stats(ps, window_start=cycle_start_sec[i],\
-        window_end=cycle_start_sec[i+1])
-    cycle_stats.append(temp) 
-    pGroupedResults(temp, 'Cycle %d' % (i + 1))
+which_trials = ['all', 'start', 'end']
+for which_trial in which_trials:
+    #cycle_stats = list()
+    #parse results by cycle count
+    for i in range(tot_cycs - 1):
+        temp = subj_ps_stats(ps, window_start=cycle_start_samp[i],\
+            window_end=cycle_start_samp[i+1], take_trials=which_trial)
+        #cycle_stats.append(temp) 
+        pGroupedResults(temp, 'Cycle %d %s' % ((i + 1),
+            which_trial))
 
-trial_stats = subj_ps_stats(ps)
+#trial_stats = subj_ps_stats(ps)
+task_stats = subj_ps_stats(ps, window_start=cycle_start_samp[1],
+    window_end=cycle_start_samp[5])
 primer_stats = subj_ps_stats(ps, window_end=end_primer_samp)
 #start stats for 2nd through 5th cycle
 start_stats = subj_ps_stats(ps, window_start=cycle_start_samp[1],
@@ -1132,7 +1142,8 @@ target_stats = subj_ps_stats(ps_target, data_type='target',\
 printSignificantInter('Start vs. end ps',
         start_stats.ps_subj_means, end_stats.ps_subj_means)
 
-pGroupedResults(trial_stats, 'trial')
+#pGroupedResults(trial_stats, 'full trial')
+pGroupedResults(task_stats, 'task')
 pGroupedResults(primer_stats, 'primer')
 pGroupedResults(start_stats, 'start')
 pGroupedResults(end_stats, 'end')
@@ -1155,8 +1166,17 @@ pResults('Pupil global target mean corrected standard error',
 printSignificant('Peak target mean corrected',
         target_stats.subj_mean_corrected_peaks)
 
+#plot bc ps data for all conditions
+plot_ps(task_stats.full_mean_bc_trace, task_stats.full_ste_bc_trace, 'Base corrected')
+
+plot_ps(start_stats.full_mean_bc_trace,
+        start_stats.full_ste_bc_trace, 'Base corrected start trials')
+
+plot_ps(end_stats.full_mean_bc_trace,
+        end_stats.full_ste_bc_trace, 'Base corrected end trials')
+
 #plot ps data for all conditions
-plot_ps(trial_stats.full_mean_bc_trace, trial_stats.full_ste_bc_trace, 'Base corrected')
+#plot_ps(task_stats.full_mean_trace, task_stats.full_ste_trace, 'Raw')
 
 #plot target ps data for all conditions
 plot_ps(target_stats.full_mean_bc_trace, target_stats.full_ste_bc_trace,\
@@ -1167,8 +1187,8 @@ plot_ps(target_stats.full_mean_bc_trace, target_stats.full_ste_bc_trace,\
 
 #baseline corrected
 barplot('Mean base corrected pupil size', 'Relative pupil size',
-        250, trial_stats.ps_subj_bc_means,
-        trial_stats.global_bc_mean, trial_stats.global_bc_ste)
+        250, task_stats.ps_subj_bc_means,
+        task_stats.global_bc_mean, task_stats.global_bc_ste)
 
 #baseline corrected target
 barplot('Peak base corrected target pupil size', 
@@ -1226,11 +1246,23 @@ subj_combined = np.zeros(shape=(3, N, condition_nums))
 subj_combined[:] = np.nan
 
 subj_combined[0] = acc_subj_means
-subj_combined[1] = trial_stats.ps_subj_means
+subj_combined[1] = task_stats.ps_subj_means
 subj_combined[2] = cog_subj
 
 combinedSig, combinedP = \
         combinedSigTest('Cross-measure R Pearson', subj_combined)
+
+subj_combined[0] = acc_subj_means_start
+subj_combined[1] = start_stats.ps_subj_means
+
+combinedSig, combinedP = \
+        combinedSigTest('Cross-measure R Pearson start trials', subj_combined)
+
+subj_combined[0] = acc_subj_means_end
+subj_combined[1] = end_stats.ps_subj_means
+
+combinedSig, combinedP = \
+        combinedSigTest('Cross-measure R Pearson end trials', subj_combined)
 
 resultstxt.close()
 print 'Finished... results text file closed\n'
