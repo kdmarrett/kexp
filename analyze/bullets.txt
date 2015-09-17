@@ -1,3 +1,6 @@
+lit review (past michael)
+word count
+
 General
 -Primer times show no significant differences
 -In general baseline correction by trial has lower p values 
@@ -44,5 +47,3 @@ Discussion points:
     in the interval after a target, may not be as discriminative as
     global changes for a task.
 
-Takeaway
-The difference between pupil size  

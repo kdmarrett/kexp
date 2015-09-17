@@ -1,11 +1,9 @@
 # author: Karl Marrett
 # analyze pupillometry data
 
-#TODO plot start vs end baseline corrected
-#TODO cycle sigs for start vs. ends
-#TODO printSignificantInter for cycle 1 vs. 2 and so on
-#TODO label each cycle
-
+#TODO change in accuracy
+#/*does this correlate with the survey and pupillometry*/
+#TODO color of the plots for r-g color blind
 #if there is time
 #TODO use remove_blink_artifacts to nullify certain target
 #windows use position of eye to clean the results later
@@ -41,7 +39,7 @@ N = len(subjects)
 stim_version_code = 8010
 # asserted fs
 fs = 1000.0  
-sig_thresh = .10
+sig_thresh = .05
 
 #data_dir = os.path.abspath(os.path.join(os.pardir, 'Data'))
 results_dir = op.abspath(op.join(op.pardir, 'paperFiles'))
@@ -1075,6 +1073,8 @@ global_mean_start_pc = acc_global_mean_start * np.tile(100,
 global_ste_start_pc = acc_global_ste_start * np.tile(100, 
         condition_nums)
 acc_subj_means_start_pc = acc_subj_means_start * 100
+barplot('Initial Accuracy', 'Accuracy (%)', 5, acc_subj_means_start_pc,
+        global_mean_start_pc, global_ste_start_pc, yrange=(50, 105))
 
 #end
 global_mean_end_pc = acc_global_mean_end * np.tile(100,
@@ -1082,11 +1082,12 @@ global_mean_end_pc = acc_global_mean_end * np.tile(100,
 global_ste_end_pc = acc_global_ste_end * np.tile(100,
         condition_nums)
 acc_subj_means_end_pc = acc_subj_means_end * 100
+barplot('Final Accuracy', 'Accuracy (%)', 5, acc_subj_means_end_pc,
+        global_mean_end_pc, global_ste_end_pc, yrange=(50, 105))
 
-
-#plot
-barplot('Accuracy', 'Accuracy (%)', 5, acc_subj_means_pc,
-        global_mean_pc, global_ste_pc, yrange=(50, 105))
+##plot
+#barplot('Accuracy', 'Accuracy (%)', 5, acc_subj_means_pc,
+        #global_mean_pc, global_ste_pc, yrange=(50, 105))
 
 #double_barplot('Accuracy', 'Accuracy (%)', 5,
         #acc_subj_means_start_pc, global_mean_start_pc,
@@ -1137,8 +1138,8 @@ start_stats = subj_ps_stats(ps, window_start=cycle_start_samp[1],
 #end stats for 2nd through 5th cycle
 end_stats = subj_ps_stats(ps, window_start=cycle_start_samp[1],
     window_end=cycle_start_samp[5], take_trials='end')
-target_stats = subj_ps_stats(ps_target, data_type='target',\
-    window_start=preslice_samp)
+#target_stats = subj_ps_stats(ps_target, data_type='target',\
+    #window_start=preslice_samp)
 
 #import pdb;pdb.set_trace()
 printSignificantInter('Start vs. end ps',
@@ -1149,27 +1150,27 @@ pGroupedResults(task_stats, 'task')
 pGroupedResults(primer_stats, 'primer')
 pGroupedResults(start_stats, 'start')
 pGroupedResults(end_stats, 'end')
-pGroupedResults(target_stats, 'target')
+#pGroupedResults(target_stats, 'target')
 
-#target peak base corrected
-pResults('Pupil global target base corrected peak',
-        target_stats.global_bc_peak_mean)
-pResults('Pupil global target bc standard error',
-        target_stats.global_bc_peak_ste)
-printSignificant('Peak target baseline corrected',
-        target_stats.subj_bc_peaks)
+##target peak base corrected
+#pResults('Pupil global target base corrected peak',
+        #target_stats.global_bc_peak_mean)
+#pResults('Pupil global target bc standard error',
+        #target_stats.global_bc_peak_ste)
+#printSignificant('Peak target baseline corrected',
+        #target_stats.subj_bc_peaks)
 
-#target peak mean corrected
-pResults('Pupil global target mean corrected peak',
-        target_stats.global_mc_peak_mean)
-pResults('Pupil global target mean corrected standard error',
-        target_stats.global_mc_peak_ste)
-#printSignificant('PS target', ps_subj_means_targ)
-printSignificant('Peak target mean corrected',
-        target_stats.subj_mean_corrected_peaks)
+##target peak mean corrected
+#pResults('Pupil global target mean corrected peak',
+        #target_stats.global_mc_peak_mean)
+#pResults('Pupil global target mean corrected standard error',
+        #target_stats.global_mc_peak_ste)
+##printSignificant('PS target', ps_subj_means_targ)
+#printSignificant('Peak target mean corrected',
+        #target_stats.subj_mean_corrected_peaks)
 
 #plot bc ps data for all conditions
-plot_ps(task_stats.full_mean_bc_trace, task_stats.full_ste_bc_trace, 'Base corrected')
+#plot_ps(task_stats.full_mean_bc_trace, task_stats.full_ste_bc_trace, 'Base corrected')
 
 plot_ps(start_stats.full_mean_bc_trace,
         start_stats.full_ste_bc_trace, 'Base corrected start trials')
@@ -1180,51 +1181,54 @@ plot_ps(end_stats.full_mean_bc_trace,
 #plot ps data for all conditions
 #plot_ps(task_stats.full_mean_trace, task_stats.full_ste_trace, 'Raw')
 
-#plot target ps data for all conditions
-plot_ps(target_stats.full_mean_bc_trace, target_stats.full_ste_bc_trace,\
-        'Base corrected target')
+##plot target ps data for all conditions
+#plot_ps(target_stats.full_mean_bc_trace, target_stats.full_ste_bc_trace,\
+        #'Base corrected target')
 
 #barplot('Mean pupil size', 'Pupil Size', 50,\
         #ps_subj_means, global_mean, global_ste)
 
-#baseline corrected
-barplot('Mean base corrected pupil size', 'Relative pupil size',
+barplot('Final pupil size', 'Relative pupil size',
         250, task_stats.ps_subj_bc_means,
-        task_stats.global_bc_mean, task_stats.global_bc_ste)
+        end_stats.global_bc_mean, end_stats.global_bc_ste)
 
-#baseline corrected target
-barplot('Peak base corrected target pupil size', 
-    'Relative pupil size', 250, target_stats.subj_bc_peaks,
-    target_stats.global_bc_peak_mean, target_stats.global_bc_peak_ste)
+barplot('Initial pupil size', 'Relative pupil size',
+        250, task_stats.ps_subj_bc_means,
+        start_stats.global_bc_mean, start_stats.global_bc_ste)
 
-#mean corrected target
-barplot('Peak mean corrected target pupil size', 
-   'Relative pupil size', 50, target_stats.subj_mean_corrected_peaks,
-   target_stats.global_mc_peak_mean, target_stats.global_mc_peak_ste)
+##baseline corrected target
+#barplot('Peak base corrected target pupil size', 
+    #'Relative pupil size', 250, target_stats.subj_bc_peaks,
+    #target_stats.global_bc_peak_mean, target_stats.global_bc_peak_ste)
+
+##mean corrected target
+#barplot('Peak mean corrected target pupil size', 
+   #'Relative pupil size', 50, target_stats.subj_mean_corrected_peaks,
+   #target_stats.global_mc_peak_mean, target_stats.global_mc_peak_ste)
 
 #Survey
 cog_subj, cog_mean, cog_ste = cleanCogData(weighted=False)
 
-pResults('Cognitive load unweighted means', cog_mean)
-pResults('Cognitive load unweighted standard error', cog_ste)
-printSignificant('Cognitive load unweighted', cog_subj)
+#pResults('Cognitive load unweighted means', cog_mean)
+#pResults('Cognitive load unweighted standard error', cog_ste)
+#printSignificant('Cognitive load unweighted', cog_subj)
 
-barplot('Unweighted cognitive load survey', 'Relative demand score\n'+\
-r'low $\hspace{8} \rightarrow \hspace{8}$high', 5,\
-        cog_subj, cog_mean, cog_ste)
+#barplot('Unweighted cognitive load survey', 'Relative demand score\n'+\
+#r'low $\hspace{8} \rightarrow \hspace{8}$high', 5,\
+        #cog_subj, cog_mean, cog_ste)
 
-#weighted
-cog_subj_weighted, cog_mean_weighted, cog_ste_weighted =\
-cleanCogData(weighted=True)
+##weighted
+#cog_subj_weighted, cog_mean_weighted, cog_ste_weighted =\
+#cleanCogData(weighted=True)
 
-pResults('Cognitive load weighted means', cog_mean_weighted)
-pResults('Cognitive load weighted standard error',
-        cog_ste_weighted)
-printSignificant('Cognitive load weighted', cog_subj_weighted)
+#pResults('Cognitive load weighted means', cog_mean_weighted)
+#pResults('Cognitive load weighted standard error',
+        #cog_ste_weighted)
+#printSignificant('Cognitive load weighted', cog_subj_weighted)
 
-barplot('Weighted cognitive load survey', 'Relative demand score\n'+\
-r'low $\hspace{8} \rightarrow \hspace{8}$high', 1,\
-        cog_subj_weighted, cog_mean_weighted, cog_ste_weighted)
+#barplot('Weighted cognitive load survey', 'Relative demand score\n'+\
+#r'low $\hspace{8} \rightarrow \hspace{8}$high', 1,\
+        #cog_subj_weighted, cog_mean_weighted, cog_ste_weighted)
 
 # WWL weighted
 cog_subj_weighted_WWL, cog_mean_weighted_WWL,\
@@ -1242,8 +1246,10 @@ r'low $\hspace{8} \rightarrow \hspace{8}$high', 1,\
         cog_subj_weighted_WWL, cog_mean_weighted_WWL, cog_ste_weighted_WWL)
 
 #Combined data
-correlation_strategies = [stats.pearsonr, stats.spearmanr]
-strategy_names = ['pearson', 'spearman']
+#correlation_strategies = [stats.pearsonr, stats.spearmanr]
+#strategy_names = ['pearson', 'spearman']
+correlation_strategies = [stats.spearmanr]
+strategy_names = ['spearman']
 for si, strategy in enumerate(correlation_strategies):
     strategy_name = strategy_names[si]
     measure_names = ['Accuracy', 'PS', 'Survey']
