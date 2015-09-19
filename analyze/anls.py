@@ -554,44 +554,63 @@ def subj_ps_stats(ps_data, data_type='trial',\
 
 roundToIncrement = lambda y, inc: round(float(y) / inc) * inc
 
-def double_barplot(pre, pre_ste, post, post_ste, name, ylabel):
+def double_barplot(name, ylabel, y_increment, pre, pre_ste, post,
+        post_ste, yrange='default'):
     N = 2
     ind = np.arange(N)  # the x locations for the groups
-    width = 0.35       # the width of the bars
-
+    width = 0.15       # the width of the bars
     fig, ax = plt.subplots()
-    rects1 = ax.bar(ind, menMeans, width, color='w', yerr=menStd)
-    rects1 = ax.bar(ind, menMeans, width, color='w', hatch='.', yerr=menStd)
-    rects1 = ax.bar(ind, menMeans, width, color='k', yerr=menStd)
+    simpleaxis(ax)
+    #find range
+    if yrange is 'default':
+        lim_buffer = y_increment
+        yrange = np.zeros((2,1))
+        yrange[0] = roundToIncrement((np.nanmin(subject_data) - lim_buffer),
+                y_increment)
+        yrange[1] = roundToIncrement(np.nanmax(subject_data) +\
+                lim_buffer, y_increment)
+        #yrange[0] = roundToIncrement(np.nanmin(global_subj_mean) -\
+        #np.nanmax(global_subj_ste) - lim_buffer, y_increment)
+        #yrange[1] = roundToIncrement(np.nanmax(global_subj_mean) +\
+                #np.nanmax(global_subj_ste) + lim_buffer, y_increment)
 
-    rects2 = ax.bar(ind+width, womenMeans, width, color='y',
-            yerr=womenStd)
-
+    colors = ['w','w','w']
+    hatchs = ['','.','/']
+    #means = [pre, post]
+    #stes = [pre_ste, post_ste]
+    #for i, in means:
+    means = zip(pre, post)
+    rects = []
+    #import pdb; pdb.set_trace()
+    error_config = {'ecolor': 'k', 'elinewidth': 3, 'ezorder': 5}
+    for i, mean in enumerate(means):
+        x_loc = ind + width * (i - 1)
+        rects.append(ax.bar(x_loc, mean, width, color=colors[i],
+            yerr=pre_ste[i], error_kw=error_config, hatch=hatchs[i]))
     # add some text for labels, title and axes ticks
     ax.set_ylabel(ylabel)
     ax.set_title(name)
+    ax.set_ylim(yrange)
     ax.set_xticks(ind+width)
     ax.set_xticklabels( ('Initial', 'Final') )
-
-    ax.legend( (rects1[0], rects2[0]), ('Men', 'Women') )
+    ax.legend((rects[0], rects[1], rects[2]),
+            ('Alphabetic', 'Fixed-order', 'Random'))
+    plt.show()
     # Custom function to draw the diff bars
-
-    def label_diff(i,j,text,X,Y):
-        x = (X[i]+X[j])/2
-        y = 1.1*max(Y[i], Y[j])
-        dx = abs(X[i]-X[j])
-        props = {'connectionstyle':'bar','arrowstyle':'-',\
-             'shrinkA':20,'shrinkB':20,'lw':2}
-        ax.annotate(text, xy=(X[i],y+7), zorder=10)
-        ax.annotate('', xy=(X[i],y), xytext=(X[j],y),
-            arrowprops=props)
-
-    # Call the function
-    label_diff(0,1,'p=0.0370',X,menMeans)
-    label_diff(1,2,'p<0.0001',X,menMeans)
-    label_diff(2,3,'p=0.0025',X,menMeans)
+    #def label_diff(i,j,text,X,Y):
+        #x = (X[i]+X[j])/2
+        #y = 1.1*max(Y[i], Y[j])
+        #dx = abs(X[i]-X[j])
+        #props = {'connectionstyle':'bar','arrowstyle':'-',\
+             #'shrinkA':20,'shrinkB':20,'lw':2}
+        #ax.annotate(text, xy=(X[i],y+7), zorder=10)
+        #ax.annotate('', xy=(X[i],y), xytext=(X[j],y),
+            #arrowprops=props)
+    ## Call the function
+    #label_diff(0,1,'p=0.0370',X,menMeans)
+    #label_diff(1,2,'p<0.0001',X,menMeans)
+    #label_diff(2,3,'p=0.0025',X,menMeans)
    
-
 def barplot(title, ylabel, y_increment, subject_data, global_subj_mean,\
         global_subj_ste, yrange='default'):
 
@@ -1090,21 +1109,30 @@ acc_start = subj_accuracy_stats(accuracy_start)
 accuracy_end = accuracy[:,:, 18:]
 acc_end = subj_accuracy_stats(accuracy_end)
 
-#pResults('Accuracy global mean', acc_global_mean)
-#pResults('Accuracy global standard error', acc_global_ste)
-#printSignificant('Accuracy', acc_subj_means)
+pResults('Accuracy global mean', acc_global.global_mean)
+pResults('Accuracy global standard error', acc_global.global_ste)
+printSignificant('Accuracy', acc_global.subj_means)
 
 #start
-pResults('Accuracy global mean start', acc_start.global_means)
+pResults('Accuracy global mean start', acc_start.global_mean)
 pResults('Accuracy global standard error start',
         acc_start.global_ste)
 #end
-pResults('Accuracy global mean end', acc_end.global_means)
+pResults('Accuracy global mean end', acc_end.global_mean)
 pResults('Accuracy global standard error end', acc_end.global_ste)
 
 #stats on differences between start and end
 printSignificantInter('Accuracy between start and end',
         acc_start.subj_means, acc_end.subj_means)
+
+temp = zip(acc_start.subj_means, acc_end.subj_means)
+delta_acc = np.array([subj[1] - subj[0] for subj in temp])
+delta_acc_mean = np.nanmean(delta_acc, axis=0)
+delta_acc_ste = stats.sem(delta_acc, axis=0)
+
+pResults('Delta accuracy global mean', delta_acc_mean)
+pResults('Delta Accuracy global standard error', delta_acc_ste)
+printSignificant('Delta accuracy sig. testing', delta_acc)
 
 #plot
 
@@ -1112,10 +1140,9 @@ printSignificantInter('Accuracy between start and end',
         #acc_global.global_mean, acc_global.global_ste, yrange=(50, 105))
         #acc_subj_means_start, acc_subj_means_end)
 
-#double_barplot('Accuracy', 'Accuracy (%)', 5,
-        #acc_subj_means_start_pc, global_mean_start_pc,
-        #global_ste_start_pc, acc_subj_means_end_pc,
-        #global_mean_end_pc, global_ste_end_pc, yrange=(50, 105))
+double_barplot('Accuracy', 'Accuracy (%)', 5,
+        acc_start.global_mean, acc_start.global_ste,
+        acc_end.global_mean, acc_end.global_ste, yrange=(50, 105))
 
 #PS
 #trial
@@ -1211,13 +1238,17 @@ plot_ps(end_stats.full_mean_bc_trace,
 #barplot('Mean pupil size', 'Pupil Size', 50,\
         #ps_subj_means, global_mean, global_ste)
 
-barplot('Final pupil size', 'Relative pupil size',
-        250, task_stats.ps_subj_bc_means,
-        end_stats.global_bc_mean, end_stats.global_bc_ste)
+#barplot('Final pupil size', 'Relative pupil size',
+        #250, task_stats.ps_subj_bc_means,
+        #end_stats.global_bc_mean, end_stats.global_bc_ste)
 
-barplot('Initial pupil size', 'Relative pupil size',
-        250, task_stats.ps_subj_bc_means,
-        start_stats.global_bc_mean, start_stats.global_bc_ste)
+#barplot('Initial pupil size', 'Relative pupil size',
+        #250, task_stats.ps_subj_bc_means,
+        #start_stats.global_bc_mean, start_stats.global_bc_ste)
+
+double_barplot('Pupil size', 'Relative pupil size (AU)', 250, 
+        start_stats.global_bc_mean, start_stats.global_bc_ste,
+        end_stats.global_bc_mean, end_stats.global_bc_ste)
 
 ##baseline corrected target
 #barplot('Peak base corrected target pupil size', 
@@ -1280,24 +1311,28 @@ for si, strategy in enumerate(correlation_strategies):
 #for safety
     subj_combined[:] = np.nan
 
-    subj_combined[0] = acc_subj_means
+    subj_combined[0] = acc_global.subj_means
     subj_combined[1] = task_stats.ps_subj_means
     subj_combined[2] = cog_subj
-
     combinedSig, combinedP = \
             combinedSigTest('Cross-measure R %s' % strategy_name,
                     subj_combined, strategy)
 
-    subj_combined[0] = acc_subj_means_start
-    subj_combined[1] = start_stats.ps_subj_means
+    subj_combined[0] = delta_acc
+    subj_combined[1] = task_stats.ps_subj_means
+    subj_combined[2] = cog_subj
+    combinedSig, combinedP = \
+            combinedSigTest('Cross-measure R %s delta accuracy' % strategy_name,
+                    subj_combined, strategy)
 
+    subj_combined[0] = acc_start.subj_means
+    subj_combined[1] = start_stats.ps_subj_means
     combinedSig, combinedP = \
             combinedSigTest('Cross-measure R %s start trials'
                     % strategy_name, subj_combined, strategy)
 
-    subj_combined[0] = acc_subj_means_end
+    subj_combined[0] = acc_end.subj_means
     subj_combined[1] = end_stats.ps_subj_means
-
     combinedSig, combinedP = \
             combinedSigTest('Cross-measure R %s end trials' %
                     strategy_name, subj_combined, strategy)
