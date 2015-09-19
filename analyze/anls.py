@@ -322,7 +322,12 @@ def subj_accuracy_stats(accuracy_data):
         #across all subjects for each condition 
         global_mean.append(np.nanmean(subj_means[:, i]))
         global_ste.append(stats.sem(subj_means[:, i]))
-    return global_mean, global_ste, subj_means, subj_stds
+    #convert to percent
+    global_mean= global_mean * np.tile(100, len(global_mean))
+    global_ste = global_ste * np.tile(100, len(global_ste))
+    subj_means = subj_means * 100
+    subj_stds = subj_stds * 100
+    return acc_tuple(global_mean, global_ste, subj_means, subj_stds)
 
 def subj_ps_stats(ps_data, type='trial',\
         window_start=0, window_end='end', take_trials='all'):
@@ -511,6 +516,44 @@ def subj_ps_stats(ps_data, type='trial',\
 
 def roundToIncrement(y, y_increment):
     return round(float(y) / y_increment) * y_increment
+
+def double_barplot(pre, pre_ste, post, post_ste, name, ylabel):
+    N = 2
+    ind = np.arange(N)  # the x locations for the groups
+    width = 0.35       # the width of the bars
+
+    fig, ax = plt.subplots()
+    rects1 = ax.bar(ind, menMeans, width, color='w', yerr=menStd)
+    rects1 = ax.bar(ind, menMeans, width, color='w', hatch='.', yerr=menStd)
+    rects1 = ax.bar(ind, menMeans, width, color='k', yerr=menStd)
+
+    rects2 = ax.bar(ind+width, womenMeans, width, color='y',
+            yerr=womenStd)
+
+    # add some text for labels, title and axes ticks
+    ax.set_ylabel(ylabel)
+    ax.set_title(name)
+    ax.set_xticks(ind+width)
+    ax.set_xticklabels( ('Initial', 'Final') )
+
+    ax.legend( (rects1[0], rects2[0]), ('Men', 'Women') )
+    # Custom function to draw the diff bars
+
+    def label_diff(i,j,text,X,Y):
+        x = (X[i]+X[j])/2
+        y = 1.1*max(Y[i], Y[j])
+        dx = abs(X[i]-X[j])
+        props = {'connectionstyle':'bar','arrowstyle':'-',\
+             'shrinkA':20,'shrinkB':20,'lw':2}
+        ax.annotate(text, xy=(X[i],y+7), zorder=10)
+        ax.annotate('', xy=(X[i],y), xytext=(X[j],y),
+            arrowprops=props)
+
+    # Call the function
+    label_diff(0,1,'p=0.0370',X,menMeans)
+    label_diff(1,2,'p<0.0001',X,menMeans)
+    label_diff(2,3,'p=0.0025',X,menMeans)
+   
 
 def barplot(title, ylabel, y_increment, subject_data, global_subj_mean,\
         global_subj_ste, yrange='default'):
@@ -995,55 +1038,37 @@ resultstxt.write('Text file for KEXP stats\n')
 resultstxt.write('# of Subjects: %d\n \n' % N)
 
 #Accuracy
-acc_global_mean, acc_global_ste,\
-    acc_subj_means, acc_subj_stds = subj_accuracy_stats(accuracy)
+acc_tuple = namedtuple('acc_tuple', 'global_mean, global_ste,\
+        subj_means, subj_std')
+
+acc_global = subj_accuracy_stats(accuracy)
 
 #compare initial trials to end trials
 accuracy_start = accuracy[:,:,:8]
-acc_global_mean_start, acc_global_ste_start, acc_subj_means_start,\
-acc_subj_stds_start =  subj_accuracy_stats(accuracy_start)
+acc_start = subj_accuracy_stats(accuracy_start)
 accuracy_end = accuracy[:,:, 18:]
-acc_global_mean_end, acc_global_ste_end,\
-        acc_subj_means_end,\
-acc_subj_stds_end = subj_accuracy_stats(accuracy_end)
+acc_end = subj_accuracy_stats(accuracy_end)
 
-pResults('Accuracy global mean', acc_global_mean)
-pResults('Accuracy global standard error', acc_global_ste)
-printSignificant('Accuracy', acc_subj_means)
+#pResults('Accuracy global mean', acc_global_mean)
+#pResults('Accuracy global standard error', acc_global_ste)
+#printSignificant('Accuracy', acc_subj_means)
+
 #start
-pResults('Accuracy global mean start', acc_global_mean_start)
+pResults('Accuracy global mean start', acc_start.global_means)
 pResults('Accuracy global standard error start',
-        acc_global_ste_start)
+        acc_start.global_ste)
 #end
-pResults('Accuracy global mean end', acc_global_mean_end)
-pResults('Accuracy global standard error end', acc_global_ste_end)
+pResults('Accuracy global mean end', acc_end.global_means)
+pResults('Accuracy global standard error end', acc_end.global_ste)
+
 #stats on differences between start and end
 printSignificantInter('Accuracy between start and end',
-        acc_subj_means_start, acc_subj_means_end)
-
-#convert to percent
-global_mean_pc = acc_global_mean * np.tile(100, len(acc_global_mean))
-global_ste_pc = acc_global_ste * np.tile(100, len(acc_global_ste))
-acc_subj_means_pc = acc_subj_means * 100
-
-#start
-global_mean_start_pc = acc_global_mean_start * np.tile(100,
-        len(acc_global_mean_start))
-global_ste_start_pc = acc_global_ste_start * np.tile(100, 
-        condition_nums)
-acc_subj_means_start_pc = acc_subj_means_start * 100
-
-#end
-global_mean_end_pc = acc_global_mean_end * np.tile(100,
-        condition_nums)
-global_ste_end_pc = acc_global_ste_end * np.tile(100,
-        condition_nums)
-acc_subj_means_end_pc = acc_subj_means_end * 100
-
+        acc_start.subj_means, acc_end.subj_means)
 
 #plot
-barplot('Accuracy', 'Accuracy (%)', 5, acc_subj_means_pc,
-        global_mean_pc, global_ste_pc, yrange=(50, 105))
+
+#barplot('Accuracy', 'Accuracy (%)', 5, acc_global.subj_means,
+        #acc_global.global_mean, acc_global.global_ste, yrange=(50, 105))
 
 #double_barplot('Accuracy', 'Accuracy (%)', 5,
         #acc_subj_means_start_pc, global_mean_start_pc,
