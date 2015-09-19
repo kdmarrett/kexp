@@ -1,0 +1,49 @@
+Text file for KEXP stats
+# of Subjects: 1
+ 
+Accuracy global mean:
+Alphabetic: 0.7500
+Fixed-Order: 0.8333
+Random: 0.9167
+
+Accuracy global standard error:
+Alphabetic: nan
+Fixed-Order: nan
+Random: nan
+
+Accuracy sig. testing:
+Alphabetic and Fixed-Order:
+nan
+Alphabetic and Random:
+nan
+Fixed-Order and Random:
+nan
+
+Accuracy global mean start:
+Alphabetic: 1.0000
+Fixed-Order: 0.8750
+Random: 1.0000
+
+Accuracy global standard error start:
+Alphabetic: nan
+Fixed-Order: nan
+Random: nan
+
+Accuracy global mean end:
+Alphabetic: 0.8333
+Fixed-Order: 1.0000
+Random: 0.8333
+
+Accuracy global standard error end:
+Alphabetic: nan
+Fixed-Order: nan
+Random: nan
+
+Accuracy between start and end sig. testing:
+Alphabetic:
+nan
+Fixed-Order:
+nan
+Random:
+nan
+
