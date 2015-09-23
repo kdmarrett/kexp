@@ -553,7 +553,7 @@ def subj_ps_stats(ps_data, data_type='trial',\
 roundToIncrement = lambda y, inc: round(float(y) / inc) * inc
 
 def double_barplot(name, ylabel, y_increment, pre, post,
-        yrange='default'):
+        yrange='default', sub_ind=111):
 
     if name is 'Accuracy':
         means = zip(pre.global_mean, post.global_mean)
@@ -574,11 +574,11 @@ def double_barplot(name, ylabel, y_increment, pre, post,
         subject_data = [zip(pre.ps_subj_bc_means[:, i],
             post.ps_subj_bc_means[:,i]) for i in
             range(post.ps_subj_bc_means.shape[-1])]
-        #import pdb; pdb.set_trace()
     N = 2
     ind = np.arange(N)  # the x locations for the groups
     width = 0.15       # the width of the bars
-    opacity = .4
+    opacity = .2
+    #fig, ax = plt.subplots(sub_ind)
     fig, ax = plt.subplots()
     simpleaxis(ax)
     #find range
@@ -603,20 +603,21 @@ def double_barplot(name, ylabel, y_increment, pre, post,
             arrowprops=props)
    
     colors = ['w','w','w']
-    hatchs = ['','.','/']
+    hatchs = ['','...','///']
     rects = []
-    error_config = {'ecolor': 'k', 'elinewidth': 3, 'ezorder': 5}
+    error_config = {'ecolor': 'k', 'elinewidth': 4, 'ezorder': 5}
     #import pdb; pdb.set_trace()
     for i, mean in enumerate(means): #iterate through conditions
         x = ind + width * (i - 1)
         #plot global data
-        rects.append(ax.bar(x, mean, width, color=colors[i],
+        rects.append(ax.bar(x, mean, width,
+            color=colors[i],lw=2.0,
             yerr=stes[i], error_kw=error_config, hatch=hatchs[i]))
         x += (.5 * width)
         # Call significance bar func
         #plot individual subjects
         for subj_mean in subject_data[i]:
-            ax.plot(x, subj_mean, color='k', alpha=opacity, lw=1,
+            ax.plot(x, subj_mean, color='k', alpha=opacity, lw=.5,
                     marker='o', zorder=10)
 
     #label_diff(0,1,'*',x, mean)
@@ -628,7 +629,11 @@ def double_barplot(name, ylabel, y_increment, pre, post,
     ax.set_xticklabels( ('Initial', 'Final') )
     #ax.legend((rects[0], rects[1], rects[2]),
             #('Alphabetic', 'Fixed-order', 'Random'))
-    plt.show()
+    #plt.show()
+    fn = name.replace(" ", "") + '_2bplt.pdf'
+    print 'Saving figure:\n%s' % fn
+    fig.savefig(fn)
+    plt.close()
 
 def barplot(title, ylabel, y_increment, subject_data, global_subj_mean,\
         global_subj_ste, yrange='default'):
@@ -640,7 +645,7 @@ def barplot(title, ylabel, y_increment, subject_data, global_subj_mean,\
     x = [.5, 1.0, 1.5]
     ax.set_xlim((.3, 2))
     bar_width = .25
-    opacity = .4
+    opacity = .2
     #find range
     if yrange is 'default':
         lim_buffer = y_increment
@@ -660,93 +665,118 @@ def barplot(title, ylabel, y_increment, subject_data, global_subj_mean,\
                 lw=0.5, color="black", alpha=0.3, zorder=1) 
 
     #plot global data
-    error_config = {'ecolor': 'k', 'elinewidth': 3, 'ezorder': 5}
-    ax.bar(x, global_subj_mean, bar_width, color='w', zorder=3,
-            yerr=global_subj_ste, error_kw=error_config, lw=1)
+    error_config = {'ecolor': 'k', 'elinewidth': 4, 'ezorder': 5}
+    hatchs = ['','...','///']
+    rects = []
+    for local_x, cond_mean, cond_ste, hatch in zip(x,
+        global_subj_mean, global_subj_ste, hatchs):
+        rects.append(ax.bar(local_x, cond_mean, bar_width, color='w', #zorder=3,
+                yerr=cond_ste, error_kw=error_config, lw=2.0,
+                hatch=hatch))
+    #ax.bar(x, global_subj_mean, bar_width, color='w', zorder=3,
+            #yerr=global_subj_ste, error_kw=error_config, lw=1)
     #shift x to be in center of bars
     x = x + np.tile(bar_width / 2, condition_nums)
 
     #plot individual subjects
     for subj_mean in subject_data:
-        ax.plot(x, subj_mean, color='k', alpha=opacity, lw=1,
+        ax.plot(x, subj_mean, color='k', alpha=opacity, lw=.5,
                 marker='o', zorder=10)
 
     ax.set_ylabel(ylabel)
     ax.set_ylim(yrange)
-    ax.set_title('%s N=%d' % (title, N))
+    ax.legend((rects[0], rects[1], rects[2]),
+            ('Alphabetic', 'Fixed-order', 'Random'))
+    #ax.set_title('%s N=%d' % (title, N))
+    ax.set_title(title)
     plt.xticks(x, ('Alphabetic', 'Fixed-order', 'Random'))
     #plt.tight_layout()
-    plt.show()
+    #plt.show()
     fn = title.replace(" ", "") + '_barplot.pdf'
     print 'Saving figure:\n%s' % fn
     fig.savefig(fn)
     plt.close()
 
-def plot_ps(trace, ste_trace, name):
+def plot_ps(trace, ste_trace, name, ax='default',
+        final_sub_plot=False):
     """plot a stack of subject mean ps data of all conditions
     Params:   trace can either by full trial or a letter window"""
 
-    fig, ax = plt.subplots()
+    if ax is 'default':
+        fig, local_ax = plt.subplots()
     #clean the ticks
-    ax.xaxis.set_ticks_position('bottom')
-    ax.yaxis.set_ticks_position('left')
+    local_ax.xaxis.set_ticks_position('bottom')
+    local_ax.yaxis.set_ticks_position('left')
     opacity = .10
     local_samp_len = trace.shape[1]
     x = np.linspace(0, local_samp_len / fs, local_samp_len)
-    colors = ('r', 'g', 'b')
+    #colors = ('r', 'g', 'b')
+    colors = ('#44AA99', '#999933', '#AA4499')
     for c_num in range(condition_nums):
-        ax.plot(x, trace[c_num], color=colors[c_num],
+        local_ax.plot(x, trace[c_num], color=colors[c_num],
                 linewidth=1, label=names[c_num], alpha=1)
-        ax.fill_between(x, trace[c_num] - ste_trace[c_num],\
+        local_ax.fill_between(x, trace[c_num] - ste_trace[c_num],\
                 trace[c_num] + ste_trace[c_num],\
                 color=colors[c_num], alpha=opacity)  
 
     #mark visual_primer if length is full trial
-    ymin, ymax = ax.get_ylim()
+    ymin, ymax = local_ax.get_ylim()
     yspan = ymax - ymin
     topFig = ymax - yspan / 7
     topFigLower = ymax - yspan / 6
     if local_samp_len == trial_samp: # a trial
-        ax.text(end_primer / 3, topFig, 'Visual\nprimer',\
+        local_ax.text(end_primer / 3, topFig, 'Visual\nprimer',\
                 size=10) 
         #ax.axvspan(0, end_primer, color='k', alpha=.12)
-        ax.text(end_primer + fix_dot_time / 3.75,\
+        local_ax.text(end_primer + fix_dot_time / 3.75,\
                 topFig, 'Fixation\n   dot',\
                 size=10) 
-        ax.axvspan(end_primer, preblock_prime_sec,\
+        local_ax.axvspan(end_primer, preblock_prime_sec,\
                 color='k', alpha=.07)
-        ax.text(24, topFig, 'Task\n', size=10) 
-        ax.legend(loc=4, prop={'size':10})
-        ax.set_title(name + ' trial pupil size N=%d' % N)
+        local_ax.text(24, topFig, 'Task\n', size=10) 
+        local_ax.legend(loc=4, prop={'size':10})
+        #local_ax.set_title(name + ' trial pupil size N=%d' % N)
+        local_ax.set_title(name + ' trial pupil size')
         for i in cycle_start_sec[1:]:
-            ax.axvline(x=i, linestyle='--', color='k',
+            local_ax.axvline(x=i, linestyle='--', color='k',
                     alpha=.4)
         #indicate with arrow
         #ax.annotate('End visual primer', xy=(end_primer, 
             #global_mean[c_num]), xytext=(5, 2000),
             #arrowprops=dict(facecolor='black', shrink=0.02))
     elif (local_samp_len == target_samp): # a window
-        ax.axvline(x=preslice_time, linestyle='--', color='k',
+        local_ax.axvline(x=preslice_time, linestyle='--', color='k',
                 alpha=.4)
-        ax.text(preslice_time + .1, topFigLower, 
+        local_ax.text(preslice_time + .1, topFigLower, 
                 'Target\n letter\n onset', size=10) 
-        ax.legend(loc=2, prop={'size':10})
-        ax.set_title(name + ' window pupil size N=%d' % N)
+        local_ax.legend(loc=2, prop={'size':10})
+        local_ax.set_title(name + ' window pupil size N=%d' % N)
 
-    ax.set_ylabel('Pupil Size (AU)')
+    local_ax.set_ylabel('Pupil Size (AU)')
     #Render stats to plot
     #info = r'$\mu$=%.1f, $\sigma$=%.3f, N=%d' % \
             #(global_mean[c_num],\
             #global_std[c_num], N)
     #plt.text(20, global_mean[c_num] + 500, info)
-    ax.set_xlabel('Trial Time (s)')
-    ax.set_xlim((0, local_samp_len / fs))
-    plt.show()
+    #plt.show()
+    local_ax.set_xlabel('Trial Time (s)')
+    local_ax.set_xlim((0, local_samp_len / fs))
     name = name.replace(" ", "")
     fn = name + '_trace.pdf'
     print 'Saving figure:\n%s' % fn
     fig.savefig(fn)
     plt.close()
+    #if final_sub_plot:
+        ##plt.show()
+        #name = name.replace(" ", "")
+        #fn = name + '_trace.pdf'
+        #print 'Saving figure:\n%s' % fn
+        #fig.savefig(fn)
+        #plt.close()
+    #else:
+        #local_ax.set_xlabel('Trial Time (s)')
+        #local_ax.set_xlim((0, local_samp_len / fs))
+        #return local_ax
 
 names = ['Alphabetic', 'Fixed-Order', 'Random']
 # read in global stimuli parameters
@@ -1160,7 +1190,7 @@ printSignificant('Delta accuracy sig. testing', delta_acc)
         #acc_subj_means_start, acc_subj_means_end)
 
 double_barplot('Accuracy', 'Accuracy (%)', 5,
-        acc_start, acc_end)#yrange=(40,105))
+        acc_start, acc_end, sub_ind=211)#yrange=(40,105))
 
 #PS
 #trial
@@ -1240,11 +1270,18 @@ pGroupedResults(end_stats, 'end')
 #plot bc ps data for all conditions
 #plot_ps(task_stats.full_mean_bc_trace, task_stats.full_ste_bc_trace, 'Base corrected')
 
-plot_ps(start_stats.full_mean_bc_trace,
-        start_stats.full_ste_bc_trace, 'Base corrected start trials')
+#fig, (ax1, ax2) = plt.subplots(2, sharex=True)
+#plot_ps(start_stats.full_mean_bc_trace,
+        #start_stats.full_ste_bc_trace, 'Base corrected initial\
+        #trials', ax=ax1)
+#plot_ps(end_stats.full_mean_bc_trace,
+        #end_stats.full_ste_bc_trace, 'Base corrected final\
+        #trials', ax=ax2, final_sub_plot=True)
 
+plot_ps(start_stats.full_mean_bc_trace,
+        start_stats.full_ste_bc_trace, 'Initial')
 plot_ps(end_stats.full_mean_bc_trace,
-        end_stats.full_ste_bc_trace, 'Base corrected end trials')
+        end_stats.full_ste_bc_trace, 'Final')
 
 #plot ps data for all conditions
 #plot_ps(task_stats.full_mean_trace, task_stats.full_ste_trace, 'Raw')
@@ -1264,8 +1301,8 @@ plot_ps(end_stats.full_mean_bc_trace,
         #250, task_stats.ps_subj_bc_means,
         #start_stats.global_bc_mean, start_stats.global_bc_ste)
 
-double_barplot('Pupil size', 'Relative pupil size (AU)', 250, 
-        start_stats, end_stats)
+double_barplot('Mean task pupil size', 'Relative pupil size (AU)', 250, 
+        start_stats, end_stats, sub_ind=212)
 
 ##baseline corrected target
 #barplot('Peak base corrected target pupil size', 
@@ -1312,9 +1349,9 @@ pResults('Cognitive load WWL weighted standard error',
 printSignificant('Cognitive load WWL weighted',
         cog_subj_weighted_WWL)
 
-barplot('WWL Weighted cognitive load survey', 'Relative demand score\n'+\
-r'low $\hspace{8} \rightarrow \hspace{8}$high', 1,\
-        cog_subj_weighted_WWL, cog_mean_weighted_WWL, cog_ste_weighted_WWL)
+barplot('NASA TLX survey results', 'Relative demand score\n'+\
+    r'low $\hspace{8} \rightarrow \hspace{8}$high', 1,\
+    cog_subj_weighted_WWL, cog_mean_weighted_WWL, cog_ste_weighted_WWL)
 
 #Combined data
 #correlation_strategies = [stats.pearsonr, stats.spearmanr]
