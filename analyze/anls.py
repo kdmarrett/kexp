@@ -1,8 +1,6 @@
 # author: Karl Marrett
 # analyze pupillometry data
 
-#TODO change in accuracy
-#/*does this correlate with the survey and pupillometry*/
 #TODO color of the plots for r-g color blind
 #if there is time
 #TODO use remove_blink_artifacts to nullify certain target
@@ -554,63 +552,84 @@ def subj_ps_stats(ps_data, data_type='trial',\
 
 roundToIncrement = lambda y, inc: round(float(y) / inc) * inc
 
-def double_barplot(name, ylabel, y_increment, pre, pre_ste, post,
-        post_ste, yrange='default'):
+def double_barplot(name, ylabel, y_increment, pre, post,
+        yrange='default'):
+
+    if name is 'Accuracy':
+        means = zip(pre.global_mean, post.global_mean)
+        stes = zip(pre.global_ste, post.global_ste)
+        all_subject_data = np.concatenate((pre.subj_means,
+            post.subj_means))
+        #subject_data.shape is [condition, subject, pre or post]
+        subject_data = [zip(pre.subj_means[:, i],
+            post.subj_means[:,i]) for i in
+            range(post.subj_means.shape[-1])]
+        #import pdb; pdb.set_trace()
+    else:
+        means = zip(pre.global_bc_mean, post.global_bc_mean)
+        stes = zip(pre.global_bc_ste, post.global_bc_ste)
+        all_subject_data = np.concatenate((pre.ps_subj_bc_means,
+            post.ps_subj_bc_means))
+        #subject_data.shape is [condition, subject, pre or post]
+        subject_data = [zip(pre.ps_subj_bc_means[:, i],
+            post.ps_subj_bc_means[:,i]) for i in
+            range(post.ps_subj_bc_means.shape[-1])]
+        #import pdb; pdb.set_trace()
     N = 2
     ind = np.arange(N)  # the x locations for the groups
     width = 0.15       # the width of the bars
+    opacity = .4
     fig, ax = plt.subplots()
     simpleaxis(ax)
     #find range
     if yrange is 'default':
         lim_buffer = y_increment
         yrange = np.zeros((2,1))
-        yrange[0] = roundToIncrement((np.nanmin(subject_data) - lim_buffer),
+        yrange[0] = roundToIncrement((np.nanmin(all_subject_data) - lim_buffer),
                 y_increment)
-        yrange[1] = roundToIncrement(np.nanmax(subject_data) +\
+        yrange[1] = roundToIncrement(np.nanmax(all_subject_data) +\
                 lim_buffer, y_increment)
-        #yrange[0] = roundToIncrement(np.nanmin(global_subj_mean) -\
-        #np.nanmax(global_subj_ste) - lim_buffer, y_increment)
-        #yrange[1] = roundToIncrement(np.nanmax(global_subj_mean) +\
-                #np.nanmax(global_subj_ste) + lim_buffer, y_increment)
 
+    # significance bars from Stack over. post
+    def label_diff(i,j,text,X,Y):
+        text_hover_space = 7
+        #x = (X[i]+X[j])/2
+        y = 1.1*max(Y[i], Y[j])
+        xtext = X[i] + abs(X[i]-X[j]) / 2
+        props = {'connectionstyle':'bar, fraction=0.2','arrowstyle':'-',\
+             'shrinkA':40,'shrinkB':40,'lw':2}
+        ax.annotate(text, xy=(xtext, y + text_hover_space), zorder=10)
+        ax.annotate('', xy=(X[i],y), xytext=(X[j],y),
+            arrowprops=props)
+   
     colors = ['w','w','w']
     hatchs = ['','.','/']
-    #means = [pre, post]
-    #stes = [pre_ste, post_ste]
-    #for i, in means:
-    means = zip(pre, post)
     rects = []
-    #import pdb; pdb.set_trace()
     error_config = {'ecolor': 'k', 'elinewidth': 3, 'ezorder': 5}
-    for i, mean in enumerate(means):
-        x_loc = ind + width * (i - 1)
-        rects.append(ax.bar(x_loc, mean, width, color=colors[i],
-            yerr=pre_ste[i], error_kw=error_config, hatch=hatchs[i]))
+    #import pdb; pdb.set_trace()
+    for i, mean in enumerate(means): #iterate through conditions
+        x = ind + width * (i - 1)
+        #plot global data
+        rects.append(ax.bar(x, mean, width, color=colors[i],
+            yerr=stes[i], error_kw=error_config, hatch=hatchs[i]))
+        x += (.5 * width)
+        # Call significance bar func
+        #plot individual subjects
+        for subj_mean in subject_data[i]:
+            ax.plot(x, subj_mean, color='k', alpha=opacity, lw=1,
+                    marker='o', zorder=10)
+
+    #label_diff(0,1,'*',x, mean)
     # add some text for labels, title and axes ticks
     ax.set_ylabel(ylabel)
     ax.set_title(name)
     ax.set_ylim(yrange)
     ax.set_xticks(ind+width)
     ax.set_xticklabels( ('Initial', 'Final') )
-    ax.legend((rects[0], rects[1], rects[2]),
-            ('Alphabetic', 'Fixed-order', 'Random'))
+    #ax.legend((rects[0], rects[1], rects[2]),
+            #('Alphabetic', 'Fixed-order', 'Random'))
     plt.show()
-    # Custom function to draw the diff bars
-    #def label_diff(i,j,text,X,Y):
-        #x = (X[i]+X[j])/2
-        #y = 1.1*max(Y[i], Y[j])
-        #dx = abs(X[i]-X[j])
-        #props = {'connectionstyle':'bar','arrowstyle':'-',\
-             #'shrinkA':20,'shrinkB':20,'lw':2}
-        #ax.annotate(text, xy=(X[i],y+7), zorder=10)
-        #ax.annotate('', xy=(X[i],y), xytext=(X[j],y),
-            #arrowprops=props)
-    ## Call the function
-    #label_diff(0,1,'p=0.0370',X,menMeans)
-    #label_diff(1,2,'p<0.0001',X,menMeans)
-    #label_diff(2,3,'p=0.0025',X,menMeans)
-   
+
 def barplot(title, ylabel, y_increment, subject_data, global_subj_mean,\
         global_subj_ste, yrange='default'):
 
@@ -1141,8 +1160,7 @@ printSignificant('Delta accuracy sig. testing', delta_acc)
         #acc_subj_means_start, acc_subj_means_end)
 
 double_barplot('Accuracy', 'Accuracy (%)', 5,
-        acc_start.global_mean, acc_start.global_ste,
-        acc_end.global_mean, acc_end.global_ste, yrange=(50, 105))
+        acc_start, acc_end)#yrange=(40,105))
 
 #PS
 #trial
@@ -1247,8 +1265,7 @@ plot_ps(end_stats.full_mean_bc_trace,
         #start_stats.global_bc_mean, start_stats.global_bc_ste)
 
 double_barplot('Pupil size', 'Relative pupil size (AU)', 250, 
-        start_stats.global_bc_mean, start_stats.global_bc_ste,
-        end_stats.global_bc_mean, end_stats.global_bc_ste)
+        start_stats, end_stats)
 
 ##baseline corrected target
 #barplot('Peak base corrected target pupil size', 
