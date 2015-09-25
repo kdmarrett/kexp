@@ -19,7 +19,7 @@ import pickle as pck
 from collections import namedtuple
 from datetime import datetime
 
-assert(pp.__version__ == .01)
+#assert(pp.__version__ == .01)
 # if something was changed in the file saving process
 force_reprocess = False
 subjects = ['HP', 'HL', 'GH', 'GG', 'GN', 'GI', 'HT', 'HI', 'HN', 'HK', 'HJ', 'GR', 'GU'] 
@@ -553,7 +553,7 @@ def subj_ps_stats(ps_data, data_type='trial',\
 roundToIncrement = lambda y, inc: round(float(y) / inc) * inc
 
 def double_barplot(name, ylabel, y_increment, pre, post,
-        yrange='default', sub_ind=111):
+        yrange='default', subject_lines=False, sub_ind=111):
 
     if name is 'Accuracy':
         means = zip(pre.global_mean, post.global_mean)
@@ -581,6 +581,8 @@ def double_barplot(name, ylabel, y_increment, pre, post,
     #fig, ax = plt.subplots(sub_ind)
     fig, ax = plt.subplots()
     simpleaxis(ax)
+    if not subject_lines:
+        all_subject_data = [max(means), min(means)]
     #find range
     if yrange is 'default':
         lim_buffer = y_increment
@@ -597,7 +599,7 @@ def double_barplot(name, ylabel, y_increment, pre, post,
         y = 1.1*max(Y[i], Y[j])
         xtext = X[i] + abs(X[i]-X[j]) / 2
         props = {'connectionstyle':'bar, fraction=0.2','arrowstyle':'-',\
-             'shrinkA':40,'shrinkB':40,'lw':2}
+             'shrinkA':20,'shrinkB':20,'lw':2}
         ax.annotate(text, xy=(xtext, y + text_hover_space), zorder=10)
         ax.annotate('', xy=(X[i],y), xytext=(X[j],y),
             arrowprops=props)
@@ -616,9 +618,10 @@ def double_barplot(name, ylabel, y_increment, pre, post,
         x += (.5 * width)
         # Call significance bar func
         #plot individual subjects
-        for subj_mean in subject_data[i]:
-            ax.plot(x, subj_mean, color='k', alpha=opacity, lw=.5,
-                    marker='o', zorder=10)
+        if subject_lines:
+            for subj_mean in subject_data[i]:
+                ax.plot(x, subj_mean, color='k', alpha=opacity, lw=.5,
+                        marker='o', zorder=10)
 
     #label_diff(0,1,'*',x, mean)
     # add some text for labels, title and axes ticks
@@ -636,7 +639,7 @@ def double_barplot(name, ylabel, y_increment, pre, post,
     plt.close()
 
 def barplot(title, ylabel, y_increment, subject_data, global_subj_mean,\
-        global_subj_ste, yrange='default'):
+        global_subj_ste, yrange='default', ylines=False):
 
     #fig, ax = plt.subplots(figsize=(12, 14)) 
     fig, ax = plt.subplots() 
@@ -660,9 +663,10 @@ def barplot(title, ylabel, y_increment, subject_data, global_subj_mean,\
                 #np.nanmax(global_subj_ste) + lim_buffer, y_increment)
 
     #plot yaxis lines
-    for y in range(yrange[0], yrange[1], y_increment):  
-        ax.plot(range(0,3), [y] * len(range(0,3)), "--",
-                lw=0.5, color="black", alpha=0.3, zorder=1) 
+    if ylines:
+        for y in range(yrange[0], yrange[1], y_increment):  
+            ax.plot(range(0,3), [y] * len(range(0,3)), "--",
+                    lw=0.5, color="black", alpha=0.3, zorder=1) 
 
     #plot global data
     error_config = {'ecolor': 'k', 'elinewidth': 4, 'ezorder': 5}
