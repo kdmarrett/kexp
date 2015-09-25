@@ -1,0 +1,21 @@
+lit review (past michael)
+
+-Across all trials only Fixed-order and Random are significantly different
+
+Cognitive load
+-WWL is an example manner for weighting different factors used in
+the original NASA TLX study
+
+Cross-measure validation
+-Survey and Pupillometry are particularly correlated
+-Fixed-order higher correlations
+
+Discussion points:
+-Rudimentary target interval testing shows a significant
+    difference in mean value and maximum value in the interval after
+    a target in the fixed order case.  However, when the mean of the
+    condition is subtracted these differences are no longer
+    significant. This suggests that local changes in pupil size, as
+    in the interval after a target, may not be as discriminative as
+    global changes for a task.
+

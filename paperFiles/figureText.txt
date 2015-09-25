@@ -1,0 +1,42 @@
+Barplots show the average subject mean for the first 9 trials vs.
+the last 9 trials for each condition and the survey results.  
+a) Behavioral: Shows the
+initial and final mean accuracy among conditions.  The accuracy
+test subjects ability to discriminate the number of targets in a
+trial as means to verify attention during the task period.
+There were no significant differences between conditions among
+any conditions.  There were also no significant differences
+between accuracies between initial and final trials.
+
+b) Physiological: Shows the mean base corrected subject pupil
+size for each subject in each condition in initial and final
+trials. Higher pupil size indicates larger cognitive load.
+Fixed-order is significantly greater than Alphabetic and Random
+in early trials (p=.04, p=.02 respectively). The initial
+Fixed-order mean was also significantly higher than during the
+final trials (p<.03).
+During the final trials, no conditions were significantly
+discriminable.
+
+c) Survey: shows the indicated weighted difficulty according to the NASA
+TLX. Subjects rated the random condition significantly harder
+than both the Fixed-order and Alphabetic condition (p<.04,
+p=.0005 respectively).  The greater difficulty of Fixed-order vs.
+Alphabetic was not significant (p=.07).
+
+Pupillometry time series: 
+
+Shows the mean subject pupillometry size throughout the course of
+a trial. A trial is segregated broadly into the primer period, No
+target occured where subjects learn the target letter and adjust
+to the ordering of the trial, followed by a period where subjects
+fixate on a white dot on the screen before the task sound begins,
+followed by the task period. During the task period shown, cycles
+are separated with dotted lines. In the first cycle, no target
+occured and Fixed-order and Random conditions are indiscriminable
+so it is not considered as part of the task during analysis.
+Analyzed separately, no significant differences exist between
+conditions in the primer portion, fixation portion, or first
+cycle of the trial as one would expect.  The resulting means from
+the initial and final task periods are shown in Figure 2b.
+
