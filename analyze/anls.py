@@ -1215,16 +1215,17 @@ stats_tuple = namedtuple('stats_tuple', 'full_mean_trace,\
         global_bc_peak_ste, global_mc_peak_ste,\
         subj_bc_peaks, subj_mean_corrected_peaks')
 
-which_trials = ['all', 'start', 'end']
-for which_trial in which_trials:
-    #cycle_stats = list()
-    #parse results by cycle count
-    for i in range(tot_cycs - 1):
-        temp = subj_ps_stats(ps, window_start=cycle_start_samp[i],\
-            window_end=cycle_start_samp[i+1], take_trials=which_trial)
-        #cycle_stats.append(temp) 
-        pGroupedResults(temp, 'Cycle %d %s' % ((i + 1),
-            which_trial))
+## Discriminate cycle stats
+#which_trials = ['all', 'start', 'end']
+#for which_trial in which_trials:
+    ##cycle_stats = list()
+    ##parse results by cycle count
+    #for i in range(tot_cycs - 1):
+        #temp = subj_ps_stats(ps, window_start=cycle_start_samp[i],\
+            #window_end=cycle_start_samp[i+1], take_trials=which_trial)
+        ##cycle_stats.append(temp) 
+        #pGroupedResults(temp, 'Cycle %d %s' % ((i + 1),
+            #which_trial))
 
 #trial_stats = subj_ps_stats(ps)
 task_stats = subj_ps_stats(ps, window_start=cycle_start_samp[1],
