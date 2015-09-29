@@ -40,3 +40,142 @@ conditions in the primer portion, fixation portion, or first
 cycle of the trial as one would expect.  The resulting means from
 the initial and final task periods are shown in Figure 2b.
 
+
+Methods
+13 subjects took part in this experiment.  All subjects were
+native English speakers with no hearing difficulties.  Participants
+had pure-tone threshold in both ears within 20 dB of normal-hearing
+thresholds at octave frequencies between 250 and 8000 Hz.  All
+subjects gave informed consent to participate in the study as
+overseen by the University of Washington Institutional Review Board.
+
+Stimuli consisted of all letters of the alphabet plus the
+additional commands of 'Pause', 'Space', 'Read', and 'Delete'
+for a total of thirty selections.  These selections were divided
+by virtual spatial location into three groups (left, middle,
+and right) as shown in Figure \ref{screenshot}.  These
+selections were monotonized using Praat software and processed
+with pseudo-anechoic head-related transfer functions (recorded
+from a KEMAR manikin at 1 m).  All selections were trimmed to
+410 ms in length.  All stimuli were generated at a
+sampling rate of 24414 Hz and sent to Tucker-Davis
+Technologies hardware for digital-to-analog conversion and
+attenuation, and then presented over in-ear headphones
+(Etymotic Research ER-2).
+
+Stimuli fell into three conditions alphabetic, fixed-order,
+and random.  The three conditions were chosen to isolate a
+feature of auditory spellers that may have an effect on
+cognitive load.  The ordering and spatial distribution of
+letters varied by condition as explained in Table
+\ref{conditionTable}.  The alphabetic condition
+closely matches the charStreamer paradigm proposed by
+Hohne et al.  2014\cite{Hohne2014}.  In the fixed-order
+condition, letters were assigned to a spatial location so as to
+separate phonemically similar letters.  Throughout the trial
+of this condition, the ordering of the letters remained
+constant.  In the random condition, similar letters were
+distributed in the same way as the fixed-order condition only
+throughout the trial, the ordering of the letters changed,
+meaning subjects had no cue as to when the target letter would
+occur. 
+
+\begin{figure}[t]
+  \centering
+  \includegraphics[width=0.4\textwidth]{2screenshot}
+  \caption{ An example of the visual primer shown before each
+      trial.  This primer depicts the phonemically displaced
+      letter ordering characteristic of the primers of the
+      fixed-order condition and the random condition. The three circles
+      represent the three spatial letter groups or streams of the trial.  The
+      target letter is highlighted in green, so in this trial
+      the subject will listen for D in all letters appearing to come
+      from straight ahead.  The clockwise
+      sequence of the letters (first letter at the bottom)
+      indicates the sequence the selections will be spoken in
+  during any given cycle.  Note that the original sequence of
+  letters within a spatial group displayed in the visual primer is only
+  retained past the first cycle in the alphabetic
+  and fixed-order conditions. In the random condition, all
+  letters will stay in the same spatial location but the
+  sequence will change.}
+  \label{screenshot}
+\end{figure}
+
+%probably remove screenshot figure
+The three circles in the example visual primer (Figure
+\ref{screenshot}), represent the three spatial groups of a trial.
+Each group has ten selections and a virtual location.  
+
+%combine with figure text
+The selections
+within a group were spoken sequentially with a 450 ms lag
+between letters.  The complete recitation of all letters in
+the group lasted 4.5 s and was termed a cycle.  The task in a trial
+consisted of five repeated cycles. Subjects were informed to
+only listen to the target spatial location group for the
+trial, and were expected to ignore the other two groups at the
+different locations which played simultaneously. Since all
+three groups were simultaneous, all thirty selections were
+presented to the subject every 4.5 s, but by selectively
+attending the target group, they only attended the recitation
+of ten selections. All the groups were asynchronized from the
+two others by 150 ms such that no letters in separate groups
+would ever have coinciding onsets during a trial.
+
+The time course of a trial is diagrammed in Figure \ref{trialtrace}.
+Each trial contained the visual priming period for the first seven seconds.
+During this priming period, the spatial locations of the letters
+were displayed (Figure \ref{screenshot}).  The target letter was highlighted in
+green and also spoken at its respective location so that the
+listener knew before the trial began which spatial group location to
+listen to for the entirety of the trial. At 7 s, the visual
+primer disappeared and subjects began fixation on a small (~5 mm
+diameter) white dot at the center of the screen for the remainder of
+the trial.  The task lasted from 13 s, when the spoken letters
+began, to 36 s, the end of the trial.  Between each trial there was a rest
+period with no visual, or auditory stimuli besides the background
+white noise.  In this period, the screen retained the same luminance
+as during the trial but without a fixation dot. This baseline period
+lasted 2 s.  All pupil data was baseline-corrected by
+subtracting all samples of the trial by the average value during
+this baseline period.  This corrected the subject's global drifts in pupil
+size over the course of the experiment.  All pupil data is thus in relative arbitrary units
+(AU) since the data processing strategy emphasized relative
+changes in pupil size.  The raw pupillometry values were proportional
+to the number of pixels of the pupil in the infrared recordings.
+Approximately half of all trials contained two targets, the other
+half, one. To test the listener's raw ability to discriminate letters
+among the conditions, subjects were prompted at the end of each
+trial to enter the target occurrences, one or two. Each cycle either
+contained the target letter or the target was substituted with
+another letter from within the same spatial group location.
+
+The experiment consisted of 27 trials per condition
+with 9 trials at each spatial location.  The experiment
+lasted last less than 2 h with breaks.   
+
+%repeats figures text
+In calculating pupillometry
+means, only the second (17.5 s) through fourth cycle (31 s) of
+the task window were counted since the fixed-order and random
+conditions were only distinguishable after the first cycle
+when the letter sequence changed.
+
+To assess the subject's experience of cognitive load subjectively,
+the NASA Task Load Index (TLX) was performed after completion
+of the experiment\cite{Zickler2013a}.  The survey consisted of two
+sections which subjects completed separately for each
+condition.  The first section of the survey prompted subjects
+to rate the condition's difficulty from 1 to 9 on 6 factors:
+mental demand, performance-based demand, effort-based demand,
+temporal demand, frustration, and physical demand. In the
+second section, subjects were given pairs of these factor
+titles and asked to choose which was the more important
+contributor to their experience of workload.  From these
+comparisons, a weighting was computed for each factor.
+Written responses were not elicited during the survey section,
+however, subjects were made aware that comments they made
+regarding the subject may be recorded and used.
+
+
