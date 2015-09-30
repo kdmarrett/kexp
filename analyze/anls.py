@@ -1,7 +1,6 @@
 # author: Karl Marrett
 # analyze pupillometry data
 
-#TODO color of the plots for r-g color blind
 #if there is time
 #TODO use remove_blink_artifacts to nullify certain target
 #windows use position of eye to clean the results later
@@ -1194,7 +1193,7 @@ printSignificant('Delta accuracy sig. testing', delta_acc)
         #acc_subj_means_start, acc_subj_means_end)
 
 double_barplot('Accuracy', 'Accuracy (%)', 5,
-        acc_start, acc_end, sub_ind=211)#yrange=(40,105))
+        acc_start, acc_end, yrange=(50,100))
 
 #PS
 #trial
