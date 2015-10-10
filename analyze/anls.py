@@ -105,7 +105,7 @@ def cleanCogData(weighted=False, weighting_type='default'):
             cog_subj[i, j] = score
     cog_mean = np.nanmean(cog_subj, axis=0)
     cog_ste = stats.sem(cog_subj, axis=0)
-    return cog_subj, cog_mean, cog_ste
+    return cog_subj, cog_mean, cog_ste, gen
 
 def simpleaxis(ax):
     """Taken from timday on S.O.,
@@ -151,15 +151,17 @@ def combinedSigTest(header, subj_combined, strategy):
         condition_nums), dtype=bool)
     p = np.zeros(shape=(len(measure_names),
         condition_nums), dtype=bool)
+    trel = np.zeros(shape=(len(measure_names),
+        condition_nums), dtype=bool)
     resultstxt.write(header + ' sig. testing:\n')
     combo = (0, 1)
-    trel, p[0], significant[0] = testSigComb(combo,subj_combined,
+    trel[0], p[0], significant[0] = testSigComb(combo,subj_combined,
             strategy)
     combo = (0, 2)
-    trel, p[1], significant[1] = testSigComb(combo,subj_combined,
+    trel[1], p[1], significant[1] = testSigComb(combo,subj_combined,
             strategy)
     combo = (1, 2)
-    trel, p[2], significant[2] = testSigComb(combo,subj_combined,
+    trel[2], p[2], significant[2] = testSigComb(combo,subj_combined,
             strategy)
     resultstxt.write('\n')
     return significant, p
@@ -176,6 +178,7 @@ def testSigComb(combo, subj_combined, strategy):
             strategy(subj_combined[combo[0],:, cind],\
                     subj_combined[combo[1],:, cind])
         resultstxt.write('%.4f' % pval)
+        resultstxt.write(', with R:%.4f' % trel)
         p_arr[cind] = pval
         if pval < sig_thresh:
             resultstxt.write('**')
@@ -183,7 +186,6 @@ def testSigComb(combo, subj_combined, strategy):
         resultstxt.write('\n')
     resultstxt.write('\n')
     return trel, p_arr, significant
-
 
 def printSignificant(header, subject_data):
     """ Takes a matrix of N subjects by condition nums of 
@@ -509,9 +511,10 @@ def subj_ps_stats(ps_data, data_type='trial',\
 
     #single number for global average for each condition
     global_mean = np.nanmean(mean_trace, axis=1)
-    global_ste = stats.sem(mean_trace, axis=1)
+    global_ste = stats.sem(ps_subj_means, axis=0)
     global_bc_mean = np.nanmean(bc_mean_trace, axis=1)
-    global_bc_ste = stats.sem(bc_mean_trace, axis=1)
+    #import pdb; pdb.set_trace()
+    global_bc_ste = stats.sem(ps_subj_bc_means, axis=0)
 
     #find peak for each subject
     subj_bc_peaks = np.nanmax(bc_mean_dat_trim, axis=2)
@@ -552,7 +555,8 @@ def subj_ps_stats(ps_data, data_type='trial',\
 roundToIncrement = lambda y, inc: round(float(y) / inc) * inc
 
 def double_barplot(name, ylabel, y_increment, pre, post,
-        yrange='default', subject_lines=False, sub_ind=111):
+    yrange='default', subject_lines=False, sub_ind=111,
+    draw_sig=False, show=False):
 
     if name is 'Accuracy':
         means = zip(pre.global_mean, post.global_mean)
@@ -574,7 +578,7 @@ def double_barplot(name, ylabel, y_increment, pre, post,
             post.ps_subj_bc_means[:,i]) for i in
             range(post.ps_subj_bc_means.shape[-1])]
     N = 2
-    ind = np.arange(N)  # the x locations for the groups
+    ind = np.arange(N) / 1.5  # the x locations for the groups
     width = 0.15       # the width of the bars
     opacity = .2
     #fig, ax = plt.subplots(sub_ind)
@@ -591,25 +595,14 @@ def double_barplot(name, ylabel, y_increment, pre, post,
         yrange[1] = roundToIncrement(np.nanmax(all_subject_data) +\
                 lim_buffer, y_increment)
 
-    # significance bars from Stack over. post
-    def label_diff(i,j,text,X,Y):
-        text_hover_space = 7
-        #x = (X[i]+X[j])/2
-        y = 1.1*max(Y[i], Y[j])
-        xtext = X[i] + abs(X[i]-X[j]) / 2
-        props = {'connectionstyle':'bar, fraction=0.2','arrowstyle':'-',\
-             'shrinkA':20,'shrinkB':20,'lw':2}
-        ax.annotate(text, xy=(xtext, y + text_hover_space), zorder=10)
-        ax.annotate('', xy=(X[i],y), xytext=(X[j],y),
-            arrowprops=props)
-   
     colors = ['w','w','w']
     hatchs = ['','...','///']
     rects = []
     error_config = {'ecolor': 'k', 'elinewidth': 4, 'ezorder': 5}
-    #import pdb; pdb.set_trace()
+    x_list = []
     for i, mean in enumerate(means): #iterate through conditions
         x = ind + width * (i - 1)
+        x_list.append(x)
         #plot global data
         rects.append(ax.bar(x, mean, width,
             color=colors[i],lw=2.0,
@@ -622,24 +615,43 @@ def double_barplot(name, ylabel, y_increment, pre, post,
                 ax.plot(x, subj_mean, color='k', alpha=opacity, lw=.5,
                         marker='o', zorder=10)
 
-    #label_diff(0,1,'*',x, mean)
+    # significance bars from Stack over. post
+    def label_diff(i,j,k,l,text, texty, X, ymax, shrink):
+        y = ymax
+        #order by condition then initial or final
+        xtext = X[i][j] + abs(X[i][j]-X[k][l]) / 2
+        props = {'connectionstyle':'bar, fraction=0.2','arrowstyle':'-',\
+             'shrinkA':shrink,'shrinkB':shrink,'lw':1.0}
+        ax.annotate(text, xy=(xtext, texty),
+                fontsize=18, zorder=10, fontweight='bold')
+        #import pdb; pdb.set_trace()
+        ax.annotate('', xy=(X[i][j],y), xytext=(X[k][l],y),
+            xycoords='data', textcoords='data', 
+            zorder=10, arrowprops=props)
+
     # add some text for labels, title and axes ticks
+    #import pdb; pdb.set_trace()
+    if draw_sig:
+        ymax = np.max(means)
+        label_diff(1, 0, 2, 0,'*', 610, x_list, 590, 400)
+        label_diff(0, 0, 1, 0,'*', 650, x_list, 630, 400)
+        label_diff(1, 0, 1, 1,'*', 700, x_list, 560, 34)
     ax.set_ylabel(ylabel)
     ax.set_title(name)
     ax.set_ylim(yrange)
-    ax.set_xticks(ind+width)
+    ax.set_xticks(ind + width / 2)
     ax.set_xticklabels( ('Initial', 'Final') )
     #ax.legend((rects[0], rects[1], rects[2]),
             #('Alphabetic', 'Fixed-order', 'Random'))
-    #plt.show()
+    if show:
+        plt.show()
     fn = name.replace(" ", "") + '_2bplt.pdf'
     print 'Saving figure:\n%s' % fn
     fig.savefig(fn)
     plt.close()
 
 def barplot(title, ylabel, y_increment, subject_data, global_subj_mean,\
-        global_subj_ste, yrange='default', ylines=False):
-
+        global_subj_ste, yrange='default', ylines=False, show=False):
     #fig, ax = plt.subplots(figsize=(12, 14)) 
     fig, ax = plt.subplots() 
     # Remove the plot frame lines.
@@ -660,6 +672,18 @@ def barplot(title, ylabel, y_increment, subject_data, global_subj_mean,\
         #np.nanmax(global_subj_ste) - lim_buffer, y_increment)
         #yrange[1] = roundToIncrement(np.nanmax(global_subj_mean) +\
                 #np.nanmax(global_subj_ste) + lim_buffer, y_increment)
+
+    # significance bars from Stack over. post
+    def label_diff(i,j,text, texty, X, ymax, shrink):
+        y = 1 + ymax
+        xtext = X[i] + abs(X[i]-X[j]) / 2
+        props = {'connectionstyle':'bar, fraction=0.2','arrowstyle':'-',\
+             'shrinkA':shrink,'shrinkB':shrink,'lw':1.0}
+        ax.annotate(text, xy=(xtext, texty),
+                fontsize=18, zorder=10, fontweight='bold')
+        #import pdb; pdb.set_trace()
+        ax.annotate('', xy=(X[i],y), xytext=(X[j],y),
+            xycoords='data', textcoords='data', arrowprops=props)
 
     #plot yaxis lines
     if ylines:
@@ -686,15 +710,20 @@ def barplot(title, ylabel, y_increment, subject_data, global_subj_mean,\
         ax.plot(x, subj_mean, color='k', alpha=opacity, lw=.5,
                 marker='o', zorder=10)
 
+    ymax = np.max(subject_data)
+    #import pdb; pdb.set_trace()
+    label_diff(1,2,'*', 9.9, x, ymax - .2, 15)
+    label_diff(0,2,'*',8.8, x, ymax - 2.3, 34)
     ax.set_ylabel(ylabel)
     ax.set_ylim(yrange)
     ax.legend((rects[0], rects[1], rects[2]),
-            ('Alphabetic', 'Fixed-order', 'Random'))
+            ('Alphabetic', 'Fixed-order', 'Random'), loc=4)
     #ax.set_title('%s N=%d' % (title, N))
     ax.set_title(title)
     plt.xticks(x, ('Alphabetic', 'Fixed-order', 'Random'))
     #plt.tight_layout()
-    #plt.show()
+    if show:
+        plt.show()
     fn = title.replace(" ", "") + '_barplot.pdf'
     print 'Saving figure:\n%s' % fn
     fig.savefig(fn)
@@ -1192,8 +1221,9 @@ printSignificant('Delta accuracy sig. testing', delta_acc)
         #acc_global.global_mean, acc_global.global_ste, yrange=(50, 105))
         #acc_subj_means_start, acc_subj_means_end)
 
-double_barplot('Accuracy', 'Accuracy (%)', 5,
-        acc_start, acc_end, yrange=(50,100))
+#already saved as final
+#double_barplot('Accuracy', 'Accuracy (%)', 5,
+        #acc_start, acc_end, yrange=(60,100), show=True)
 
 #PS
 #trial
@@ -1282,10 +1312,11 @@ pGroupedResults(end_stats, 'end')
         #end_stats.full_ste_bc_trace, 'Base corrected final\
         #trials', ax=ax2, final_sub_plot=True)
 
-plot_ps(start_stats.full_mean_bc_trace,
-        start_stats.full_ste_bc_trace, 'Initial')
-plot_ps(end_stats.full_mean_bc_trace,
-        end_stats.full_ste_bc_trace, 'Final')
+##already saved final version
+#plot_ps(start_stats.full_mean_bc_trace,
+        #start_stats.full_ste_bc_trace, 'Initial')
+#plot_ps(end_stats.full_mean_bc_trace,
+        #end_stats.full_ste_bc_trace, 'Final')
 
 #plot ps data for all conditions
 #plot_ps(task_stats.full_mean_trace, task_stats.full_ste_trace, 'Raw')
@@ -1306,7 +1337,8 @@ plot_ps(end_stats.full_mean_bc_trace,
         #start_stats.global_bc_mean, start_stats.global_bc_ste)
 
 double_barplot('Mean task pupil size', 'Relative pupil size (AU)', 250, 
-        start_stats, end_stats, sub_ind=212)
+    start_stats, end_stats, sub_ind=212, show=True, draw_sig=True,
+    yrange=(-100, 750))
 
 ##baseline corrected target
 #barplot('Peak base corrected target pupil size', 
@@ -1319,7 +1351,7 @@ double_barplot('Mean task pupil size', 'Relative pupil size (AU)', 250,
    #target_stats.global_mc_peak_mean, target_stats.global_mc_peak_ste)
 
 #Survey
-cog_subj, cog_mean, cog_ste = cleanCogData(weighted=False)
+cog_subj, cog_mean, cog_ste, gen = cleanCogData(weighted=False)
 
 #pResults('Cognitive load unweighted means', cog_mean)
 #pResults('Cognitive load unweighted standard error', cog_ste)
@@ -1344,7 +1376,7 @@ cog_subj, cog_mean, cog_ste = cleanCogData(weighted=False)
 
 # WWL weighted
 cog_subj_weighted_WWL, cog_mean_weighted_WWL,\
-    cog_ste_weighted_WWL =\
+    cog_ste_weighted_WWL, gen =\
     cleanCogData(weighted=True, weighting_type='WWL')
 
 pResults('Cognitive load WWL weighted means', cog_mean_weighted_WWL)
@@ -1353,9 +1385,11 @@ pResults('Cognitive load WWL weighted standard error',
 printSignificant('Cognitive load WWL weighted',
         cog_subj_weighted_WWL)
 
-barplot('NASA TLX survey results', 'Relative demand score\n'+\
-    r'low $\hspace{8} \rightarrow \hspace{8}$high', 1,\
-    cog_subj_weighted_WWL, cog_mean_weighted_WWL, cog_ste_weighted_WWL)
+#already saved final figure
+#barplot('NASA TLX survey results', 'Relative demand score\n'+\
+    #r'low $\hspace{8} \rightarrow \hspace{8}$high', 1,\
+    #cog_subj_weighted_WWL, cog_mean_weighted_WWL, cog_ste_weighted_WWL,
+    #show=False, yrange=(0,11))
 
 #Combined data
 #correlation_strategies = [stats.pearsonr, stats.spearmanr]
@@ -1371,14 +1405,16 @@ for si, strategy in enumerate(correlation_strategies):
 
     subj_combined[0] = acc_global.subj_means
     subj_combined[1] = task_stats.ps_subj_means
-    subj_combined[2] = cog_subj
+    subj_combined[2] = cog_subj_weighted_WWL
+    #subj_combined[2] = cog_subj
     combinedSig, combinedP = \
             combinedSigTest('Cross-measure R %s' % strategy_name,
                     subj_combined, strategy)
 
     subj_combined[0] = delta_acc
     subj_combined[1] = task_stats.ps_subj_means
-    subj_combined[2] = cog_subj
+    subj_combined[2] = cog_subj_weighted_WWL
+    #subj_combined[2] = cog_subj
     combinedSig, combinedP = \
             combinedSigTest('Cross-measure R %s delta accuracy' % strategy_name,
                     subj_combined, strategy)
