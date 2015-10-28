@@ -495,9 +495,16 @@ def subj_ps_stats(ps_data, data_type='trial',\
     #subject means for sig testing and plotting
     ps_subj_means = np.nanmean(mean_dat_trim, axis=2)
     ps_subj_std = np.nanstd(mean_dat_trim, axis=2)
-    ps_subj_bc_means = np.nanmean(bc_mean_dat_trim, axis=2)
     ps_subj_bc_std = np.nanstd(bc_mean_dat_trim, axis=2)
-    assert(ps_subj_means.shape == (N, condition_nums))
+    #get the standard deviation for every subject
+    subj_experiment_stds = np.nanmean(ps_subj_bc_std, axis=1)
+    #normalize each subjects baseline corrected data
+    for subject_exp_std, si in enumerate(subj_experiment_stds):
+        bc_mean_dat_trim[si, ...] = bc_mean_dat_trim[si, ...] / subject_exp_std
+        bc_mean_dat[si, ...] = bc_mean_dat[si, ...] / subject_exp_std
+    #TODO check this doesn't have different implications
+    ps_subj_bc_means = np.nanmean(bc_mean_dat_trim, axis=2)
+    assert(ps_subj_bc_means.shape == (N, condition_nums))
     # means across all subjects
     full_mean_trace = np.nanmean(mean_dat, axis=0) 
     full_mean_bc_trace = np.nanmean(bc_mean_dat, axis=0) 
