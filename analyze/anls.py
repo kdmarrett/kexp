@@ -351,7 +351,8 @@ def subj_accuracy_stats(accuracy_data):
     return acc_tuple(global_mean, global_ste, subj_means, subj_stds)
 
 def subj_ps_stats(ps_data, data_type='trial',\
-        window_start=0, window_end='end', take_trials='all'):
+        window_start=0, window_end='end', take_trials='all',
+        normalize_by_std=False):
     """ ps[subject, cond_ind, block, trial, sample] 
     Params:
         window_start : start sample to analyze
@@ -499,9 +500,10 @@ def subj_ps_stats(ps_data, data_type='trial',\
     subj_experiment_stds= [np.nanstd(dat) for dat in ps_data]
     #import pdb; pdb.set_trace()
     #normalize each subjects baseline corrected data
-    for si, subject_exp_std in enumerate(subj_experiment_stds):
-        bc_mean_dat_trim[si, ...] = bc_mean_dat_trim[si, ...] / subject_exp_std
-        bc_mean_dat[si, ...] = bc_mean_dat[si, ...] / subject_exp_std
+    if normalize_by_std:
+        for si, subject_exp_std in enumerate(subj_experiment_stds):
+            bc_mean_dat_trim[si, ...] = bc_mean_dat_trim[si, ...] / subject_exp_std
+            bc_mean_dat[si, ...] = bc_mean_dat[si, ...] / subject_exp_std
     ps_subj_bc_means = np.nanmean(bc_mean_dat_trim, axis=2)
     assert(ps_subj_bc_means.shape == (N, condition_nums))
     # means across all subjects
@@ -790,7 +792,7 @@ def plot_ps(trace, ste_trace, name, ax='default',
         local_ax.legend(loc=2, prop={'size':10})
         local_ax.set_title(name + ' window pupil size N=%d' % N)
 
-    local_ax.set_ylabel('Pupil Size (AU)')
+    local_ax.set_ylabel('Corrected pupil pixel area')
     #Render stats to plot
     #info = r'$\mu$=%.1f, $\sigma$=%.3f, N=%d' % \
             #(global_mean[c_num],\
@@ -1320,11 +1322,11 @@ pGroupedResults(end_stats, 'end')
         #end_stats.full_ste_bc_trace, 'Base corrected final\
         #trials', ax=ax2, final_sub_plot=True)
 
-##already saved final version
-#plot_ps(start_stats.full_mean_bc_trace,
-        #start_stats.full_ste_bc_trace, 'Initial')
-#plot_ps(end_stats.full_mean_bc_trace,
-        #end_stats.full_ste_bc_trace, 'Final')
+#already saved final version
+plot_ps(start_stats.full_mean_bc_trace,
+        start_stats.full_ste_bc_trace, 'Initial')
+plot_ps(end_stats.full_mean_bc_trace,
+        end_stats.full_ste_bc_trace, 'Final')
 
 #plot ps data for all conditions
 #plot_ps(task_stats.full_mean_trace, task_stats.full_ste_trace, 'Raw')
@@ -1344,7 +1346,7 @@ pGroupedResults(end_stats, 'end')
         #250, task_stats.ps_subj_bc_means,
         #start_stats.global_bc_mean, start_stats.global_bc_ste)
 
-double_barplot('Mean task pupil size', 'Relative pupil size (AU)', 250, 
+double_barplot('Mean task pupil size', 'Corrected pupil pixel area', 250, 
     start_stats, end_stats, sub_ind=212, show=True, draw_sig=True,
     yrange=(-100, 750))
 
