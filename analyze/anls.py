@@ -134,9 +134,9 @@ def pResults(header, var):
     return
 
 def pGroupedResults(stats_tuple, group):
-    pResults('Pupil global %s means' % str(group), stats_tuple.global_mean)
+    pResults('Pupil global %s uncorrected means' % str(group), stats_tuple.global_mean)
     #pResults('Pupil global %s standard error' % str(group), stats_tuple.global_ste)
-    printSignificant('PS %s' % str(group), stats_tuple.ps_subj_means)
+    printSignificant('PS uncorrected %s' % str(group), stats_tuple.ps_subj_means)
     pResults('Pupil global %s bc means' % str(group), stats_tuple.global_bc_mean)
     #pResults('Pupil global %s bc standard error' % str(group), stats_tuple.global_bc_ste)
     printSignificant('PS baseline corrected %s' % str(group), stats_tuple.ps_subj_bc_means)
@@ -380,9 +380,7 @@ def subj_ps_stats(ps_data, data_type='trial',\
 
     # dat holds each time trace
     mean_dat = np.full((N, condition_nums, local_samp_len), np.nan)
-    std_dat = np.full((N, condition_nums, local_samp_len), np.nan)
-    bc_mean_dat = np.full((N, condition_nums, local_samp_len),
-            np.nan)
+    bc_mean_dat = np.full((N, condition_nums, local_samp_len), np.nan)
     #get a mean value for the baseline period proceeding each trial 
     base_mean = np.full((N, trials_to_process), np.nan)
     #FIXME collapse this
@@ -488,8 +486,7 @@ def subj_ps_stats(ps_data, data_type='trial',\
                     bc_trial[:] = np.nan
                     for rti, raw_trial in enumerate(raw_windows):
                         bc_trial[rti,:] = raw_trial - base_mean[s_ind, rti]
-                    bc_mean_dat[s_ind, c_ind] = np.nanmean(bc_trial,
-                            axis=0)
+                    bc_mean_dat[s_ind, c_ind] = np.nanmean(bc_trial, axis=0)
     mean_dat_trim = mean_dat[:,:,window_start:window_end]
     bc_mean_dat_trim = bc_mean_dat[:,:,window_start:window_end]
     #subject means for sig testing and plotting
@@ -497,12 +494,14 @@ def subj_ps_stats(ps_data, data_type='trial',\
     ps_subj_std = np.nanstd(mean_dat_trim, axis=2)
     ps_subj_bc_std = np.nanstd(bc_mean_dat_trim, axis=2)
     #get the standard deviation for every subject
-    subj_experiment_stds = np.nanmean(ps_subj_bc_std, axis=1)
+    #temp = np.nanstd(bc_mean_dat, axis=2)
+    #subj_experiment_stds = np.nanmean(temp, axis=1)
+    subj_experiment_stds= [np.nanstd(dat) for dat in ps_data]
+    #import pdb; pdb.set_trace()
     #normalize each subjects baseline corrected data
-    for subject_exp_std, si in enumerate(subj_experiment_stds):
+    for si, subject_exp_std in enumerate(subj_experiment_stds):
         bc_mean_dat_trim[si, ...] = bc_mean_dat_trim[si, ...] / subject_exp_std
         bc_mean_dat[si, ...] = bc_mean_dat[si, ...] / subject_exp_std
-    #TODO check this doesn't have different implications
     ps_subj_bc_means = np.nanmean(bc_mean_dat_trim, axis=2)
     assert(ps_subj_bc_means.shape == (N, condition_nums))
     # means across all subjects
@@ -1270,7 +1269,7 @@ stats_tuple = namedtuple('stats_tuple', 'full_mean_trace,\
 #trial_stats = subj_ps_stats(ps)
 task_stats = subj_ps_stats(ps, window_start=cycle_start_samp[1],
     window_end=cycle_start_samp[5])
-primer_stats = subj_ps_stats(ps, window_end=end_primer_samp)
+#primer_stats = subj_ps_stats(ps, window_end=end_primer_samp)
 #start stats for 2nd through 5th cycle
 start_stats = subj_ps_stats(ps, window_start=cycle_start_samp[1],
     window_end=cycle_start_samp[5], take_trials='start')
@@ -1280,13 +1279,15 @@ end_stats = subj_ps_stats(ps, window_start=cycle_start_samp[1],
 #target_stats = subj_ps_stats(ps_target, data_type='target',\
     #window_start=preslice_samp)
 
-#import pdb;pdb.set_trace()
-printSignificantInter('Start vs. end ps',
+printSignificantInter('Start vs. end uncorrected raw PS',
         start_stats.ps_subj_means, end_stats.ps_subj_means)
+
+printSignificantInter('Start vs. end bc PS',
+        start_stats.ps_subj_bc_means, end_stats.ps_subj_bc_means)
 
 #pGroupedResults(trial_stats, 'full trial')
 pGroupedResults(task_stats, 'task')
-pGroupedResults(primer_stats, 'primer')
+#pGroupedResults(primer_stats, 'primer')
 pGroupedResults(start_stats, 'start')
 pGroupedResults(end_stats, 'end')
 #pGroupedResults(target_stats, 'target')
