@@ -564,7 +564,7 @@ roundToIncrement = lambda y, inc: round(float(y) / inc) * inc
 
 def double_barplot(name, ylabel, y_increment, pre, post,
     yrange='default', subject_lines=False, sub_ind=111,
-    draw_sig=False, show=False):
+    draw_sig=False, show=True):
 
     if name is 'Accuracy':
         means = zip(pre.global_mean, post.global_mean)
@@ -604,7 +604,7 @@ def double_barplot(name, ylabel, y_increment, pre, post,
                 lim_buffer, y_increment)
 
     colors = ['w','w','w']
-    hatchs = ['','...','///']
+    hatchs = ['','.','/']
     rects = []
     error_config = {'ecolor': 'k', 'elinewidth': 4, 'ezorder': 5}
     x_list = []
@@ -641,20 +641,34 @@ def double_barplot(name, ylabel, y_increment, pre, post,
     #import pdb; pdb.set_trace()
     if draw_sig:
         ymax = np.max(means)
-        label_diff(1, 0, 2, 0,'*', 610, x_list, 590, 400)
-        label_diff(0, 0, 1, 0,'*', 650, x_list, 630, 400)
-        label_diff(1, 0, 1, 1,'*', 700, x_list, 560, 34)
+        label_diff(1, 0, 2, 0,'*', 625, x_list, 590, 400)
+        label_diff(0, 0, 1, 0,'*', 665, x_list, 630, 400)
+        #label_diff(1, 0, 1, 1,'*', 725, x_list, 700, 34)
+        label_diff(1, 0, 1, 1,'*', 725, x_list, 560, 34)
     ax.set_ylabel(ylabel)
     ax.set_title(name)
     ax.set_ylim(yrange)
     ax.set_xticks(ind + width / 2)
     ax.set_xticklabels( ('Initial', 'Final') )
+    #params = {
+       #'axes.labelsize': 8,
+       #'text.fontsize': 8,
+       #'legend.fontsize': 10,
+       #'xtick.labelsize': 10,
+       #'ytick.labelsize': 10,
+       #'text.usetex': False,
+       #'figure.figsize': [4.5, 4.5]
+       #}
+    #plt.rcParams.update(params)
+    plt.rcParams.update({'figure.figsize': [3,9]})
+    #plt.rcParams.update({'figure.figsize': [3,1.5]})
     #ax.legend((rects[0], rects[1], rects[2]),
             #('Alphabetic', 'Fixed-order', 'Random'))
     if show:
         plt.show()
     fn = name.replace(" ", "") + '_2bplt.png'
     print 'Saving figure:\n%s' % fn
+    #fig.set_size_inches(3, 1.7)
     fig.savefig(fn, dpi=DPI_NO)
     plt.close()
 
@@ -701,7 +715,7 @@ def barplot(title, ylabel, y_increment, subject_data, global_subj_mean,\
 
     #plot global data
     error_config = {'ecolor': 'k', 'elinewidth': 4, 'ezorder': 5}
-    hatchs = ['','...','///']
+    hatchs = ['','.','/']
     rects = []
     for local_x, cond_mean, cond_ste, hatch in zip(x,
         global_subj_mean, global_subj_ste, hatchs):
@@ -734,6 +748,7 @@ def barplot(title, ylabel, y_increment, subject_data, global_subj_mean,\
         plt.show()
     fn = title.replace(" ", "") + '_barplot.png'
     print 'Saving figure:\n%s' % fn
+    #fig.set_size_inches(3, 1.7)
     fig.savefig(fn, dpi=DPI_NO)
     plt.close()
 
@@ -804,6 +819,7 @@ def plot_ps(trace, ste_trace, name, ax='default',
     name = name.replace(" ", "")
     fn = name + '_trace.png'
     print 'Saving figure:\n%s' % fn
+    #fig.set_size_inches(3, 1.7)
     fig.savefig(fn, dpi=DPI_NO)
     plt.close()
     #if final_sub_plot:
@@ -824,7 +840,7 @@ param_data_dir = op.join(data_dir, 'Params')
 global_vars = sio.loadmat(op.join(param_data_dir, 'global_vars.mat'))
 preblock = global_vars['preblock_prime_sec'][0]
 trial_len = 36.000
-DPI_NO = 300
+DPI_NO = 200
 trial_samp = np.floor(trial_len*fs).astype(int)
 # time of visual primer (s)
 end_primer = global_vars['vPrimerLen'] 
@@ -1230,9 +1246,10 @@ printSignificant('Delta accuracy sig. testing', delta_acc)
         #acc_global.global_mean, acc_global.global_ste, yrange=(50, 105))
         #acc_subj_means_start, acc_subj_means_end)
 
-#already saved as final
-double_barplot('Accuracy', 'Accuracy (%)', 5,
-        acc_start, acc_end, yrange=(60,100), show=True)
+##already saved as final
+#double_barplot('Accuracy', 'Accuracy (%)', 5,
+        #acc_start, acc_end, yrange=(60,100), show=True,
+        #draw_sig=False)
 
 #PS
 #trial
@@ -1323,11 +1340,11 @@ pGroupedResults(end_stats, 'end')
         #end_stats.full_ste_bc_trace, 'Base corrected final\
         #trials', ax=ax2, final_sub_plot=True)
 
-#already saved final version
-plot_ps(start_stats.full_mean_bc_trace,
-        start_stats.full_ste_bc_trace, 'Initial')
-plot_ps(end_stats.full_mean_bc_trace,
-        end_stats.full_ste_bc_trace, 'Final')
+##already saved final version
+#plot_ps(start_stats.full_mean_bc_trace,
+        #start_stats.full_ste_bc_trace, 'Initial')
+#plot_ps(end_stats.full_mean_bc_trace,
+        #end_stats.full_ste_bc_trace, 'Final')
 
 #plot ps data for all conditions
 #plot_ps(task_stats.full_mean_trace, task_stats.full_ste_trace, 'Raw')
@@ -1349,7 +1366,7 @@ plot_ps(end_stats.full_mean_bc_trace,
 
 double_barplot('Mean task pupil size', 'Corrected pupil pixel area', 250, 
     start_stats, end_stats, sub_ind=212, show=True, draw_sig=True,
-    yrange=(-100, 750))
+    yrange=(-100, 800))
 
 ##baseline corrected target
 #barplot('Peak base corrected target pupil size', 
@@ -1396,7 +1413,7 @@ pResults('Cognitive load WWL weighted standard error',
 printSignificant('Cognitive load WWL weighted',
         cog_subj_weighted_WWL)
 
-#already saved final figure
+##already saved final figure
 #barplot('NASA TLX survey results', 'Relative demand score\n'+\
     #r'low $\hspace{8} \rightarrow \hspace{8}$high', 1,\
     #cog_subj_weighted_WWL, cog_mean_weighted_WWL, cog_ste_weighted_WWL,
