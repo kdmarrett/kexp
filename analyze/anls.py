@@ -653,9 +653,9 @@ def double_barplot(name, ylabel, y_increment, pre, post,
             #('Alphabetic', 'Fixed-order', 'Random'))
     if show:
         plt.show()
-    fn = name.replace(" ", "") + '_2bplt.pdf'
+    fn = name.replace(" ", "") + '_2bplt.png'
     print 'Saving figure:\n%s' % fn
-    fig.savefig(fn)
+    fig.savefig(fn, dpi=DPI_NO)
     plt.close()
 
 def barplot(title, ylabel, y_increment, subject_data, global_subj_mean,\
@@ -732,9 +732,9 @@ def barplot(title, ylabel, y_increment, subject_data, global_subj_mean,\
     #plt.tight_layout()
     if show:
         plt.show()
-    fn = title.replace(" ", "") + '_barplot.pdf'
+    fn = title.replace(" ", "") + '_barplot.png'
     print 'Saving figure:\n%s' % fn
-    fig.savefig(fn)
+    fig.savefig(fn, dpi=DPI_NO)
     plt.close()
 
 def plot_ps(trace, ste_trace, name, ax='default',
@@ -802,14 +802,14 @@ def plot_ps(trace, ste_trace, name, ax='default',
     local_ax.set_xlabel('Trial Time (s)')
     local_ax.set_xlim((0, local_samp_len / fs))
     name = name.replace(" ", "")
-    fn = name + '_trace.pdf'
+    fn = name + '_trace.png'
     print 'Saving figure:\n%s' % fn
-    fig.savefig(fn)
+    fig.savefig(fn, dpi=DPI_NO)
     plt.close()
     #if final_sub_plot:
         ##plt.show()
         #name = name.replace(" ", "")
-        #fn = name + '_trace.pdf'
+        #fn = name + '_trace.png'
         #print 'Saving figure:\n%s' % fn
         #fig.savefig(fn)
         #plt.close()
@@ -824,6 +824,7 @@ param_data_dir = op.join(data_dir, 'Params')
 global_vars = sio.loadmat(op.join(param_data_dir, 'global_vars.mat'))
 preblock = global_vars['preblock_prime_sec'][0]
 trial_len = 36.000
+DPI_NO = 300
 trial_samp = np.floor(trial_len*fs).astype(int)
 # time of visual primer (s)
 end_primer = global_vars['vPrimerLen'] 
@@ -1230,8 +1231,8 @@ printSignificant('Delta accuracy sig. testing', delta_acc)
         #acc_subj_means_start, acc_subj_means_end)
 
 #already saved as final
-#double_barplot('Accuracy', 'Accuracy (%)', 5,
-        #acc_start, acc_end, yrange=(60,100), show=True)
+double_barplot('Accuracy', 'Accuracy (%)', 5,
+        acc_start, acc_end, yrange=(60,100), show=True)
 
 #PS
 #trial
