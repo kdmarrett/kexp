@@ -37,8 +37,8 @@ stim_version_code = 8010
 # asserted fs
 fs = 1000.0  
 sig_thresh = .05
-FONT_SIZE = 10
-TITLE_SIZE = 10 
+FONT_SIZE = 8
+TITLE_SIZE = 8 
 
 #data_dir = os.path.abspath(os.path.join(os.pardir, 'Data'))
 results_dir = op.abspath(op.join(op.pardir, 'paperFiles'))
@@ -647,12 +647,13 @@ def double_barplot(name, ylabel, y_increment, pre, post,
         label_diff(0, 0, 1, 0,'*', 640, x_list, 640, 400)
         label_diff(1, 0, 1, 1,'*', 745, x_list, 700, 5)
         #label_diff(1, 0, 1, 1,'*', 725, x_list, 560, 1)
-    #import pdb; pdb.set_trace()
+    import pdb; pdb.set_trace()
     ax.set_ylabel(ylabel, fontsize=FONT_SIZE)
     ax.set_title(name, fontsize=TITLE_SIZE)
     ax.set_ylim(yrange)
     ax.set_xticks(ind + width / 2)
     ax.set_xticklabels( ('Initial', 'Final'), fontsize=FONT_SIZE )
+    #ax.set_yticklabels(yrange, fontsize=FONT_SIZE )
     #ax.legend((rects[0], rects[1], rects[2]),
             #('Alphabetic', 'Fixed-order', 'Random'))
     if show:
