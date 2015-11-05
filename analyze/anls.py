@@ -37,6 +37,8 @@ stim_version_code = 8010
 # asserted fs
 fs = 1000.0  
 sig_thresh = .05
+FONT_SIZE = 10
+TITLE_SIZE = 10 
 
 #data_dir = os.path.abspath(os.path.join(os.pardir, 'Data'))
 results_dir = op.abspath(op.join(op.pardir, 'paperFiles'))
@@ -563,7 +565,7 @@ def subj_ps_stats(ps_data, data_type='trial',\
 roundToIncrement = lambda y, inc: round(float(y) / inc) * inc
 
 def double_barplot(name, ylabel, y_increment, pre, post,
-    yrange='default', subject_lines=False, sub_ind=111,
+    yrange='default', subject_lines=False, 
     draw_sig=False, show=True):
 
     if name is 'Accuracy':
@@ -589,8 +591,7 @@ def double_barplot(name, ylabel, y_increment, pre, post,
     ind = np.arange(N) / 1.5  # the x locations for the groups
     width = 0.15       # the width of the bars
     opacity = .2
-    #fig, ax = plt.subplots(sub_ind)
-    fig, ax = plt.subplots()
+    fig, ax = plt.subplots(ncols=1, nrows=1, figsize=(1.5, 2.5))
     simpleaxis(ax)
     if not subject_lines:
         all_subject_data = [max(means), min(means)]
@@ -604,9 +605,9 @@ def double_barplot(name, ylabel, y_increment, pre, post,
                 lim_buffer, y_increment)
 
     colors = ['w','w','w']
-    hatchs = ['','.','/']
+    hatchs = ['','..','//']
     rects = []
-    error_config = {'ecolor': 'k', 'elinewidth': 4, 'ezorder': 5}
+    error_config = {'ecolor': 'k', 'elinewidth': 2, 'ezorder': 5}
     x_list = []
     for i, mean in enumerate(means): #iterate through conditions
         x = ind + width * (i - 1)
@@ -631,7 +632,8 @@ def double_barplot(name, ylabel, y_increment, pre, post,
         props = {'connectionstyle':'bar, fraction=0.2','arrowstyle':'-',\
              'shrinkA':shrink,'shrinkB':shrink,'lw':1.0}
         ax.annotate(text, xy=(xtext, texty),
-                fontsize=18, zorder=10, fontweight='bold')
+                fontsize=14, zorder=10)
+                #fontsize=18, zorder=10, fontweight='bold')
         #import pdb; pdb.set_trace()
         ax.annotate('', xy=(X[i][j],y), xytext=(X[k][l],y),
             xycoords='data', textcoords='data', 
@@ -641,27 +643,16 @@ def double_barplot(name, ylabel, y_increment, pre, post,
     #import pdb; pdb.set_trace()
     if draw_sig:
         ymax = np.max(means)
-        label_diff(1, 0, 2, 0,'*', 625, x_list, 590, 400)
-        label_diff(0, 0, 1, 0,'*', 665, x_list, 630, 400)
-        #label_diff(1, 0, 1, 1,'*', 725, x_list, 700, 34)
-        label_diff(1, 0, 1, 1,'*', 725, x_list, 560, 34)
-    ax.set_ylabel(ylabel)
-    ax.set_title(name)
+        label_diff(1, 0, 2, 0,'*', 600, x_list, 600, 400)
+        label_diff(0, 0, 1, 0,'*', 640, x_list, 640, 400)
+        label_diff(1, 0, 1, 1,'*', 745, x_list, 700, 5)
+        #label_diff(1, 0, 1, 1,'*', 725, x_list, 560, 1)
+    #import pdb; pdb.set_trace()
+    ax.set_ylabel(ylabel, fontsize=FONT_SIZE)
+    ax.set_title(name, fontsize=TITLE_SIZE)
     ax.set_ylim(yrange)
     ax.set_xticks(ind + width / 2)
-    ax.set_xticklabels( ('Initial', 'Final') )
-    #params = {
-       #'axes.labelsize': 8,
-       #'text.fontsize': 8,
-       #'legend.fontsize': 10,
-       #'xtick.labelsize': 10,
-       #'ytick.labelsize': 10,
-       #'text.usetex': False,
-       #'figure.figsize': [4.5, 4.5]
-       #}
-    #plt.rcParams.update(params)
-    plt.rcParams.update({'figure.figsize': [3,9]})
-    #plt.rcParams.update({'figure.figsize': [3,1.5]})
+    ax.set_xticklabels( ('Initial', 'Final'), fontsize=FONT_SIZE )
     #ax.legend((rects[0], rects[1], rects[2]),
             #('Alphabetic', 'Fixed-order', 'Random'))
     if show:
@@ -675,13 +666,13 @@ def double_barplot(name, ylabel, y_increment, pre, post,
 def barplot(title, ylabel, y_increment, subject_data, global_subj_mean,\
         global_subj_ste, yrange='default', ylines=False, show=False):
     #fig, ax = plt.subplots(figsize=(12, 14)) 
-    fig, ax = plt.subplots() 
+    fig, ax = plt.subplots(ncols=1, nrows=1, figsize=(4,3))
     # Remove the plot frame lines.
     simpleaxis(ax)
     x = [.5, 1.0, 1.5]
     ax.set_xlim((.3, 2))
     bar_width = .25
-    opacity = .2
+    opacity = .3
     #find range
     if yrange is 'default':
         lim_buffer = y_increment
@@ -702,7 +693,7 @@ def barplot(title, ylabel, y_increment, subject_data, global_subj_mean,\
         props = {'connectionstyle':'bar, fraction=0.2','arrowstyle':'-',\
              'shrinkA':shrink,'shrinkB':shrink,'lw':1.0}
         ax.annotate(text, xy=(xtext, texty),
-                fontsize=18, zorder=10, fontweight='bold')
+                fontsize=14, zorder=10)
         #import pdb; pdb.set_trace()
         ax.annotate('', xy=(X[i],y), xytext=(X[j],y),
             xycoords='data', textcoords='data', arrowprops=props)
@@ -714,8 +705,8 @@ def barplot(title, ylabel, y_increment, subject_data, global_subj_mean,\
                     lw=0.5, color="black", alpha=0.3, zorder=1) 
 
     #plot global data
-    error_config = {'ecolor': 'k', 'elinewidth': 4, 'ezorder': 5}
-    hatchs = ['','.','/']
+    error_config = {'ecolor': 'k', 'elinewidth': 3, 'ezorder': 5}
+    hatchs = ['','..','//']
     rects = []
     for local_x, cond_mean, cond_ste, hatch in zip(x,
         global_subj_mean, global_subj_ste, hatchs):
@@ -734,15 +725,17 @@ def barplot(title, ylabel, y_increment, subject_data, global_subj_mean,\
 
     ymax = np.max(subject_data)
     #import pdb; pdb.set_trace()
-    label_diff(1,2,'*', 9.9, x, ymax - .2, 15)
-    label_diff(0,2,'*',8.8, x, ymax - 2.3, 34)
-    ax.set_ylabel(ylabel)
+    label_diff(1,2,'*', 9.7, x, ymax - .1, 7)
+    label_diff(0,2,'*',8.7, x, ymax - 2.1, 20)
+    ax.set_ylabel(ylabel, fontsize=FONT_SIZE)
     ax.set_ylim(yrange)
     ax.legend((rects[0], rects[1], rects[2]),
-            ('Alphabetic', 'Fixed-order', 'Random'), loc=4)
+            ('Alphabetic', 'Fixed-order', 'Random'), loc=4,
+            prop={'size':9})
     #ax.set_title('%s N=%d' % (title, N))
-    ax.set_title(title)
-    plt.xticks(x, ('Alphabetic', 'Fixed-order', 'Random'))
+    ax.set_title(title, fontsize=TITLE_SIZE)
+    plt.xticks(x, ('Alphabetic', 'Fixed-order', 'Random'),
+            fontsize=FONT_SIZE)
     #plt.tight_layout()
     if show:
         plt.show()
@@ -1246,10 +1239,10 @@ printSignificant('Delta accuracy sig. testing', delta_acc)
         #acc_global.global_mean, acc_global.global_ste, yrange=(50, 105))
         #acc_subj_means_start, acc_subj_means_end)
 
-##already saved as final
-#double_barplot('Accuracy', 'Accuracy (%)', 5,
-        #acc_start, acc_end, yrange=(60,100), show=True,
-        #draw_sig=False)
+#already saved as final
+double_barplot('Accuracy', 'Accuracy (%)', 5,
+        acc_start, acc_end, yrange=(60,100), show=True,
+        draw_sig=False)
 
 #PS
 #trial
@@ -1365,7 +1358,7 @@ pGroupedResults(end_stats, 'end')
         #start_stats.global_bc_mean, start_stats.global_bc_ste)
 
 double_barplot('Mean task pupil size', 'Corrected pupil pixel area', 250, 
-    start_stats, end_stats, sub_ind=212, show=True, draw_sig=True,
+    start_stats, end_stats, show=True, draw_sig=True,
     yrange=(-100, 800))
 
 ##baseline corrected target
@@ -1413,11 +1406,11 @@ pResults('Cognitive load WWL weighted standard error',
 printSignificant('Cognitive load WWL weighted',
         cog_subj_weighted_WWL)
 
-##already saved final figure
-#barplot('NASA TLX survey results', 'Relative demand score\n'+\
-    #r'low $\hspace{8} \rightarrow \hspace{8}$high', 1,\
-    #cog_subj_weighted_WWL, cog_mean_weighted_WWL, cog_ste_weighted_WWL,
-    #show=False, yrange=(0,11))
+#already saved final figure
+barplot('NASA TLX survey results', 'Relative demand score\n'+\
+    r'low $\hspace{8} \rightarrow \hspace{8}$high', 1,\
+    cog_subj_weighted_WWL, cog_mean_weighted_WWL, cog_ste_weighted_WWL,
+    show=True, yrange=(0,11))
 
 #Combined data
 #correlation_strategies = [stats.pearsonr, stats.spearmanr]
