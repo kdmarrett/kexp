@@ -591,7 +591,8 @@ def double_barplot(name, ylabel, y_increment, pre, post,
     ind = np.arange(N) / 1.5  # the x locations for the groups
     width = 0.15       # the width of the bars
     opacity = .2
-    fig, ax = plt.subplots(ncols=1, nrows=1, figsize=(1.5, 2.5))
+    #fig, ax = plt.subplots(ncols=1, nrows=1, figsize=(1.5, 2.5))
+    fig, ax = plt.subplots(ncols=1, nrows=1, figsize=(3.0, 4.5))
     simpleaxis(ax)
     if not subject_lines:
         all_subject_data = [max(means), min(means)]
@@ -647,13 +648,14 @@ def double_barplot(name, ylabel, y_increment, pre, post,
         label_diff(0, 0, 1, 0,'*', 640, x_list, 640, 400)
         label_diff(1, 0, 1, 1,'*', 745, x_list, 700, 5)
         #label_diff(1, 0, 1, 1,'*', 725, x_list, 560, 1)
-    import pdb; pdb.set_trace()
+    #import pdb; pdb.set_trace()
     ax.set_ylabel(ylabel, fontsize=FONT_SIZE)
     ax.set_title(name, fontsize=TITLE_SIZE)
     ax.set_ylim(yrange)
     ax.set_xticks(ind + width / 2)
     ax.set_xticklabels( ('Initial', 'Final'), fontsize=FONT_SIZE )
-    #ax.set_yticklabels(yrange, fontsize=FONT_SIZE )
+    ax.set_yticklabels(range(yrange[0], yrange[1], y_increment),
+            fontsize=FONT_SIZE )
     #ax.legend((rects[0], rects[1], rects[2]),
             #('Alphabetic', 'Fixed-order', 'Random'))
     if show:
@@ -737,6 +739,8 @@ def barplot(title, ylabel, y_increment, subject_data, global_subj_mean,\
     ax.set_title(title, fontsize=TITLE_SIZE)
     plt.xticks(x, ('Alphabetic', 'Fixed-order', 'Random'),
             fontsize=FONT_SIZE)
+    ax.set_yticklabels(range(yrange[0], yrange[1], y_increment),
+            fontsize=FONT_SIZE )
     #plt.tight_layout()
     if show:
         plt.show()
@@ -1358,7 +1362,7 @@ pGroupedResults(end_stats, 'end')
         #250, task_stats.ps_subj_bc_means,
         #start_stats.global_bc_mean, start_stats.global_bc_ste)
 
-double_barplot('Mean task pupil size', 'Corrected pupil pixel area', 250, 
+double_barplot('Mean task pupil size', 'Corrected pupil pixel area', 100, 
     start_stats, end_stats, show=True, draw_sig=True,
     yrange=(-100, 800))
 
@@ -1409,7 +1413,7 @@ printSignificant('Cognitive load WWL weighted',
 
 #already saved final figure
 barplot('NASA TLX survey results', 'Relative demand score\n'+\
-    r'low $\hspace{8} \rightarrow \hspace{8}$high', 1,\
+    r'low $\hspace{8} \rightarrow \hspace{8}$high', 2,\
     cog_subj_weighted_WWL, cog_mean_weighted_WWL, cog_ste_weighted_WWL,
     show=True, yrange=(0,11))
 
