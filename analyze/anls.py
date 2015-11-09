@@ -591,8 +591,8 @@ def double_barplot(name, ylabel, y_increment, pre, post,
     ind = np.arange(N) / 1.5  # the x locations for the groups
     width = 0.15       # the width of the bars
     opacity = .2
-    #fig, ax = plt.subplots(ncols=1, nrows=1, figsize=(1.5, 2.5))
-    fig, ax = plt.subplots(ncols=1, nrows=1, figsize=(3.0, 4.5))
+    fig, ax = plt.subplots(ncols=1, nrows=1, figsize=(1.5, 2.5))
+    #fig, ax = plt.subplots(ncols=1, nrows=1, figsize=(3.0, 4.5))
     simpleaxis(ax)
     if not subject_lines:
         all_subject_data = [max(means), min(means)]
