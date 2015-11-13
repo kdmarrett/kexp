@@ -591,7 +591,8 @@ def double_barplot(name, ylabel, y_increment, pre, post,
     ind = np.arange(N) / 1.5  # the x locations for the groups
     width = 0.15       # the width of the bars
     opacity = .2
-    fig, ax = plt.subplots(ncols=1, nrows=1, figsize=(1.5, 2.5))
+    #fig, ax = plt.subplots(ncols=1, nrows=1, figsize=(1.0, 2.0))
+    fig, ax = plt.subplots(ncols=1, nrows=1, figsize=(1.5, 2.5)) # original
     #fig, ax = plt.subplots(ncols=1, nrows=1, figsize=(3.0, 4.5))
     simpleaxis(ax)
     if not subject_lines:
@@ -644,9 +645,12 @@ def double_barplot(name, ylabel, y_increment, pre, post,
     #import pdb; pdb.set_trace()
     if draw_sig:
         ymax = np.max(means)
-        label_diff(1, 0, 2, 0,'*', 600, x_list, 600, 400)
-        label_diff(0, 0, 1, 0,'*', 640, x_list, 640, 400)
-        label_diff(1, 0, 1, 1,'*', 745, x_list, 700, 5)
+        #label_diff(1, 0, 2, 0,'*', 600, x_list, 600, 400)
+        #label_diff(0, 0, 1, 0,'*', 640, x_list, 640, 400)
+        #label_diff(1, 0, 1, 1,'*', 745, x_list, 700, 5)
+        label_diff(1, 0, 2, 0,'*', 620, x_list, 600, 400)
+        label_diff(0, 0, 1, 0,'*', 660, x_list, 640, 400)
+        label_diff(1, 0, 1, 1,'*', 765, x_list, 680, 10)
         #label_diff(1, 0, 1, 1,'*', 725, x_list, 560, 1)
     #import pdb; pdb.set_trace()
     ax.set_ylabel(ylabel, fontsize=FONT_SIZE)
@@ -728,8 +732,8 @@ def barplot(title, ylabel, y_increment, subject_data, global_subj_mean,\
 
     ymax = np.max(subject_data)
     #import pdb; pdb.set_trace()
-    label_diff(1,2,'*', 9.7, x, ymax - .1, 7)
-    label_diff(0,2,'*',8.7, x, ymax - 2.1, 20)
+    label_diff(1,2,'*', 9.4, x, ymax - .1, 7)
+    label_diff(0,2,'*', 8.7, x, ymax - 1.1, 20)
     ax.set_ylabel(ylabel, fontsize=FONT_SIZE)
     ax.set_ylim(yrange)
     ax.legend((rects[0], rects[1], rects[2]),
