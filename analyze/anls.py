@@ -37,8 +37,21 @@ stim_version_code = 8010
 # asserted fs
 fs = 1000.0  
 sig_thresh = .05
-FONT_SIZE = 8
-TITLE_SIZE = 8 
+hatchs = ['','..','//']
+bar_line_width = 1.5
+elinewidth = 1.5
+
+#for nasa
+FONT_SIZE = 10
+SIG_FONT_SIZE = 12
+TITLE_SIZE = 12 
+
+##for mean pupil
+#FONT_SIZE = 6
+#SIG_FONT_SIZE = 12
+#TITLE_SIZE = 6 
+
+tightLayout = True
 
 #data_dir = os.path.abspath(os.path.join(os.pardir, 'Data'))
 results_dir = op.abspath(op.join(op.pardir, 'paperFiles'))
@@ -607,16 +620,15 @@ def double_barplot(name, ylabel, y_increment, pre, post,
                 lim_buffer, y_increment)
 
     colors = ['w','w','w']
-    hatchs = ['','..','//']
     rects = []
-    error_config = {'ecolor': 'k', 'elinewidth': 2, 'ezorder': 5}
+    error_config = {'ecolor': 'k', 'elinewidth': elinewidth, 'ezorder': 5}
     x_list = []
     for i, mean in enumerate(means): #iterate through conditions
         x = ind + width * (i - 1)
         x_list.append(x)
         #plot global data
         rects.append(ax.bar(x, mean, width,
-            color=colors[i],lw=2.0,
+            color=colors[i],lw=bar_line_width,
             yerr=stes[i], error_kw=error_config, hatch=hatchs[i]))
         x += (.5 * width)
         # Call significance bar func
@@ -634,7 +646,7 @@ def double_barplot(name, ylabel, y_increment, pre, post,
         props = {'connectionstyle':'bar, fraction=0.2','arrowstyle':'-',\
              'shrinkA':shrink,'shrinkB':shrink,'lw':1.0}
         ax.annotate(text, xy=(xtext, texty),
-                fontsize=14, zorder=10)
+                fontsize=SIG_FONT_SIZE, zorder=10)
                 #fontsize=18, zorder=10, fontweight='bold')
         #import pdb; pdb.set_trace()
         ax.annotate('', xy=(X[i][j],y), xytext=(X[k][l],y),
@@ -650,8 +662,8 @@ def double_barplot(name, ylabel, y_increment, pre, post,
         #label_diff(1, 0, 1, 1,'*', 745, x_list, 700, 5)
         label_diff(1, 0, 2, 0,'*', 620, x_list, 600, 400)
         label_diff(0, 0, 1, 0,'*', 660, x_list, 640, 400)
-        label_diff(1, 0, 1, 1,'*', 765, x_list, 680, 10)
-        #label_diff(1, 0, 1, 1,'*', 725, x_list, 560, 1)
+        label_diff(1, 0, 1, 1,'*', 745, x_list, 705, 5)
+        #label_diff(1, 0, 1, 1,'*', 765, x_list, 680, 10)
     #import pdb; pdb.set_trace()
     ax.set_ylabel(ylabel, fontsize=FONT_SIZE)
     ax.set_title(name, fontsize=TITLE_SIZE)
@@ -660,6 +672,8 @@ def double_barplot(name, ylabel, y_increment, pre, post,
     ax.set_xticklabels( ('Initial', 'Final'), fontsize=FONT_SIZE )
     ax.set_yticklabels(range(yrange[0], yrange[1], y_increment),
             fontsize=FONT_SIZE )
+    if tightLayout:
+        plt.tight_layout()
     #ax.legend((rects[0], rects[1], rects[2]),
             #('Alphabetic', 'Fixed-order', 'Random'))
     if show:
@@ -700,8 +714,7 @@ def barplot(title, ylabel, y_increment, subject_data, global_subj_mean,\
         props = {'connectionstyle':'bar, fraction=0.2','arrowstyle':'-',\
              'shrinkA':shrink,'shrinkB':shrink,'lw':1.0}
         ax.annotate(text, xy=(xtext, texty),
-                fontsize=14, zorder=10)
-        #import pdb; pdb.set_trace()
+                fontsize=SIG_FONT_SIZE, zorder=10)
         ax.annotate('', xy=(X[i],y), xytext=(X[j],y),
             xycoords='data', textcoords='data', arrowprops=props)
 
@@ -712,13 +725,13 @@ def barplot(title, ylabel, y_increment, subject_data, global_subj_mean,\
                     lw=0.5, color="black", alpha=0.3, zorder=1) 
 
     #plot global data
-    error_config = {'ecolor': 'k', 'elinewidth': 3, 'ezorder': 5}
-    hatchs = ['','..','//']
+    error_config = {'ecolor': 'k', 'elinewidth': elinewidth, 'ezorder': 5}
     rects = []
     for local_x, cond_mean, cond_ste, hatch in zip(x,
         global_subj_mean, global_subj_ste, hatchs):
         rects.append(ax.bar(local_x, cond_mean, bar_width, color='w', #zorder=3,
-                yerr=cond_ste, error_kw=error_config, lw=2.0,
+                yerr=cond_ste, error_kw=error_config,
+                lw=bar_line_width,
                 hatch=hatch))
     #ax.bar(x, global_subj_mean, bar_width, color='w', zorder=3,
             #yerr=global_subj_ste, error_kw=error_config, lw=1)
@@ -732,8 +745,8 @@ def barplot(title, ylabel, y_increment, subject_data, global_subj_mean,\
 
     ymax = np.max(subject_data)
     #import pdb; pdb.set_trace()
-    label_diff(1,2,'*', 9.4, x, ymax - .1, 7)
-    label_diff(0,2,'*', 8.7, x, ymax - 1.1, 20)
+    label_diff(1,2,'*', 10.2, x, ymax - .0, 7)
+    label_diff(0,2,'*', 8.7, x, ymax - 2.1, 20)
     ax.set_ylabel(ylabel, fontsize=FONT_SIZE)
     ax.set_ylim(yrange)
     ax.legend((rects[0], rects[1], rects[2]),
@@ -745,7 +758,8 @@ def barplot(title, ylabel, y_increment, subject_data, global_subj_mean,\
             fontsize=FONT_SIZE)
     ax.set_yticklabels(range(yrange[0], yrange[1], y_increment),
             fontsize=FONT_SIZE )
-    #plt.tight_layout()
+    if tightLayout:
+        plt.tight_layout()
     if show:
         plt.show()
     fn = title.replace(" ", "") + '_barplot.png'
@@ -1366,9 +1380,9 @@ pGroupedResults(end_stats, 'end')
         #250, task_stats.ps_subj_bc_means,
         #start_stats.global_bc_mean, start_stats.global_bc_ste)
 
-double_barplot('Mean task pupil size', 'Corrected pupil pixel area', 100, 
-    start_stats, end_stats, show=True, draw_sig=True,
-    yrange=(-100, 800))
+#double_barplot('Mean task pupil size', 'Corrected pupil pixel area', 100, 
+    #start_stats, end_stats, show=True, draw_sig=True,
+    #yrange=(-100, 800))
 
 ##baseline corrected target
 #barplot('Peak base corrected target pupil size', 
