@@ -1,12 +1,6 @@
 # author: Karl Marrett
 # analyze pupillometry data
 
-#if there is time
-#TODO use remove_blink_artifacts to nullify certain target
-#windows use position of eye to clean the results later
-#TODO think about degrees of freedom
-#TODO think about subtracting by condition
-
 import glob
 from os import path as op
 from scipy import io as sio 
@@ -38,20 +32,20 @@ stim_version_code = 8010
 fs = 1000.0  
 sig_thresh = .05
 hatchs = ['','..','//']
-bar_line_width = 1.5
-elinewidth = 1.5
+bar_line_width = 2
+elinewidth = 2
+global_lw=1.5
+#Final
+global_fig_size = (3, 4.5)
+trace_fig_size = (6, 4.5)
+showPlots =False
 
-#for nasa
-FONT_SIZE = 10
+#new
+FONT_SIZE = 18
 SIG_FONT_SIZE = 12
-TITLE_SIZE = 12 
-
-##for mean pupil
-#FONT_SIZE = 6
-#SIG_FONT_SIZE = 12
-#TITLE_SIZE = 6 
-
+TITLE_SIZE = 18 
 tightLayout = True
+rotation=00
 
 #data_dir = os.path.abspath(os.path.join(os.pardir, 'Data'))
 results_dir = op.abspath(op.join(op.pardir, 'paperFiles'))
@@ -159,7 +153,7 @@ def pGroupedResults(stats_tuple, group):
 def combinedSigTest(header, subj_combined, strategy):
     """ Takes a matrix of N subjects by condition nums of 
     some statistic and computes the relative and independent 
-    t test scores.  Prints these scores to results.txt, with 
+    t-test scores.  Prints these scores to results.txt, with 
     significant relations with * appended."""
     #assert(subject_data.shape == (N, condition_nums))
     significant = np.zeros(shape=(len(measure_names),
@@ -578,7 +572,7 @@ def subj_ps_stats(ps_data, data_type='trial',\
 roundToIncrement = lambda y, inc: round(float(y) / inc) * inc
 
 def double_barplot(name, ylabel, y_increment, pre, post,
-    yrange='default', subject_lines=False, 
+    yrange='default', subject_lines=False, legend=True,
     draw_sig=False, show=True):
 
     if name is 'Accuracy':
@@ -598,15 +592,12 @@ def double_barplot(name, ylabel, y_increment, pre, post,
             post.ps_subj_bc_means))
         #subject_data.shape is [condition, subject, pre or post]
         subject_data = [zip(pre.ps_subj_bc_means[:, i],
-            post.ps_subj_bc_means[:,i]) for i in
-            range(post.ps_subj_bc_means.shape[-1])]
+            post.ps_subj_bc_means[:,i]) for i in range(post.ps_subj_bc_means.shape[-1])]
     N = 2
     ind = np.arange(N) / 1.5  # the x locations for the groups
     width = 0.15       # the width of the bars
     opacity = .2
-    #fig, ax = plt.subplots(ncols=1, nrows=1, figsize=(1.0, 2.0))
-    fig, ax = plt.subplots(ncols=1, nrows=1, figsize=(1.5, 2.5)) # original
-    #fig, ax = plt.subplots(ncols=1, nrows=1, figsize=(3.0, 4.5))
+    fig, ax = plt.subplots(ncols=1, nrows=1, figsize=global_fig_size)
     simpleaxis(ax)
     if not subject_lines:
         all_subject_data = [max(means), min(means)]
@@ -628,7 +619,7 @@ def double_barplot(name, ylabel, y_increment, pre, post,
         x_list.append(x)
         #plot global data
         rects.append(ax.bar(x, mean, width,
-            color=colors[i],lw=bar_line_width,
+            color=colors[i],lw=global_lw,
             yerr=stes[i], error_kw=error_config, hatch=hatchs[i]))
         x += (.5 * width)
         # Call significance bar func
@@ -644,7 +635,7 @@ def double_barplot(name, ylabel, y_increment, pre, post,
         #order by condition then initial or final
         xtext = X[i][j] + abs(X[i][j]-X[k][l]) / 2
         props = {'connectionstyle':'bar, fraction=0.2','arrowstyle':'-',\
-             'shrinkA':shrink,'shrinkB':shrink,'lw':1.0}
+             'shrinkA':shrink,'shrinkB':shrink,'lw':global_lw}
         ax.annotate(text, xy=(xtext, texty),
                 fontsize=SIG_FONT_SIZE, zorder=10)
                 #fontsize=18, zorder=10, fontweight='bold')
@@ -662,37 +653,39 @@ def double_barplot(name, ylabel, y_increment, pre, post,
         #label_diff(1, 0, 1, 1,'*', 745, x_list, 700, 5)
         label_diff(1, 0, 2, 0,'*', 620, x_list, 600, 400)
         label_diff(0, 0, 1, 0,'*', 660, x_list, 640, 400)
-        label_diff(1, 0, 1, 1,'*', 745, x_list, 705, 5)
+        label_diff(1, 0, 1, 1,'*', 765, x_list, 705, 5)
         #label_diff(1, 0, 1, 1,'*', 765, x_list, 680, 10)
     #import pdb; pdb.set_trace()
     ax.set_ylabel(ylabel, fontsize=FONT_SIZE)
     ax.set_title(name, fontsize=TITLE_SIZE)
     ax.set_ylim(yrange)
     ax.set_xticks(ind + width / 2)
-    ax.set_xticklabels( ('Initial', 'Final'), fontsize=FONT_SIZE )
+    ax.set_xticklabels( ('Initial', 'Final'), fontsize=FONT_SIZE,
+            rotation=rotation)
     ax.set_yticklabels(range(yrange[0], yrange[1], y_increment),
             fontsize=FONT_SIZE )
     if tightLayout:
         plt.tight_layout()
-    #ax.legend((rects[0], rects[1], rects[2]),
-            #('Alphabetic', 'Fixed-order', 'Random'))
+    if legend:
+        ax.legend((rects[0], rects[1], rects[2]),
+                ('Alphabetic', 'Fixed-order', 'Random'), loc='upper right',
+                prop={'size':8})
     if show:
         plt.show()
-    fn = name.replace(" ", "") + '_2bplt.png'
-    print 'Saving figure:\n%s' % fn
+    fn = name.replace(" ", "") + '_2bplt.pdf'
+    print('Saving figure:\n%s' % fn)
     #fig.set_size_inches(3, 1.7)
     fig.savefig(fn, dpi=DPI_NO)
     plt.close()
 
 def barplot(title, ylabel, y_increment, subject_data, global_subj_mean,\
         global_subj_ste, yrange='default', ylines=False, show=False):
-    #fig, ax = plt.subplots(figsize=(12, 14)) 
-    fig, ax = plt.subplots(ncols=1, nrows=1, figsize=(4,3))
+    fig, ax = plt.subplots(ncols=1, nrows=1, figsize=global_fig_size)
     # Remove the plot frame lines.
     simpleaxis(ax)
-    x = [.5, 1.0, 1.5]
-    ax.set_xlim((.3, 2))
-    bar_width = .25
+    x = [.25, .5, .75]
+    ax.set_xlim((0.1, 1))
+    bar_width = .15
     opacity = .3
     #find range
     if yrange is 'default':
@@ -712,7 +705,7 @@ def barplot(title, ylabel, y_increment, subject_data, global_subj_mean,\
         y = 1 + ymax
         xtext = X[i] + abs(X[i]-X[j]) / 2
         props = {'connectionstyle':'bar, fraction=0.2','arrowstyle':'-',\
-             'shrinkA':shrink,'shrinkB':shrink,'lw':1.0}
+             'shrinkA':shrink,'shrinkB':shrink,'lw':global_lw}
         ax.annotate(text, xy=(xtext, texty),
                 fontsize=SIG_FONT_SIZE, zorder=10)
         ax.annotate('', xy=(X[i],y), xytext=(X[j],y),
@@ -731,7 +724,7 @@ def barplot(title, ylabel, y_increment, subject_data, global_subj_mean,\
         global_subj_mean, global_subj_ste, hatchs):
         rects.append(ax.bar(local_x, cond_mean, bar_width, color='w', #zorder=3,
                 yerr=cond_ste, error_kw=error_config,
-                lw=bar_line_width,
+                lw=global_lw,
                 hatch=hatch))
     #ax.bar(x, global_subj_mean, bar_width, color='w', zorder=3,
             #yerr=global_subj_ste, error_kw=error_config, lw=1)
@@ -745,36 +738,44 @@ def barplot(title, ylabel, y_increment, subject_data, global_subj_mean,\
 
     ymax = np.max(subject_data)
     #import pdb; pdb.set_trace()
-    label_diff(1,2,'*', 10.2, x, ymax - .0, 7)
-    label_diff(0,2,'*', 8.7, x, ymax - 2.1, 20)
+    #label_diff(1,2,'*', 9.9, x, ymax - .4, 35)
+    label_diff(1,2,'*', 9.9, x, 8.6, 38)
+    #label_diff(0,2,'*', 10.4, x, ymax - 0.9, 85)
+    label_diff(0,2,'*', 10.4, x, 8.9, 350)
     ax.set_ylabel(ylabel, fontsize=FONT_SIZE)
     ax.set_ylim(yrange)
-    ax.legend((rects[0], rects[1], rects[2]),
-            ('Alphabetic', 'Fixed-order', 'Random'), loc=4,
-            prop={'size':9})
+    #ax.legend((rects[0], rects[1], rects[2]),
+            #('alphabetic', 'fixed-order', 'random'), loc='upper left',
+            #prop={'size':9})
     #ax.set_title('%s N=%d' % (title, N))
     ax.set_title(title, fontsize=TITLE_SIZE)
     plt.xticks(x, ('Alphabetic', 'Fixed-order', 'Random'),
-            fontsize=FONT_SIZE)
+            fontsize=FONT_SIZE, rotation=rotation)
+    plt.tick_params(
+        axis='x',          # changes apply to the x-axis
+        which='both',      # both major and minor ticks are affected
+        bottom='off',      # ticks along the bottom edge are off
+        top='off',         # ticks along the top edge are off
+        labelbottom='off') # labels along the bottom edge are off
     ax.set_yticklabels(range(yrange[0], yrange[1], y_increment),
             fontsize=FONT_SIZE )
     if tightLayout:
         plt.tight_layout()
     if show:
         plt.show()
-    fn = title.replace(" ", "") + '_barplot.png'
-    print 'Saving figure:\n%s' % fn
+    fn = title.replace(" ", "") + '_barplot.pdf'
+    print('Saving figure:\n%s' % fn)
     #fig.set_size_inches(3, 1.7)
     fig.savefig(fn, dpi=DPI_NO)
     plt.close()
 
-def plot_ps(trace, ste_trace, name, ax='default',
+def plot_ps(trace, ste_trace, name, ax='default', printLegend=True,
         final_sub_plot=False):
     """plot a stack of subject mean ps data of all conditions
     Params:   trace can either by full trial or a letter window"""
 
     if ax is 'default':
-        fig, local_ax = plt.subplots()
+        fig, local_ax = plt.subplots(ncols=1, nrows=1, figsize=trace_fig_size)
     #clean the ticks
     local_ax.xaxis.set_ticks_position('bottom')
     local_ax.yaxis.set_ticks_position('left')
@@ -793,21 +794,28 @@ def plot_ps(trace, ste_trace, name, ax='default',
     #mark visual_primer if length is full trial
     ymin, ymax = local_ax.get_ylim()
     yspan = ymax - ymin
-    topFig = ymax - yspan / 7
+    topFig = ymax - yspan / 6
     topFigLower = ymax - yspan / 6
     if local_samp_len == trial_samp: # a trial
-        local_ax.text(end_primer / 3, topFig, 'Visual\nprimer',\
-                size=10) 
+        local_ax.text(0.5, topFig, 'Visual\nprimer',\
+                size=FONT_SIZE - 2) 
         #ax.axvspan(0, end_primer, color='k', alpha=.12)
-        local_ax.text(end_primer + fix_dot_time / 3.75,\
+        #local_ax.text(end_primer + fix_dot_time / 18.85,\
+                #topFig, 'Fixation\n   dot',\
+                #size=FONT_SIZE) 
+        #local_ax.text(end_primer / 7.2, topFig, 'Visual\nprimer',\
+                #size=FONT_SIZE) 
+        local_ax.text(end_primer,\
                 topFig, 'Fixation\n   dot',\
-                size=10) 
+                size=FONT_SIZE - 2) 
         local_ax.axvspan(end_primer, preblock_prime_sec,\
                 color='k', alpha=.07)
-        local_ax.text(24, topFig, 'Task\n', size=10) 
-        local_ax.legend(loc=4, prop={'size':10})
+        local_ax.text(24, topFig, 'Task\n', size=FONT_SIZE - 2) 
+        if printLegend:
+            local_ax.legend(loc=4, prop={'size':16})
         #local_ax.set_title(name + ' trial pupil size N=%d' % N)
-        local_ax.set_title(name + ' trial pupil size')
+        local_ax.set_title(name + ' trial pupil size',
+                fontsize=TITLE_SIZE)
         for i in cycle_start_sec[1:]:
             local_ax.axvline(x=i, linestyle='--', color='k',
                     alpha=.4)
@@ -819,36 +827,30 @@ def plot_ps(trace, ste_trace, name, ax='default',
         local_ax.axvline(x=preslice_time, linestyle='--', color='k',
                 alpha=.4)
         local_ax.text(preslice_time + .1, topFigLower, 
-                'Target\n letter\n onset', size=10) 
-        local_ax.legend(loc=2, prop={'size':10})
-        local_ax.set_title(name + ' window pupil size N=%d' % N)
+                'Target\n letter\n onset', size=FONT_SIZE) 
+        if printLegend:
+            local_ax.legend(loc=4, prop={'size':16})
+        local_ax.set_title(name + ' window pupil size N=%d' % N,
+                fontsize=TITLE_SIZE)
 
-    local_ax.set_ylabel('Corrected pupil pixel area')
+    local_ax.set_ylabel('Corrected pupil pixel area',
+            fontsize=TITLE_SIZE)
     #Render stats to plot
     #info = r'$\mu$=%.1f, $\sigma$=%.3f, N=%d' % \
             #(global_mean[c_num],\
             #global_std[c_num], N)
     #plt.text(20, global_mean[c_num] + 500, info)
-    #plt.show()
-    local_ax.set_xlabel('Trial Time (s)')
+    local_ax.set_xlabel('Trial Time (s)', fontsize=TITLE_SIZE)
     local_ax.set_xlim((0, local_samp_len / fs))
+    if tightLayout:
+        plt.tight_layout()
+    #plt.show()
     name = name.replace(" ", "")
-    fn = name + '_trace.png'
-    print 'Saving figure:\n%s' % fn
+    fn = name + '_trace.pdf'
+    print('Saving figure:\n%s' % fn)
     #fig.set_size_inches(3, 1.7)
     fig.savefig(fn, dpi=DPI_NO)
     plt.close()
-    #if final_sub_plot:
-        ##plt.show()
-        #name = name.replace(" ", "")
-        #fn = name + '_trace.png'
-        #print 'Saving figure:\n%s' % fn
-        #fig.savefig(fn)
-        #plt.close()
-    #else:
-        #local_ax.set_xlabel('Trial Time (s)')
-        #local_ax.set_xlim((0, local_samp_len / fs))
-        #return local_ax
 
 names = ['Alphabetic', 'Fixed-Order', 'Random']
 # read in global stimuli parameters
@@ -1033,11 +1035,11 @@ for s_ind, subj in enumerate(subjects):
     for b_ind, fname in enumerate(fnames):
         bnum = mid_block_order[b_ind]
         trial_ind = np.zeros(condition_nums)
-        print '\tProcessing bnum: ' + str(bnum)
+        print('\tProcessing bnum: ' + str(bnum))
         try:
             raw = pp.raw(fname)
         except:
-            print 'Edf file: %s corrupted, skipping' % str(fname)
+            print('Edf file: %s corrupted, skipping' % str(fname))
             continue
         raw_blinks = raw #hold on to blink data
         raw.remove_blink_artifacts()
@@ -1045,8 +1047,8 @@ for s_ind, subj in enumerate(subjects):
         screen_coords = raw.info['screen_coords']
         #import pdb; pdb.set_trace()
         if (len(fnames) != s2_blocks):
-            print '\t Warning: incorrect edf file count ' + \
-            str(len(fnames))
+            print('\t Warning: incorrect edf file count ' + \
+            str(len(fnames)))
 
         #block_final_mats = sorted(glob.glob(op.join(data_dir, '%s_*' %
             #subj, 'b'+ str(bnum) + '.*final.mat')))
@@ -1067,9 +1069,9 @@ for s_ind, subj in enumerate(subjects):
                         subj_data_dir, advance=True)
                 trial_id = base + ' ' + ' '.join(map(str, id_list))
             except:
-                print '\tWarning: trial ' + str(tnum) + \
+                print('\tWarning: trial ' + str(tnum) + \
                         ' not found for bnum ' + \
-                        str(bnum) + ' in mat files'
+                        str(bnum) + ' in mat files')
                 #advance indexer dict
                 remove_flag = True
                 block_ind[bnum] += 1
@@ -1077,13 +1079,13 @@ for s_ind, subj in enumerate(subjects):
             #check the event for this trial
             events = raw.find_events(trial_id, event_id)
             if (len(events) == 0):
-                print '\tWarning: trial ' + str(tnum) + \
+                print('\tWarning: trial ' + str(tnum) + \
                         ' not found for bnum ' + \
-                        str(bnum) + ' in edf files'
+                        str(bnum) + ' in edf files')
                 remove_flag = True
                 block_ind[bnum] += 1
             else:
-                print '\t\tProcessing trial ' + str(tnum)
+                print('\t\tProcessing trial ' + str(tnum))
             for pattern in condition_pattern:
                 if trial_id.startswith(pattern):
                     cond = pattern
@@ -1115,10 +1117,10 @@ for s_ind, subj in enumerate(subjects):
                     target_epoch = pp.Epochs(raw, events=events, 
                         event_id=event_id, tmin=tmin, tmax=tmax)
                 except:
-                    print 'One target lost due to clipping of window'
-                    print 'Raw samples: %d end sample: %d '\
-                            % (raw.n_samples, last_sample)
-                    print 'Overbleed: %d' % (last_sample - raw.n_samples)
+                    print('One target lost due to clipping of window')
+                    print('Raw samples: %d end sample: %d '\
+                            % (raw.n_samples, last_sample))
+                    print('Overbleed: %d' % (last_sample - raw.n_samples))
                 ctemp = target_epoch.get_data('ps')[0]
                 for i in range(int(target_samp)):
                     subj_ps_target[c_ind, b_ind, trial_ind[c_ind], timeind, i] = ctemp[i] 
@@ -1262,9 +1264,9 @@ printSignificant('Delta accuracy sig. testing', delta_acc)
         #acc_global.global_mean, acc_global.global_ste, yrange=(50, 105))
         #acc_subj_means_start, acc_subj_means_end)
 
-#already saved as final
+#FINALIZED
 double_barplot('Accuracy', 'Accuracy (%)', 5,
-        acc_start, acc_end, yrange=(60,100), show=True,
+        acc_start, acc_end, yrange=(75,100), show=showPlots,
         draw_sig=False)
 
 #PS
@@ -1356,11 +1358,12 @@ pGroupedResults(end_stats, 'end')
         #end_stats.full_ste_bc_trace, 'Base corrected final\
         #trials', ax=ax2, final_sub_plot=True)
 
-##already saved final version
-#plot_ps(start_stats.full_mean_bc_trace,
-        #start_stats.full_ste_bc_trace, 'Initial')
-#plot_ps(end_stats.full_mean_bc_trace,
-        #end_stats.full_ste_bc_trace, 'Final')
+#FINALIZED
+plot_ps(start_stats.full_mean_bc_trace,
+        start_stats.full_ste_bc_trace, 'Initial')
+plot_ps(end_stats.full_mean_bc_trace,
+        end_stats.full_ste_bc_trace, 'Final',
+        printLegend=False)
 
 #plot ps data for all conditions
 #plot_ps(task_stats.full_mean_trace, task_stats.full_ste_trace, 'Raw')
@@ -1380,9 +1383,10 @@ pGroupedResults(end_stats, 'end')
         #250, task_stats.ps_subj_bc_means,
         #start_stats.global_bc_mean, start_stats.global_bc_ste)
 
-#double_barplot('Mean task pupil size', 'Corrected pupil pixel area', 100, 
-    #start_stats, end_stats, show=True, draw_sig=True,
-    #yrange=(-100, 800))
+#FINALIZED PLOT
+double_barplot('Task pupil size', 'Corrected pupil pixel area', 100, 
+    start_stats, end_stats, show=False, draw_sig=True,
+    yrange=(-100, 800), legend=False)
 
 ##baseline corrected target
 #barplot('Peak base corrected target pupil size', 
@@ -1429,11 +1433,11 @@ pResults('Cognitive load WWL weighted standard error',
 printSignificant('Cognitive load WWL weighted',
         cog_subj_weighted_WWL)
 
-#already saved final figure
-barplot('NASA TLX survey results', 'Relative demand score\n'+\
-    r'low $\hspace{8} \rightarrow \hspace{8}$high', 2,\
+#FINALIZED PLOT
+barplot('TLX Survey', 'Relative demand score\n'+\
+    r'low $\hspace{6} \rightarrow \hspace{6}$high', 2,\
     cog_subj_weighted_WWL, cog_mean_weighted_WWL, cog_ste_weighted_WWL,
-    show=True, yrange=(0,11))
+    show=showPlots, yrange=(0,11))
 
 #Combined data
 #correlation_strategies = [stats.pearsonr, stats.spearmanr]
@@ -1476,4 +1480,4 @@ for si, strategy in enumerate(correlation_strategies):
                     strategy_name, subj_combined, strategy)
 
 resultstxt.close()
-print 'Finished... results text file closed\n'
+print('Finished... results text file closed\n')
